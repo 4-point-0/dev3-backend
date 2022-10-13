@@ -11,7 +11,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthRequest } from 'src/user/entities/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -26,6 +26,7 @@ export class ProjectController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
+  @ApiBearerAuth()
   @ApiResponse({ status: 200, type: Project })
   create(
     @Req() request: AuthRequest,
@@ -59,6 +60,7 @@ export class ProjectController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
+  @ApiBearerAuth()
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Req() request: AuthRequest,
@@ -76,6 +78,7 @@ export class ProjectController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
+  @ApiBearerAuth()
   @ApiResponse({ status: 200, type: Project })
   async remove(@Req() request: AuthRequest, @Param('id') id: string) {
     const venue = await this.projectService.findOne(id);
