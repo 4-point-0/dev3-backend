@@ -1,6 +1,7 @@
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { AdminModule } from '@adminjs/nestjs';
 import { Module, Scope } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import AdminJS from 'adminjs';
@@ -26,7 +27,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     AuthModule,
     UserModule,
     AdminModule.createAdminAsync({
-      imports: [MongooseSchemasModule],
+      imports: [ConfigModule.forRoot(), MongooseSchemasModule],
       inject: [getModelToken('Project'), getModelToken('User')],
       useFactory: (projectModel: Model<Project>, userModel: Model<User>) => ({
         adminJsOptions: {
