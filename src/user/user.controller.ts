@@ -39,8 +39,7 @@ export class UserController {
     return request.user;
   }
 
-  @Roles(Role.Admin)
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('projects/owned')
   @ApiResponse({ status: 200, type: [Project] })
   venuesOwned(@Req() request: AuthRequest) {
