@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Response } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 
@@ -13,6 +13,13 @@ class NearLoginDto {
   signedJsonString: string;
 }
 
+class NearLoginResponse {
+  @ApiProperty({
+    type: String,
+  })
+  token: string;
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -22,7 +29,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'The user has been logged in',
-    type: Response,
+    type: NearLoginResponse,
   })
   nearLogin(@Body() data: NearLoginDto) {
     return this.authService.getNearJwtToken(
