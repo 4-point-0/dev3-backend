@@ -42,7 +42,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('projects/owned')
   @ApiResponse({ status: 200, type: [Project] })
-  venuesOwned(@Req() request: AuthRequest) {
+  projectsOwned(@Req() request: AuthRequest) {
     return this.projectService.findAllForOwner(request.user._id);
   }
 
