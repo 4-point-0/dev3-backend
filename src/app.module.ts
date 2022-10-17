@@ -15,6 +15,7 @@ import { ProjectModule } from './project/project.module';
 import { MongooseSchemasModule } from './schemas.module';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
+import { AddressModule } from './address/address.module';
 
 AdminJS.registerAdapter(AdminJSMongoose);
 
@@ -98,6 +99,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
       }),
     }),
     MongooseSchemasModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [
