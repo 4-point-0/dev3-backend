@@ -24,8 +24,9 @@ export class AddressController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, type: Address })
   @ApiResponse({ status: 201, description: 'Address created' })
-  @ApiResponse({ status: 400 })
-  @ApiResponse({ status: 500 })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 500, description: 'Server error' })
   @HttpCode(200)
   async create(@Req() request: AuthRequest, @Body() dto: CreateAddressDto) {
     dto.owner = request.user._id;
