@@ -3,10 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ServiceError } from 'src/common/models/ServiceError';
 import { ServiceResult } from 'src/common/models/ServiceResult';
-import {
-  isNearImplicitWallet,
-  isNearWallet,
-} from 'src/utils/nearWalletValidation';
+import { isNearWallet } from 'src/utils/nearWalletValidation';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { Address, AddressDocument } from './entities/address.entity';
 
@@ -20,14 +17,7 @@ export class AddressService {
 
   async create(dto: CreateAddressDto): Promise<ServiceResult<Address>> {
     try {
-      if (dto.wallet.includes('near')) {
-        if (!isNearWallet(dto.wallet)) {
-          return new ServiceResult<Address>(
-            null,
-            new ServiceError(400, `Wallet ${dto.wallet} not valid`),
-          );
-        }
-      } else if (!isNearImplicitWallet(dto.wallet)) {
+      if (!isNearWallet(dto.wallet)) {
         return new ServiceResult<Address>(
           null,
           new ServiceError(400, `Wallet ${dto.wallet} not valid`),
