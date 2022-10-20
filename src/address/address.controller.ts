@@ -13,14 +13,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { handle } from 'src/helpers/response/handle';
-import { AuthRequest } from 'src/user/entities/user.entity';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { handle } from '../helpers/response/handle';
+import { AuthRequest } from '../user/entities/user.entity';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
-import { HttpExceptionFilter } from 'src/helpers/filters/http-exception.filter';
+import { HttpExceptionFilter } from '../helpers/filters/http-exception.filter';
 
 @ApiTags('address')
 @Controller('address')
