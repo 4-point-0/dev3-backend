@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import mongoose, { Document, ObjectId } from 'mongoose';
-import { User } from 'src/user/entities/user.entity';
+import mongoose, { Document } from 'mongoose';
+import { User } from '../../user/entities/user.entity';
 
 export type AddressDocument = Address & Document;
 
@@ -9,7 +9,7 @@ export type AddressDocument = Address & Document;
   _id: true,
 })
 export class Address {
-  _id: ObjectId;
+  _id: mongoose.Types.ObjectId;
 
   @ApiProperty({
     type: Date,

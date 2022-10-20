@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { ObjectId } from 'mongoose';
+import Mongoose, { ObjectId } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -8,7 +8,7 @@ export type AuthRequest = Request & { user: User };
 
 @Schema()
 export class User {
-  _id: ObjectId;
+  _id: Mongoose.Types.ObjectId;
 
   @ApiProperty({
     type: Date,
