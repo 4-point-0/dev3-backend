@@ -25,22 +25,22 @@ export class AddressService {
         );
       }
 
-      const isWalletUnique = await this.repo
+      const addressWalletDoc = await this.repo
         .exists({ owner: dto.owner, wallet: dto.wallet })
         .exec();
 
-      if (isWalletUnique !== null) {
+      if (addressWalletDoc) {
         return new ServiceResult<Address>(
           null,
           new ServiceError(400, `Wallet ${dto.wallet} isn't unique`),
         );
       }
 
-      const isAliasUnique = await this.repo
+      const addressAliasDoc = await this.repo
         .exists({ owner: dto.owner, alias: dto.alias })
         .exec();
 
-      if (isAliasUnique !== null) {
+      if (addressAliasDoc) {
         return new ServiceResult<Address>(
           null,
           new ServiceError(400, `Alias ${dto.alias} isn't unique`),
