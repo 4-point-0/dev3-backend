@@ -6,8 +6,8 @@ import {
   IsPhoneNumber,
   Matches,
 } from 'class-validator';
-import { ObjectId } from 'mongoose';
-import { nearWalletRegex } from 'src/utils/regex';
+import Mongoose from 'mongoose';
+import { nearWalletRegex } from '../../utils/regex';
 
 export class CreateAddressDto {
   @ApiProperty({
@@ -43,5 +43,5 @@ export class CreateAddressDto {
   })
   phone: string;
 
-  owner: ObjectId;
+  owner: Mongoose.Types.ObjectId;
 }
