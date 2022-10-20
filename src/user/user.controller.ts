@@ -29,7 +29,6 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly projectService: ProjectService,
-    private jwtService: JwtService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
