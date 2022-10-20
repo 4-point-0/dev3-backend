@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongose, { Model } from 'mongoose';
-import { ServiceError } from 'src/helpers/response/error';
-import { ServiceResult } from 'src/helpers/response/result';
-import { isNearWallet } from 'src/utils/nearWalletValidation';
+import { ServiceError } from '../helpers/response/error';
+import { ServiceResult } from '../helpers/response/result';
+import { isNearWallet } from '../utils/nearWalletValidation';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address, AddressDocument } from './entities/address.entity';
