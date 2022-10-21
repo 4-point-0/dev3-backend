@@ -1,23 +1,25 @@
 import Mongoose from 'mongoose';
 import { CreateAddressDto } from './dto/create-address.dto';
 
+export const mockUser = {
+  _id: new Mongoose.Types.ObjectId('634ff3d708393072d5daa875'),
+  updatedAt: new Date(),
+  createdAt: new Date(),
+  isCensored: true,
+  isActive: true,
+  uid: 'dev3.testnet',
+  accountType: 'near',
+  roles: ['customer'],
+  username: 'dev3.testnet',
+  nearWalletAccountId: 'dev3.testnet',
+};
+
 export const mockAddress = {
   wallet: 'john.near',
   alias: 'johhy1',
   email: 'john@email.com',
   phone: '+38599345687',
-  owner: {
-    _id: new Mongoose.Types.ObjectId('634ff3d708393072d5daa875'),
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    isCensored: true,
-    isActive: true,
-    uid: 'dev3.testnet',
-    accountType: 'near',
-    roles: ['customer'],
-    username: 'dev3.testnet',
-    nearWalletAccountId: 'dev3.testnet',
-  },
+  owner: mockUser,
   _id: new Mongoose.Types.ObjectId('634ff1e4bb85ed5475a1ff5d'),
   updatedAt: new Date(),
   createdAt: new Date(),
