@@ -104,9 +104,10 @@ export class AddressService {
         );
       }
 
-      const updateAddress = await this.repo
-        .findByIdAndUpdate(id, updateAddressDto)
-        .exec();
+      const updateAddress = await this.repo.findOne({ _id: id }).exec();
+      updateAddress.phone = updateAddressDto.phone;
+      updateAddress.email = updateAddressDto.email;
+      await this.repo.updateOne({ _id: id }, updateAddress);
       return new ServiceResult<Address>(updateAddress);
     } catch (error) {
       this.logger.error('AddressService - update', error);
