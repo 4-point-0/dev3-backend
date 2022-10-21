@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as borsh from 'borsh';
 import { sha256 } from 'js-sha256';
 import { firstValueFrom } from 'rxjs';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import * as nacl from 'tweetnacl';
 
 export interface JwtUser {
