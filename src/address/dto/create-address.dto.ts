@@ -10,7 +10,9 @@ export class CreateAddressDto extends UpdateAddressDto {
     required: true,
   })
   @IsNotEmpty()
-  @Matches(nearWalletRegex)
+  @Matches(nearWalletRegex, {
+    message: 'wallet must be named or implicit near wallet',
+  })
   wallet: string;
   @ApiProperty({
     type: String,
