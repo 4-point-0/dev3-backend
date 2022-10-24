@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { jwtConstants } from 'src/auth/constants';
-import { ProjectModule } from 'src/project/project.module';
+import { jwtConstants } from '../auth/constants';
+import { ProjectModule } from '../project/project.module';
 import { User, UserSchema } from './entities/user.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';

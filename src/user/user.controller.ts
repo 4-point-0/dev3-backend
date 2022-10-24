@@ -11,12 +11,12 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { Role } from 'src/auth/role.enum';
-import { Roles } from 'src/auth/roles.decorators';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { Project } from 'src/project/entities/project.entity';
-import { ProjectService } from 'src/project/project.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Role } from '../auth/role.enum';
+import { Roles } from '../auth/roles.decorators';
+import { RolesGuard } from '../auth/roles.guard';
+import { Project } from '../project/entities/project.entity';
+import { ProjectService } from '../project/project.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthRequest, User } from './entities/user.entity';
@@ -29,7 +29,6 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly projectService: ProjectService,
-    private jwtService: JwtService,
   ) {}
 
   @UseGuards(JwtAuthGuard)

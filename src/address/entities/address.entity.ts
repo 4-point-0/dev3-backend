@@ -1,16 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import mongoose, { Document, ObjectId } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { User } from '../../user/entities/user.entity';
-import { toSlug } from '../../utils/slug';
 
-export type ProjectDocument = Project & Document;
+export type AddressDocument = Address & Document;
 
 @Schema({
   _id: true,
 })
-export class Project {
-  _id: ObjectId;
+export class Address {
+  _id: mongoose.Types.ObjectId;
 
   @ApiProperty({
     type: Date,
@@ -25,34 +24,28 @@ export class Project {
   createdAt: Date;
 
   @ApiProperty({
-    type: Boolean,
+    type: String,
   })
-  @Prop({ default: false })
-  isCensored: boolean;
-
-  @ApiProperty({
-    type: Boolean,
-  })
-  @Prop({ default: true })
-  isActive: boolean;
+  @Prop({ required: true })
+  wallet: string;
 
   @ApiProperty({
     type: String,
   })
   @Prop({ required: true })
-  name: string;
+  alias: string;
 
   @ApiProperty({
     type: String,
   })
-  @Prop({ unique: true })
-  slug: string;
+  @Prop({ required: false })
+  phone: string;
 
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: true })
-  logoUrl: string;
+  @Prop({ required: false })
+  email: string;
 
   @ApiProperty({
     type: User,
@@ -61,9 +54,4 @@ export class Project {
   owner: User;
 }
 
-export const ProjectSchema = SchemaFactory.createForClass(Project);
-
-ProjectSchema.pre('save', function (next) {
-  this.slug = toSlug(this.name);
-  next();
-});
+export const AddressSchema = SchemaFactory.createForClass(Address);

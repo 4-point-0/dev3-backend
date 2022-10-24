@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ObjectId } from 'mongoose';
+import Mongoose, { ObjectId } from 'mongoose';
 
 export class CreateProjectDto {
   @ApiProperty({
@@ -23,5 +23,5 @@ export class CreateProjectDto {
   })
   readonly logoUrl: string;
 
-  owner: ObjectId;
+  owner: Mongoose.Types.ObjectId;
 }

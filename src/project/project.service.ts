@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import Mongoose, { Model, ObjectId } from 'mongoose';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project, ProjectDocument } from './entities/project.entity';
@@ -23,7 +23,7 @@ export class ProjectService {
       .exec();
   }
 
-  findAllForOwner(ownerId: ObjectId): Promise<Project[]> {
+  findAllForOwner(ownerId: Mongoose.Types.ObjectId): Promise<Project[]> {
     return this.repo.find({ owner: ownerId }).populate('owner').exec();
   }
 

@@ -1,7 +1,7 @@
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { AdminModule } from '@adminjs/nestjs';
 import { Module, Scope } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import AdminJS from 'adminjs';
@@ -15,14 +15,18 @@ import { ProjectModule } from './project/project.module';
 import { MongooseSchemasModule } from './schemas.module';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
+import { AddressModule } from './address/address.module';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 AdminJS.registerAdapter(AdminJSMongoose);
-
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb+srv://admin:admin@cluster0.oxj1bds.mongodb.net/?retryWrites=true&w=majority&ssl=true',
-    ),
+    MongooseModule.forRootAsync({
+      useFactory: () => ({
+        uri: process.env.DATABASE_URL,
+      }),
+    }),
     ProjectModule,
     AuthModule,
     UserModule,
@@ -98,6 +102,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
       }),
     }),
     MongooseSchemasModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [
