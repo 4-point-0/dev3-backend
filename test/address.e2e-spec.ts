@@ -4,8 +4,9 @@ import * as request from 'supertest';
 import { AddressService } from '../src/address/address.service';
 import {
   mockAddresses,
+  mockAuthUser,
   mockCreateAddressDto1,
-} from '../src/address/mock-tests-data';
+} from './mock-tests-data';
 import { AddressModule } from '../src/address/address.module';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard';
 import { ServiceResult } from '../src/helpers/response/result';
@@ -36,12 +37,7 @@ describe('AddressController (e2e)', () => {
       .useValue({
         canActivate: (context: ExecutionContext) => {
           const req = context.switchToHttp().getRequest();
-          req.user = {
-            uid: 'dev3.testnet',
-            username: 'dev3.testnet',
-            accountType: 'near',
-            nearWalletAccountId: 'dev3.testnet',
-          };
+          req.user = mockAuthUser;
           return true;
         },
       })
