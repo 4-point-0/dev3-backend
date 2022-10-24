@@ -4,7 +4,7 @@ import {
   mockAddresses,
   mockCreateAddressDtos,
   mockUser,
-} from './mock-tests-data';
+} from '../../test/mock-tests-data';
 import { ServiceResult } from '../helpers/response/result';
 import { AddressService } from './address.service';
 import { Address, AddressSchema } from './entities/address.entity';

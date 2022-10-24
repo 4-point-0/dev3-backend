@@ -1,5 +1,12 @@
 import Mongoose from 'mongoose';
-import { CreateAddressDto } from './dto/create-address.dto';
+import { CreateAddressDto } from '../src/address/dto/create-address.dto';
+
+export const mockAuthUser = {
+  uid: 'dev3.testnet',
+  username: 'dev3.testnet',
+  accountType: 'near',
+  nearWalletAccountId: 'dev3.testnet',
+};
 
 export const mockUser = {
   _id: new Mongoose.Types.ObjectId('634ff3d708393072d5daa875'),
