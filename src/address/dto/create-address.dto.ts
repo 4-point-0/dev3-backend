@@ -1,10 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsPhoneNumber,
+  Matches,
+} from 'class-validator';
 import Mongoose from 'mongoose';
 import { nearWalletRegex } from '../../utils/regex';
-import { UpdateAddressDto } from './update-address.dto';
 
-export class CreateAddressDto extends UpdateAddressDto {
+export class CreateAddressDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -24,6 +29,21 @@ export class CreateAddressDto extends UpdateAddressDto {
     required: false,
   })
   alias: string;
+
+  @IsEmail()
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  email: string;
+  @IsPhoneNumber()
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  phone: string;
 
   owner: Mongoose.Types.ObjectId;
 }
