@@ -1,7 +1,7 @@
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { AdminModule } from '@adminjs/nestjs';
 import { Module, Scope } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import AdminJS from 'adminjs';
@@ -17,6 +17,7 @@ import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { AddressModule } from './address/address.module';
 import * as dotenv from 'dotenv';
+import { Address } from './address/entities/address.entity';
 dotenv.config();
 
 AdminJS.registerAdapter(AdminJSMongoose);
@@ -32,8 +33,16 @@ AdminJS.registerAdapter(AdminJSMongoose);
     UserModule,
     AdminModule.createAdminAsync({
       imports: [ConfigModule.forRoot(), MongooseSchemasModule],
-      inject: [getModelToken('Project'), getModelToken('User')],
-      useFactory: (projectModel: Model<Project>, userModel: Model<User>) => ({
+      inject: [
+        getModelToken('Project'),
+        getModelToken('User'),
+        getModelToken('Address'),
+      ],
+      useFactory: (
+        projectModel: Model<Project>,
+        userModel: Model<User>,
+        addressModel: Model<Address>,
+      ) => ({
         adminJsOptions: {
           rootPath: '/admin',
           resources: [
@@ -59,6 +68,9 @@ AdminJS.registerAdapter(AdminJSMongoose);
                       new: false,
                     },
                   },
+                  owner: {
+                    isRequired: true,
+                  },
                 },
                 parent: { name: 'Content', icon: 'Home' },
               },
@@ -81,6 +93,29 @@ AdminJS.registerAdapter(AdminJSMongoose);
                       edit: false,
                       new: false,
                     },
+                  },
+                },
+                parent: { name: 'Content', icon: 'Home' },
+              },
+            },
+            {
+              resource: addressModel,
+              options: {
+                properties: {
+                  createdAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  updatedAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  owner: {
+                    isRequired: true,
                   },
                 },
                 parent: { name: 'Content', icon: 'Home' },
