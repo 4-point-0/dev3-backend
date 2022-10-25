@@ -2,11 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { Document } from 'mongoose';
 import { User } from '../../user/entities/user.entity';
+import { emailRegex, nearWalletRegex } from '../../utils/regex';
 
 export type AddressDocument = Address & Document;
 
 @Schema({
   _id: true,
+  autoIndex: true,
 })
 export class Address {
   _id: mongoose.Types.ObjectId;
@@ -26,7 +28,7 @@ export class Address {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: true })
+  @Prop({ required: true, match: nearWalletRegex })
   wallet: string;
 
   @ApiProperty({
@@ -44,7 +46,7 @@ export class Address {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: false })
+  @Prop({ required: false, match: emailRegex })
   email: string;
 
   @ApiProperty({
@@ -55,3 +57,6 @@ export class Address {
 }
 
 export const AddressSchema = SchemaFactory.createForClass(Address);
+
+AddressSchema.index({ owner: 1, alias: 1 }, { unique: true });
+AddressSchema.index({ owner: 1, wallet: 1 }, { unique: true });
