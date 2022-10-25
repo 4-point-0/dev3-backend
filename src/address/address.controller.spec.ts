@@ -10,7 +10,7 @@ import { ServiceResult } from '../helpers/response/result';
 import { AddressController } from './address.controller';
 import { AddressService } from './address.service';
 import { Address } from './entities/address.entity';
-import { ServiceError } from '../helpers/response/error';
+import { BadRequest, NotFound } from '../helpers/response/errors';
 
 describe('AddressController', () => {
   let addressController: AddressController;
@@ -48,10 +48,7 @@ describe('AddressController', () => {
     });
 
     it('should return Address not found (Not Found - 404) exception', async () => {
-      const result = new ServiceResult<Address>(
-        null,
-        new ServiceError(404, 'Address not found'),
-      );
+      const result = new NotFound<Address>('Address not found');
       jest.spyOn(addressService, 'findOne').mockResolvedValue(result);
 
       try {
@@ -81,10 +78,10 @@ describe('AddressController', () => {
       const wallet = 'test.hear';
       const dto = { ...mockCreateAddressDtos[0] };
       dto.wallet = wallet;
-      const result = new ServiceResult<Address>(
-        null,
-        new ServiceError(400, `wallet must be named or implicit near wallet`),
+      const result = new BadRequest<Address>(
+        'wallet must be named or implicit near wallet',
       );
+
       jest.spyOn(addressService, 'create').mockResolvedValue(result);
       const req: any = {
         user: mockAuthUser,
@@ -102,10 +99,7 @@ describe('AddressController', () => {
     it('should return alias should not be empty (Bad request - 400) exception', async () => {
       const dto = { ...mockCreateAddressDtos[0] };
       dto.alias = undefined;
-      const result = new ServiceResult<Address>(
-        null,
-        new ServiceError(400, 'alias should not be empty'),
-      );
+      const result = new BadRequest<Address>('alias should not be empty');
       jest.spyOn(addressService, 'create').mockResolvedValue(result);
       const req: any = {
         user: mockAuthUser,
@@ -148,10 +142,10 @@ describe('AddressController', () => {
       address.phone = phone;
       address.email = email;
 
-      const result = new ServiceResult<Address>(
-        null,
-        new ServiceError(400, `phone must be a valid phone number`),
+      const result = new BadRequest<Address>(
+        'phone must be a valid phone number',
       );
+
       jest.spyOn(addressService, 'update').mockResolvedValue(result);
       const req: any = {
         user: mockAuthUser,
@@ -175,10 +169,7 @@ describe('AddressController', () => {
       address.phone = phone;
       address.email = email;
 
-      const result = new ServiceResult<Address>(
-        null,
-        new ServiceError(400, `email must be an email`),
-      );
+      const result = new BadRequest<Address>('email must be an email');
       jest.spyOn(addressService, 'update').mockResolvedValue(result);
       const req: any = {
         user: mockAuthUser,
@@ -207,10 +198,7 @@ describe('AddressController', () => {
     });
 
     it('should return Address not found (Not found - 404) exception', async () => {
-      const result = new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      );
+      const result = new NotFound<Address>('Address not found');
       jest.spyOn(addressService, 'remove').mockResolvedValue(result);
 
       try {

@@ -5,13 +5,12 @@ import {
   mockCreateAddressDtos,
   mockUser,
 } from '../../test/mock-tests-data';
-import { ServiceResult } from '../helpers/response/result';
 import { AddressService } from './address.service';
 import { Address, AddressSchema } from './entities/address.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model } from 'mongoose';
-import { ServiceError } from '../helpers/response/error';
+import { BadRequest, NotFound, Unauthorized } from '../helpers/response/errors';
 
 describe('AddressService', () => {
   let addressService: AddressService;
@@ -64,10 +63,7 @@ describe('AddressService', () => {
     dtoWallet.wallet = wallet;
     const response = await addressService.create(dtoWallet);
     expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(400, `Wallet ${wallet} not valid`),
-      ),
+      new BadRequest<Address>(`Wallet ${wallet} not valid`),
     );
   });
 
@@ -77,10 +73,7 @@ describe('AddressService', () => {
     dtoWallet.wallet = wallet;
     const response = await addressService.create(dtoWallet);
     expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(400, `Wallet ${wallet} not valid`),
-      ),
+      new BadRequest<Address>(`Wallet ${wallet} not valid`),
     );
   });
 
@@ -91,10 +84,7 @@ describe('AddressService', () => {
     dtoWallet.wallet = wallet;
     const response = await addressService.create(dtoWallet);
     expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(400, `Wallet ${wallet} not valid`),
-      ),
+      new BadRequest<Address>(`Wallet ${wallet} not valid`),
     );
   });
 
@@ -105,10 +95,7 @@ describe('AddressService', () => {
     dtoWallet.wallet = wallet;
     const response = await addressService.create(dtoWallet);
     expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(400, `Wallet ${wallet} not valid`),
-      ),
+      new BadRequest<Address>(`Wallet ${wallet} not valid`),
     );
   });
 
@@ -116,12 +103,8 @@ describe('AddressService', () => {
     await new addressModel(mockCreateAddressDtos[0]).save();
     const response = await addressService.create(mockCreateAddressDtos[0]);
     expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(
-          400,
-          `Wallet ${mockCreateAddressDtos[0].wallet} isn't unique`,
-        ),
+      new BadRequest<Address>(
+        `Wallet ${mockCreateAddressDtos[0].wallet} isn't unique`,
       ),
     );
   });
@@ -133,12 +116,8 @@ describe('AddressService', () => {
     dtoWallet.wallet = wallet;
     const response = await addressService.create(dtoWallet);
     expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(
-          400,
-          `Alias ${mockCreateAddressDtos[0].alias} isn't unique`,
-        ),
+      new BadRequest<Address>(
+        `Alias ${mockCreateAddressDtos[0].alias} isn't unique`,
       ),
     );
   });
@@ -159,23 +138,13 @@ describe('AddressService', () => {
   it(`FindOne - should return Address not found (Not Found - 404) exception`, async () => {
     await new addressModel(mockAddresses[0]).save();
     const response = await addressService.findOne('12');
-    expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      ),
-    );
+    expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`FindOne - should return Address not found (Not Found - 404) exception`, async () => {
     await new addressModel(mockAddresses[0]).save();
     const response = await addressService.findOne('634ff1e4bb85ed5475a1ff6d');
-    expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      ),
-    );
+    expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Update - should update`, async () => {
@@ -201,12 +170,7 @@ describe('AddressService', () => {
       phone: phone,
       email: email,
     });
-    expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      ),
-    );
+    expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Update - should return Address not found (Not Found - 404) exception`, async () => {
@@ -222,12 +186,7 @@ describe('AddressService', () => {
         email: email,
       },
     );
-    expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      ),
-    );
+    expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Update - should return Unauthorized access to user address (Not Found - 404) exception`, async () => {
@@ -244,10 +203,7 @@ describe('AddressService', () => {
       },
     );
     expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(401, `Unauthorized access to user address`),
-      ),
+      new Unauthorized('Unauthorized access to user address'),
     );
   });
 
@@ -256,12 +212,7 @@ describe('AddressService', () => {
     await addressService.remove(createResult._id.toString());
     const response = await addressService.findOne(createResult._id.toString());
 
-    expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      ),
-    );
+    expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Remove - should return Address not found (Not Found - 404) exception`, async () => {
@@ -269,44 +220,12 @@ describe('AddressService', () => {
     const response = await addressService.remove(
       mockAddresses[1]._id.toString(),
     );
-    expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      ),
-    );
+    expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Remove - should return Address not found (Not Found - 404) exception`, async () => {
     await new addressModel(mockAddresses[0]).save();
     const response = await addressService.remove('12');
-    expect(response).toStrictEqual(
-      new ServiceResult<Address>(
-        null,
-        new ServiceError(404, `Address not found`),
-      ),
-    );
+    expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
-
-  // it(`FindOne - should return Address not found (Not Found - 404) exception`, async () => {
-  //   await new addressModel(mockAddresses[0]).save();
-  //   const response = await addressService.findOne('12');
-  //   expect(response).toStrictEqual(
-  //     new ServiceResult<Address>(
-  //       null,
-  //       new ServiceError(404, `Address not found`),
-  //     ),
-  //   );
-  // });
-
-  // it(`FindOne - should return Address not found (Not Found - 404) exception`, async () => {
-  //   await new addressModel(mockAddresses[0]).save();
-  //   const response = await addressService.findOne('634ff1e4bb85ed5475a1ff6d');
-  //   expect(response).toStrictEqual(
-  //     new ServiceResult<Address>(
-  //       null,
-  //       new ServiceError(404, `Address not found`),
-  //     ),
-  //   );
-  // });
 });

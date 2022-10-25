@@ -22,12 +22,12 @@ import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
 import { HttpExceptionFilter } from '../helpers/filters/http-exception.filter';
 
+@UseGuards(JwtAuthGuard)
 @ApiTags('address')
 @Controller('address')
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
@@ -44,7 +44,6 @@ export class AddressController {
     return handle(await this.addressService.create(dto));
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
@@ -62,7 +61,6 @@ export class AddressController {
     return handle(await this.addressService.findAll());
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
@@ -82,7 +80,6 @@ export class AddressController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())

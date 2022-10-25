@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import Mongose, { Model } from 'mongoose';
-import { ServiceError } from '../helpers/response/error';
+import Mongoose, { Model } from 'mongoose';
+import {
+  BadRequest,
+  NotFound,
+  ServerError,
+  Unauthorized,
+} from '../helpers/response/errors';
 import { ServiceResult } from '../helpers/response/result';
 import { isNearWallet } from '../utils/nearWalletValidation';
 import { CreateAddressDto } from './dto/create-address.dto';
@@ -19,10 +24,7 @@ export class AddressService {
   async create(dto: CreateAddressDto): Promise<ServiceResult<Address>> {
     try {
       if (!isNearWallet(dto.wallet)) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(400, `Wallet ${dto.wallet} not valid`),
-        );
+        return new BadRequest<Address>(`Wallet ${dto.wallet} not valid`);
       }
 
       const addressWalletDoc = await this.repo
@@ -30,10 +32,7 @@ export class AddressService {
         .exec();
 
       if (addressWalletDoc) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(400, `Wallet ${dto.wallet} isn't unique`),
-        );
+        return new BadRequest<Address>(`Wallet ${dto.wallet} isn't unique`);
       }
 
       const addressAliasDoc = await this.repo
@@ -41,21 +40,13 @@ export class AddressService {
         .exec();
 
       if (addressAliasDoc) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(400, `Alias ${dto.alias} isn't unique`),
-        );
+        return new BadRequest<Address>(`Alias ${dto.alias} isn't unique`);
       }
-
-      const address = new this.repo(dto);
-      const result = await address.save();
+      const result = await new this.repo(dto).save();
       return new ServiceResult<Address>(result);
     } catch (error) {
       this.logger.error('AddressService - create', error);
-      return new ServiceResult<Address>(
-        null,
-        new ServiceError(500, `Can't create address`),
-      );
+      return new ServerError<Address>(`Can't create address`);
     }
   }
 
@@ -65,10 +56,7 @@ export class AddressService {
       return new ServiceResult<Address[]>(addresses);
     } catch (error) {
       this.logger.error('AddressService - findAll', error);
-      return new ServiceResult<Address[]>(
-        null,
-        new ServiceError(500, `Can't get addresses`),
-      );
+      return new ServerError<Address[]>(`Can't get addresses`);
     }
   }
 
@@ -78,11 +66,8 @@ export class AddressService {
     updateAddressDto: UpdateAddressDto,
   ): Promise<ServiceResult<Address>> {
     try {
-      if (!Mongose.Types.ObjectId.isValid(id)) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(404, 'Address not found'),
-        );
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<Address>('Address not found');
       }
 
       const address = await this.repo
@@ -91,17 +76,11 @@ export class AddressService {
         .exec();
 
       if (!address) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(404, `Address not found`),
-        );
+        return new NotFound<Address>('Address not found');
       }
 
       if (address.owner.uid !== userUid) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(401, `Unauthorized access to user address`),
-        );
+        return new Unauthorized<Address>('Unauthorized access to user address');
       }
 
       const updateAddress = await this.repo.findOne({ _id: id }).exec();
@@ -111,20 +90,14 @@ export class AddressService {
       return new ServiceResult<Address>(updateAddress);
     } catch (error) {
       this.logger.error('AddressService - update', error);
-      return new ServiceResult<Address>(
-        null,
-        new ServiceError(500, `Can't update address`),
-      );
+      return new ServerError<Address>(`Can't update address`);
     }
   }
 
   async findOne(id: string): Promise<ServiceResult<Address>> {
     try {
-      if (!Mongose.Types.ObjectId.isValid(id)) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(404, 'Address not found'),
-        );
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<Address>('Address not found');
       }
       const address = await this.repo
         .findOne({ _id: id })
@@ -132,28 +105,19 @@ export class AddressService {
         .exec();
 
       if (!address) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(404, 'Address not found'),
-        );
+        return new NotFound<Address>('Address not found');
       }
       return new ServiceResult<Address>(address);
     } catch (error) {
       this.logger.error('AddressService - findOne', error);
-      return new ServiceResult<Address>(
-        null,
-        new ServiceError(500, `Can't get address`),
-      );
+      return new ServerError<Address>(`Can't get address`);
     }
   }
 
   async remove(id: string): Promise<ServiceResult<Address>> {
     try {
-      if (!Mongose.Types.ObjectId.isValid(id)) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(404, `Address not found`),
-        );
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<Address>('Address not found');
       }
 
       const address = await this.repo
@@ -162,20 +126,14 @@ export class AddressService {
         .exec();
 
       if (!address) {
-        return new ServiceResult<Address>(
-          null,
-          new ServiceError(404, 'Address not found'),
-        );
+        return new NotFound<Address>('Address not found');
       }
 
       const result = await this.repo.findByIdAndDelete(id).exec();
       return new ServiceResult<Address>(result);
     } catch (error) {
       this.logger.error('AddressService - findOne', error);
-      return new ServiceResult<Address>(
-        null,
-        new ServiceError(500, `Can't remove address`),
-      );
+      return new ServerError<Address>(`Can't remove address`);
     }
   }
 }
