@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { Document, ObjectId } from 'mongoose';
-import { User } from '../../user/entities/user.entity';
 import { toSlug } from '../../utils/slug';
+import { User } from '../../user/entities/user.entity';
 
 export type ProjectDocument = Project & Document;
 
@@ -39,7 +39,7 @@ export class Project {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   name: string;
 
   @ApiProperty({
@@ -51,7 +51,7 @@ export class Project {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: true })
+  @Prop({ required: false })
   logoUrl: string;
 
   @ApiProperty({
@@ -64,6 +64,6 @@ export class Project {
 export const ProjectSchema = SchemaFactory.createForClass(Project);
 
 ProjectSchema.pre('save', function (next) {
-  this.slug = toSlug(this.name);
+  this.slug = toSlug(this.slug ? this.slug : this.name);
   next();
 });
