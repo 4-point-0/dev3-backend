@@ -45,13 +45,13 @@ export class UserController {
     return this.projectService.findAllForOwner(request.user._id);
   }
 
-  @Roles(Role.Admin)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get('projects/all')
-  @ApiResponse({ status: 200, type: [Project] })
-  projectsAll(@Req() request: AuthRequest) {
-    return this.projectService.findAll(true);
-  }
+  // @Roles(Role.Admin)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Get('projects/all')
+  // @ApiResponse({ status: 200, type: [Project] })
+  // projectsAll(@Req() request: AuthRequest) {
+  //   return this.projectService.findAll(true);
+  // }
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
