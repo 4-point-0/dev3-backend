@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import mongoose, { Document, ObjectId } from 'mongoose';
+import Mongoose, { Document, ObjectId } from 'mongoose';
 import { toSlug } from '../../utils/slug';
 import { User } from '../../user/entities/user.entity';
 
@@ -27,15 +27,6 @@ export class Project {
   @ApiProperty({
     type: Boolean,
   })
-  @Prop({ default: false })
-  isCensored: boolean;
-
-  @ApiProperty({
-    type: Boolean,
-  })
-  @Prop({ default: true })
-  isActive: boolean;
-
   @ApiProperty({
     type: String,
   })
@@ -57,7 +48,7 @@ export class Project {
   @ApiProperty({
     type: User,
   })
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  @Prop({ type: Mongoose.Schema.Types.ObjectId, ref: User.name })
   owner: User;
 }
 

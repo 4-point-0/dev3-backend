@@ -1,27 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
-import Mongoose, { ObjectId } from 'mongoose';
+import { IsNotEmpty } from 'class-validator';
+import Mongoose from 'mongoose';
 
 export class CreateProjectDto {
+  @IsNotEmpty()
   @ApiProperty({
-    type: Boolean,
-    required: false,
+    type: String,
   })
-  readonly isActive: boolean;
+  readonly name?: string;
 
   @ApiProperty({
     type: String,
   })
-  readonly name: string;
+  readonly slug?: string;
 
   @ApiProperty({
     type: String,
   })
-  readonly slug: string;
-
-  @ApiProperty({
-    type: String,
-  })
-  readonly logoUrl: string;
+  readonly logoUrl?: string;
 
   owner: Mongoose.Types.ObjectId;
 }

@@ -1,93 +1,121 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
   Query,
   Req,
-  UnauthorizedException,
+  UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { HttpExceptionFilter } from '../helpers/filters/http-exception.filter';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthRequest } from '../user/entities/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
 import { ProjectService } from './project.service';
+import { handle } from '../helpers/response/handle';
+import { PaginatedDto } from '../common/pagination/paginated-dto';
+import { ApiPaginatedResponse } from '../common/pagination/api-paginated-response';
 
+@UseGuards(JwtAuthGuard)
 @ApiTags('project')
 @Controller('project')
+@ApiExtraModels(PaginatedDto)
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Project })
-  create(
-    @Req() request: AuthRequest,
-    @Body() createProjectDto: CreateProjectDto,
-  ) {
-    createProjectDto.owner = request.user._id;
-    return this.projectService.create(createProjectDto);
+  @ApiResponse({ status: 201, description: 'Project created' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  @HttpCode(200)
+  async create(@Req() request: AuthRequest, @Body() dto: CreateProjectDto) {
+    dto.owner = request.user._id;
+    return handle(await this.projectService.create(dto));
   }
 
   @Get()
-  @ApiQuery({ name: 'id', required: false })
+  @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
+  @ApiQuery({ name: 'offset', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'name', required: false })
   @ApiQuery({ name: 'slug', required: false })
-  @ApiResponse({ status: 200, type: [Project] })
-  findAll(@Query('id') id?: string, @Query('slug') slug?: string) {
-    if (id) {
-      return this.projectService.findOne(id);
-    }
-
-    if (slug) {
-      return this.projectService.findBySlug(slug);
-    }
-
-    return this.projectService.findAll();
+  @ApiPaginatedResponse(Project)
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async findAll(
+    @Query('offset') offset?: number,
+    @Query('limit') limit?: number,
+    @Query('slug') slug?: string,
+    @Query('name') name?: string,
+  ) {
+    return handle<PaginatedDto<Project>>(
+      await this.projectService.findAll(offset, limit, name, slug),
+    );
   }
 
-  @Get(':slug')
+  @Get(':id')
+  @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Project })
-  findOne(@Param('slug') slug: string) {
-    return this.projectService.findBySlug(slug);
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async findById(@Param('id') id: string) {
+    return handle<Project>(await this.projectService.findOne(id));
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Get('slug/:slug')
+  @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: Project })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async findBySlug(@Param('slug') slug: string) {
+    return handle<Project>(await this.projectService.findBySlug(slug));
+  }
+
   @Patch(':id')
   @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Project })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
   async update(
     @Req() request: AuthRequest,
     @Param('id') id: string,
-    @Body() updateProjectDto: UpdateProjectDto,
+    @Body() dto: UpdateProjectDto,
   ) {
-    const venue = await this.projectService.findOne(id);
-    if (
-      venue.owner.uid !== request.user.uid &&
-      !request.user.roles.includes('admin')
-    )
-      throw new UnauthorizedException();
-    return this.projectService.update(id, updateProjectDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, type: Project })
-  async remove(@Req() request: AuthRequest, @Param('id') id: string) {
-    const venue = await this.projectService.findOne(id);
-    if (
-      venue.owner.uid !== request.user.uid &&
-      !request.user.roles.includes('admin')
-    )
-      throw new UnauthorizedException();
-
-    return this.projectService.remove(id);
+    return handle(await this.projectService.update(id, request.user.uid, dto));
   }
 }

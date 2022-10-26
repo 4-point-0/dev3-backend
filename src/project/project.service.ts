@@ -1,26 +1,85 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model, ObjectId } from 'mongoose';
+import { ServiceResult } from '../helpers/response/result';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project, ProjectDocument } from './entities/project.entity';
+import {
+  BadRequest,
+  NotFound,
+  ServerError,
+  Unauthorized,
+} from '../helpers/response/errors';
+import { PaginatedDto } from '../common/pagination/paginated-dto';
+import { toSlug } from '../utils/slug';
 
 @Injectable()
 export class ProjectService {
+  private readonly logger = new Logger(ProjectService.name);
+
   constructor(
     @InjectModel(Project.name) private repo: Model<ProjectDocument>,
   ) {}
 
-  create(createProjectDto: CreateProjectDto): Promise<Project> {
-    const created = new this.repo(createProjectDto);
-    return created.save();
+  async create(dto: CreateProjectDto): Promise<ServiceResult<Project>> {
+    try {
+      if (!dto.name) {
+        return new BadRequest<Project>(`Name can't be empty`);
+      }
+
+      const projectNameDoc = await this.repo
+        .exists({ owner: dto.owner, name: dto.name })
+        .exec();
+
+      if (projectNameDoc) {
+        return new BadRequest<Project>(`Name ${dto.name} isn't unique`);
+      }
+      const result = await new this.repo(dto).save();
+      return new ServiceResult<Project>(result);
+    } catch (error) {
+      this.logger.error('ProjectService - create', error);
+      return new ServerError<Project>(`Can't create project`);
+    }
   }
 
-  findAll(isAdmin = false): Promise<Project[]> {
-    return this.repo
-      .find(isAdmin ? {} : { isActive: true, isCensored: false })
-      .populate('owner')
-      .exec();
+  async findAll(
+    offset?: number,
+    limit?: number,
+    name?: string,
+    slug?: string,
+  ): Promise<ServiceResult<PaginatedDto<Project>>> {
+    try {
+      offset = offset > 0 ? offset : 0;
+      limit = limit > 0 ? limit : 0;
+
+      const query = this.repo.find();
+      const totalQuery = this.repo.find().count();
+
+      if (name) {
+        query.find({ name: { $regex: name, $options: 'i' } });
+      }
+
+      if (slug) {
+        query.find({ slug: { $regex: slug, $options: 'i' } });
+      }
+
+      const projects = await query
+        .populate('owner')
+        .skip(offset)
+        .limit(limit)
+        .exec();
+
+      return new ServiceResult<PaginatedDto<Project>>({
+        total: await totalQuery.exec(),
+        offset: offset,
+        limit: limit,
+        results: projects,
+      });
+    } catch (error) {
+      this.logger.error('ProjectService - findAll', error);
+      return new ServerError<PaginatedDto<Project>>(`Can't get projects`);
+    }
   }
 
   findAllForOwner(ownerId: Mongoose.Types.ObjectId): Promise<Project[]> {
@@ -31,22 +90,75 @@ export class ProjectService {
     return this.repo.findOne({ slug, owner: ownerId }).populate('owner').exec();
   }
 
-  findBySlug(slug: string): Promise<Project> {
-    return this.repo
-      .findOne({ slug, isActive: true, isCensored: false })
-      .populate('owner')
-      .exec();
+  async findBySlug(slug: string): Promise<ServiceResult<Project>> {
+    try {
+      const project = await this.repo
+        .findOne({ slug: slug })
+        .populate('owner')
+        .exec();
+
+      if (!project) {
+        return new NotFound<Project>('Project not found');
+      }
+      return new ServiceResult<Project>(project);
+    } catch (error) {
+      this.logger.error('ProjectService - findBySlug', error);
+      return new ServerError<Project>(`Can't get project`);
+    }
   }
 
-  findOne(id: string): Promise<Project> {
-    return this.repo.findOne({ _id: id }).populate('owner').exec();
+  async findOne(id: string): Promise<ServiceResult<Project>> {
+    try {
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<Project>('Project not found');
+      }
+      const project = await this.repo
+        .findOne({ _id: id })
+        .populate('owner')
+        .exec();
+
+      if (!project) {
+        return new NotFound<Project>('Project not found');
+      }
+      return new ServiceResult<Project>(project);
+    } catch (error) {
+      this.logger.error('ProjectService - findOne', error);
+      return new ServerError<Project>(`Can't get project`);
+    }
   }
 
-  update(id: string, updateProjectDto: UpdateProjectDto): Promise<Project> {
-    return this.repo.findByIdAndUpdate(id, updateProjectDto).exec();
-  }
+  async update(
+    id: string,
+    userUid: string,
+    dto: UpdateProjectDto,
+  ): Promise<ServiceResult<Project>> {
+    try {
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<Project>('Project not found');
+      }
 
-  remove(id: string): Promise<Project> {
-    return this.repo.findByIdAndDelete(id).exec();
+      const project = await this.repo
+        .findOne({ _id: id })
+        .populate('owner')
+        .exec();
+
+      if (!project) {
+        return new NotFound<Project>('Project not found');
+      }
+
+      if (project.owner.uid !== userUid) {
+        return new Unauthorized<Project>('Unauthorized access to user project');
+      }
+
+      const updateProject = await this.repo.findOne({ _id: id }).exec();
+      updateProject.name = dto.name ?? dto.name;
+      updateProject.logoUrl = dto.logoUrl ?? dto.logoUrl;
+      updateProject.slug = toSlug(dto.slug ? dto.slug : dto.name);
+      await this.repo.updateOne({ _id: id }, updateProject);
+      return new ServiceResult<Project>(updateProject);
+    } catch (error) {
+      this.logger.error('ProjectService - update', error);
+      return new ServerError<Project>(`Can't update project`);
+    }
   }
 }
