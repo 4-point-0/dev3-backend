@@ -8,7 +8,7 @@ import {
   Unauthorized,
 } from '../helpers/response/errors';
 import { ServiceResult } from '../helpers/response/result';
-import { isNearWallet } from '../utils/nearWalletValidation';
+import { isNearWallet } from '../utils/near-wallet-validation';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address, AddressDocument } from './entities/address.entity';
