@@ -66,13 +66,20 @@ export class ProjectController {
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async findAll(
+    @Req() request: AuthRequest,
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
     @Query('slug') slug?: string,
     @Query('name') name?: string,
   ) {
     return handle<PaginatedDto<Project>>(
-      await this.projectService.findAll(offset, limit, name, slug),
+      await this.projectService.findAll(
+        offset,
+        limit,
+        name,
+        slug,
+        request.user._id,
+      ),
     );
   }
 
@@ -85,8 +92,10 @@ export class ProjectController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findById(@Param('id') id: string) {
-    return handle<Project>(await this.projectService.findOne(id));
+  async findById(@Req() request: AuthRequest, @Param('id') id: string) {
+    return handle<Project>(
+      await this.projectService.findOne(id, request.user.uid),
+    );
   }
 
   @Get('slug/:slug')
@@ -98,8 +107,10 @@ export class ProjectController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findBySlug(@Param('slug') slug: string) {
-    return handle<Project>(await this.projectService.findBySlug(slug));
+  async findBySlug(@Req() request: AuthRequest, @Param('slug') slug: string) {
+    return handle<Project>(
+      await this.projectService.findBySlug(slug, request.user.uid),
+    );
   }
 
   @Patch(':id')

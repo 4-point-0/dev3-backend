@@ -38,7 +38,10 @@ describe('AddressController', () => {
         results: mockProjects,
       });
       jest.spyOn(projectService, 'findAll').mockResolvedValue(result);
-      const response = await projectController.findAll();
+      const req: any = {
+        user: mockAuthUser,
+      };
+      const response = await projectController.findAll(req);
       expect(response).toBe(result.data);
     });
   });
@@ -47,8 +50,11 @@ describe('AddressController', () => {
     it('should return one project by id', async () => {
       const result = new ServiceResult<Project>(mockProjects[0]);
       jest.spyOn(projectService, 'findOne').mockResolvedValue(result);
-
+      const req: any = {
+        user: mockAuthUser,
+      };
       const response = await projectController.findById(
+        req,
         '634ff1e4bb85ed5475a1ff5d',
       );
       expect(response).toBe(result.data);
@@ -57,9 +63,11 @@ describe('AddressController', () => {
     it('should return Project not found (Not Found - 404) exception', async () => {
       const result = new NotFound<Project>('Project not found');
       jest.spyOn(projectService, 'findOne').mockResolvedValue(result);
-
+      const req: any = {
+        user: mockAuthUser,
+      };
       try {
-        await projectController.findById('624ff1e4bb85ed5475a1ff5d');
+        await projectController.findById(req, '624ff1e4bb85ed5475a1ff5d');
       } catch (error) {
         expect(error.status).toBe(404);
         expect(error.message).toBe('Project not found');
@@ -71,17 +79,21 @@ describe('AddressController', () => {
     it('should return one project by slug', async () => {
       const result = new ServiceResult<Project>(mockProjects[0]);
       jest.spyOn(projectService, 'findBySlug').mockResolvedValue(result);
-
-      const response = await projectController.findBySlug('slug-1234');
+      const req: any = {
+        user: mockAuthUser,
+      };
+      const response = await projectController.findBySlug(req, 'slug-1234');
       expect(response).toBe(result.data);
     });
 
     it('should return Project not found (Not Found - 404) exception', async () => {
       const result = new NotFound<Project>('Project not found');
       jest.spyOn(projectService, 'findBySlug').mockResolvedValue(result);
-
+      const req: any = {
+        user: mockAuthUser,
+      };
       try {
-        await projectController.findBySlug('test');
+        await projectController.findBySlug(req, 'test');
       } catch (error) {
         expect(error.status).toBe(404);
         expect(error.message).toBe('Project not found');

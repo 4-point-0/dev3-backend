@@ -1,12 +1,7 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  mockCreateProjectDto1,
-  mockCreateProjectDto2,
-  mockCreateProjectDto3,
-  mockCreateProjectDto4,
   mockCreateProjectDtos,
-  mockProject1,
   mockProjects,
   mockUser,
 } from '../../test/mock-tests-data';
@@ -110,10 +105,10 @@ describe('ProjectService', () => {
   });
 
   it(`FindAll - should findAll with total count, limit, offset, filter by name, slug`, async () => {
-    await new projectModel(mockCreateProjectDto1).save();
-    await new projectModel(mockCreateProjectDto2).save();
-    await new projectModel(mockCreateProjectDto3).save();
-    await new projectModel(mockCreateProjectDto4).save();
+    await new projectModel(mockCreateProjectDtos[0]).save();
+    await new projectModel(mockCreateProjectDtos[1]).save();
+    await new projectModel(mockCreateProjectDtos[2]).save();
+    await new projectModel(mockCreateProjectDtos[3]).save();
     const limit = 2;
     const offset = 0;
     const name = 'project';
@@ -123,49 +118,58 @@ describe('ProjectService', () => {
     expect(result.data.offset).toEqual(offset);
     expect(result.data.limit).toEqual(limit);
     expect(result.data.results.length).toEqual(limit);
-    expect(result.data.results[0].name).toMatch(mockCreateProjectDto2.name);
-    expect(result.data.results[0].slug).toMatch(mockCreateProjectDto2.slug);
-    expect(result.data.results[1].name).toMatch(mockCreateProjectDto3.name);
-    expect(result.data.results[1].slug).toMatch(mockCreateProjectDto3.slug);
+    expect(result.data.results[0].name).toMatch(mockCreateProjectDtos[1].name);
+    expect(result.data.results[0].slug.includes(slug)).toBeTruthy();
+    expect(result.data.results[1].name).toMatch(mockCreateProjectDtos[2].name);
+    expect(result.data.results[1].slug.includes(slug)).toBeTruthy();
   });
 
   it(`FindOne - should findOne`, async () => {
-    const createResult = await new projectModel(
-      mockCreateProjectDtos[0],
-    ).save();
-    const result = await projectService.findOne(createResult._id.toString());
+    const user = await new userModel(mockUser).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
+
+    const result = await projectService.findOne(
+      createResult._id.toString(),
+      user.uid,
+    );
+
     expect(result.data.name).toBe(mockCreateProjectDtos[0].name);
   });
 
   it(`FindOne - should return Project not found (Not Found - 404) exception`, async () => {
-    await new projectModel(mockCreateProjectDtos[0]).save();
-    const response = await projectService.findOne('12');
+    const user = await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const response = await projectService.findOne('12', user.uid);
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
   it(`FindOne - should return Project not found (Not Found - 404) exception`, async () => {
-    await new projectModel(mockCreateProjectDtos[0]).save();
-    const response = await projectService.findOne('634ff1e4bb81ed5475a1ff6d');
+    const user = await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const response = await projectService.findOne(
+      '634ff1e4bb81ed5475a1ff6d',
+      user.uid,
+    );
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
   it(`FindBySlug - should findBySlug`, async () => {
-    const createResult = await new projectModel(
-      mockCreateProjectDtos[0],
-    ).save();
-    const result = await projectService.findBySlug(createResult.slug);
+    const user = await new userModel(mockUser).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
+    const result = await projectService.findBySlug(createResult.slug, user.uid);
     expect(result.data.slug).toBe(createResult.slug);
   });
 
   it(`FindBySlug - should return Project not found (Not Found - 404) exception`, async () => {
-    await new projectModel(mockCreateProjectDtos[0]).save();
-    const response = await projectService.findBySlug('12');
+    const user = await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const response = await projectService.findBySlug('12', user.uid);
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
   it(`Update - should update`, async () => {
     const userResult = await new userModel(mockUser).save();
-    const createResult = await new projectModel(mockProject1).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
     const name = 'changed-name';
     const slug = 'koui';
     const result = await projectService.update(
@@ -179,7 +183,7 @@ describe('ProjectService', () => {
 
   it(`Update - should return Project not found (Not Found - 404) exception`, async () => {
     const userResult = await new userModel(mockUser).save();
-    await new projectModel(mockProject1).save();
+    await new projectModel(mockProjects[0]).save();
     const name = 'changed-name';
     const slug = 'koui';
     const response = await projectService.update('12', userResult.uid, {
@@ -189,9 +193,9 @@ describe('ProjectService', () => {
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
-  it(`Update - should return Address not found (Not Found - 404) exception`, async () => {
+  it(`Update - should return Project not found (Not Found - 404) exception`, async () => {
     const userResult = await new userModel(mockUser).save();
-    await new projectModel(mockProject1).save();
+    await new projectModel(mockProjects[0]).save();
     const name = 'changed-name';
     const slug = 'koui';
     const response = await projectService.update(
@@ -207,7 +211,7 @@ describe('ProjectService', () => {
 
   it(`Update - should return Unauthorized access to user project (Not Found - 404) exception`, async () => {
     await new userModel(mockUser).save();
-    const createResult = await new projectModel(mockProject1).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
     const name = 'changed-name';
     const slug = 'koui';
     const response = await projectService.update(

@@ -49,10 +49,15 @@ export class ProjectService {
     limit?: number,
     name?: string,
     slug?: string,
+    ownerId?: Mongoose.Types.ObjectId,
   ): Promise<ServiceResult<PaginatedDto<Project>>> {
     try {
       const query = this.repo.find();
       const totalQuery = this.repo.countDocuments();
+
+      if (ownerId) {
+        query.find({ owner: ownerId });
+      }
 
       if (name) {
         query.find({ name: { $regex: name, $options: 'i' } });
@@ -76,15 +81,14 @@ export class ProjectService {
     }
   }
 
-  findAllForOwner(ownerId: Mongoose.Types.ObjectId): Promise<Project[]> {
-    return this.repo.find({ owner: ownerId }).populate('owner').exec();
-  }
+  // findBySlugForOwner(slug: string, ownerId: ObjectId): Promise<Project> {
+  //   return this.repo.findOne({ slug, owner: ownerId }).populate('owner').exec();
+  // }
 
-  findBySlugForOwner(slug: string, ownerId: ObjectId): Promise<Project> {
-    return this.repo.findOne({ slug, owner: ownerId }).populate('owner').exec();
-  }
-
-  async findBySlug(slug: string): Promise<ServiceResult<Project>> {
+  async findBySlug(
+    slug: string,
+    userUid: string,
+  ): Promise<ServiceResult<Project>> {
     try {
       const project = await this.repo
         .findOne({ slug: slug })
@@ -94,6 +98,11 @@ export class ProjectService {
       if (!project) {
         return new NotFound<Project>('Project not found');
       }
+
+      if (project.owner.uid !== userUid) {
+        return new Unauthorized<Project>('Unauthorized access to user project');
+      }
+
       return new ServiceResult<Project>(project);
     } catch (error) {
       this.logger.error('ProjectService - findBySlug', error);
@@ -101,11 +110,12 @@ export class ProjectService {
     }
   }
 
-  async findOne(id: string): Promise<ServiceResult<Project>> {
+  async findOne(id: string, userUid: string): Promise<ServiceResult<Project>> {
     try {
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<Project>('Project not found');
       }
+
       const project = await this.repo
         .findOne({ _id: id })
         .populate('owner')
@@ -114,6 +124,11 @@ export class ProjectService {
       if (!project) {
         return new NotFound<Project>('Project not found');
       }
+
+      if (project.owner.uid !== userUid) {
+        return new Unauthorized<Project>('Unauthorized access to user project');
+      }
+
       return new ServiceResult<Project>(project);
     } catch (error) {
       this.logger.error('ProjectService - findOne', error);
