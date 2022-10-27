@@ -13,6 +13,7 @@ import {
 } from '../helpers/response/errors';
 import { PaginatedDto } from '../common/pagination/paginated-dto';
 import { toSlug } from '../utils/slug';
+import { toPage } from '../helpers/pagination/pagination-helper';
 
 @Injectable()
 export class ProjectService {
@@ -50,11 +51,8 @@ export class ProjectService {
     slug?: string,
   ): Promise<ServiceResult<PaginatedDto<Project>>> {
     try {
-      offset = offset > 0 ? offset : 0;
-      limit = limit > 0 ? limit : 0;
-
       const query = this.repo.find();
-      const totalQuery = this.repo.find().count();
+      const totalQuery = this.repo.countDocuments();
 
       if (name) {
         query.find({ name: { $regex: name, $options: 'i' } });
@@ -64,18 +62,14 @@ export class ProjectService {
         query.find({ slug: { $regex: slug, $options: 'i' } });
       }
 
-      const projects = await query
-        .populate('owner')
-        .skip(offset)
-        .limit(limit)
-        .exec();
+      const paginatedDto = await toPage<Project>(
+        query,
+        totalQuery,
+        offset,
+        limit,
+      );
 
-      return new ServiceResult<PaginatedDto<Project>>({
-        total: await totalQuery.exec(),
-        offset: offset,
-        limit: limit,
-        results: projects,
-      });
+      return new ServiceResult<PaginatedDto<Project>>(paginatedDto);
     } catch (error) {
       this.logger.error('ProjectService - findAll', error);
       return new ServerError<PaginatedDto<Project>>(`Can't get projects`);
