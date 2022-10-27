@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import Mongoose, { Document, ObjectId } from 'mongoose';
+import Mongoose, { Document } from 'mongoose';
 import { toSlug } from '../../utils/slug';
 import { User } from '../../user/entities/user.entity';
 
@@ -10,7 +10,7 @@ export type ProjectDocument = Project & Document;
   _id: true,
 })
 export class Project {
-  _id: ObjectId;
+  _id: Mongoose.Types.ObjectId;
 
   @ApiProperty({
     type: Date,
@@ -48,7 +48,7 @@ export class Project {
   @ApiProperty({
     type: User,
   })
-  @Prop({ type: Mongoose.Schema.Types.ObjectId, ref: User.name })
+  @Prop({ type: Mongoose.Types.ObjectId, ref: User.name })
   owner: User;
 }
 

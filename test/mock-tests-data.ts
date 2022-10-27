@@ -3,10 +3,10 @@ import { CreateProjectDto } from '../src/project/dto/create-project.dto';
 import { CreateAddressDto } from '../src/address/dto/create-address.dto';
 
 export const mockAuthUser = {
-  uid: 'dev3.testnet',
-  username: 'dev3.testnet',
+  uid: 'rimatikdev.testnet',
+  username: 'rimatikdev.testnet',
   accountType: 'near',
-  nearWalletAccountId: 'dev3.testnet',
+  nearWalletAccountId: 'rimatikdev.testnet',
 };
 
 export const mockUser = {
@@ -119,7 +119,12 @@ export const mockProject4 = {
   createdAt: new Date(),
 };
 
-export const mockProjects = [mockProject1, mockProject2, mockProject3];
+export const mockProjects = [
+  mockProject1,
+  mockProject2,
+  mockProject3,
+  mockProject4,
+];
 
 export const mockCreateProjectDto1: CreateProjectDto = {
   name: mockProject1.name,
