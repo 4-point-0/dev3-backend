@@ -11,6 +11,7 @@ import { User, UserSchema } from '../user/entities/user.entity';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../helpers/response/errors';
+import Mongoose from 'mongoose';
 
 describe('ProjectService', () => {
   let projectService: ProjectService;
@@ -77,16 +78,17 @@ describe('ProjectService', () => {
   });
 
   it(`FindAll - should findAll`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockCreateProjectDtos[0]).save();
     await new projectModel(mockCreateProjectDtos[1]).save();
-    const result = await projectService.findAll();
+    const result = await projectService.findAll(mockUser._id);
     expect(result.data.results).toHaveLength(2);
   });
 
   it(`FindAll - should findAll with total count`, async () => {
     await new projectModel(mockCreateProjectDtos[0]).save();
     await new projectModel(mockCreateProjectDtos[1]).save();
-    const result = await projectService.findAll();
+    const result = await projectService.findAll(mockUser._id);
     expect(result.data.total).toEqual(2);
   });
 
@@ -97,7 +99,7 @@ describe('ProjectService', () => {
     await new projectModel(mockCreateProjectDtos[3]).save();
     const limit = 2;
     const offset = 2;
-    const result = await projectService.findAll(offset, limit);
+    const result = await projectService.findAll(mockUser._id, offset, limit);
     expect(result.data.total).toEqual(4);
     expect(result.data.offset).toEqual(offset);
     expect(result.data.limit).toEqual(limit);
@@ -113,7 +115,13 @@ describe('ProjectService', () => {
     const offset = 0;
     const name = 'project';
     const slug = 'slug';
-    const result = await projectService.findAll(offset, limit, name, slug);
+    const result = await projectService.findAll(
+      mockUser._id,
+      offset,
+      limit,
+      name,
+      slug,
+    );
     expect(result.data.total).toEqual(4);
     expect(result.data.offset).toEqual(offset);
     expect(result.data.limit).toEqual(limit);
@@ -125,12 +133,15 @@ describe('ProjectService', () => {
   });
 
   it(`FindOne - should findOne`, async () => {
-    const user = await new userModel(mockUser).save();
-    const createResult = await new projectModel(mockProjects[0]).save();
+    await new userModel(mockUser).save();
+
+    const createResult = await new projectModel(
+      mockCreateProjectDtos[0],
+    ).save();
 
     const result = await projectService.findOne(
       createResult._id.toString(),
-      user.uid,
+      mockUser._id.toString(),
     );
 
     expect(result.data.name).toBe(mockCreateProjectDtos[0].name);
@@ -139,7 +150,7 @@ describe('ProjectService', () => {
   it(`FindOne - should return Project not found (Not Found - 404) exception`, async () => {
     const user = await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
-    const response = await projectService.findOne('12', user.uid);
+    const response = await projectService.findOne('12', user._id.toString());
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
@@ -148,7 +159,7 @@ describe('ProjectService', () => {
     await new projectModel(mockProjects[0]).save();
     const response = await projectService.findOne(
       '634ff1e4bb81ed5475a1ff6d',
-      user.uid,
+      user._id.toString(),
     );
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
@@ -156,14 +167,17 @@ describe('ProjectService', () => {
   it(`FindBySlug - should findBySlug`, async () => {
     const user = await new userModel(mockUser).save();
     const createResult = await new projectModel(mockProjects[0]).save();
-    const result = await projectService.findBySlug(createResult.slug, user.uid);
+    const result = await projectService.findBySlug(
+      createResult.slug,
+      user._id.toString(),
+    );
     expect(result.data.slug).toBe(createResult.slug);
   });
 
   it(`FindBySlug - should return Project not found (Not Found - 404) exception`, async () => {
     const user = await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
-    const response = await projectService.findBySlug('12', user.uid);
+    const response = await projectService.findBySlug('12', user._id.toString());
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
@@ -174,7 +188,7 @@ describe('ProjectService', () => {
     const slug = 'koui';
     const result = await projectService.update(
       createResult._id.toString(),
-      userResult.uid,
+      userResult._id.toString(),
       { name: name, slug: slug },
     );
     expect(result.data.name).toBe(name);
@@ -186,10 +200,14 @@ describe('ProjectService', () => {
     await new projectModel(mockProjects[0]).save();
     const name = 'changed-name';
     const slug = 'koui';
-    const response = await projectService.update('12', userResult.uid, {
-      name: name,
-      slug: slug,
-    });
+    const response = await projectService.update(
+      '12',
+      userResult._id.toString(),
+      {
+        name: name,
+        slug: slug,
+      },
+    );
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
@@ -199,8 +217,8 @@ describe('ProjectService', () => {
     const name = 'changed-name';
     const slug = 'koui';
     const response = await projectService.update(
-      '634ff1e4bc85ed5475a1ff50',
-      userResult.uid,
+      new Mongoose.Types.ObjectId().toString(),
+      userResult._id.toString(),
       {
         name: name,
         slug: slug,
@@ -216,7 +234,7 @@ describe('ProjectService', () => {
     const slug = 'koui';
     const response = await projectService.update(
       createResult._id.toString(),
-      'boby.near',
+      new Mongoose.Types.ObjectId().toString(),
       {
         name: name,
         slug: slug,

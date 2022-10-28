@@ -4,6 +4,7 @@ import {
   mockProjects,
   mockAuthUser,
   mockCreateProjectDtos,
+  mockUser,
 } from '../../test/mock-tests-data';
 import { ServiceResult } from '../helpers/response/result';
 import { ProjectController } from './project.controller';
@@ -51,12 +52,13 @@ describe('AddressController', () => {
       const result = new ServiceResult<Project>(mockProjects[0]);
       jest.spyOn(projectService, 'findOne').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       const response = await projectController.findById(
         req,
         '634ff1e4bb85ed5475a1ff5d',
       );
+
       expect(response).toBe(result.data);
     });
 
@@ -64,7 +66,7 @@ describe('AddressController', () => {
       const result = new NotFound<Project>('Project not found');
       jest.spyOn(projectService, 'findOne').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       try {
         await projectController.findById(req, '624ff1e4bb85ed5475a1ff5d');
@@ -80,7 +82,7 @@ describe('AddressController', () => {
       const result = new ServiceResult<Project>(mockProjects[0]);
       jest.spyOn(projectService, 'findBySlug').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       const response = await projectController.findBySlug(req, 'slug-1234');
       expect(response).toBe(result.data);
@@ -90,7 +92,7 @@ describe('AddressController', () => {
       const result = new NotFound<Project>('Project not found');
       jest.spyOn(projectService, 'findBySlug').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       try {
         await projectController.findBySlug(req, 'test');
@@ -106,7 +108,7 @@ describe('AddressController', () => {
       const result = new ServiceResult<Project>(mockProjects[0]);
       jest.spyOn(projectService, 'create').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       const response = await projectController.create(
         req,
@@ -121,7 +123,7 @@ describe('AddressController', () => {
       const result = new BadRequest<Project>(`Name can't be empty`);
       jest.spyOn(projectService, 'create').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       try {
         await projectController.create(req, dto);
@@ -143,7 +145,7 @@ describe('AddressController', () => {
       const result = new ServiceResult<Project>(project);
       jest.spyOn(projectService, 'update').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       const response = await projectController.update(
         req,
@@ -152,29 +154,6 @@ describe('AddressController', () => {
       );
       expect(response.name).toBe(name);
       expect(response.slug).toBe(slug);
-    });
-
-    it('should return Project not found (Not Found - 404) exceptio', async () => {
-      const name = 'changed-name';
-      const slug = 'koui';
-      const project = { ...mockProjects[0] };
-      project.name = name;
-      project.slug = slug;
-
-      const result = new NotFound<Project>('Project not found');
-      jest.spyOn(projectService, 'update').mockResolvedValue(result);
-      const req: any = {
-        user: mockAuthUser,
-      };
-      try {
-        await projectController.update(req, '634ff1e4bb82ed5475a1ff5d', {
-          name: name,
-          slug: slug,
-        });
-      } catch (error) {
-        expect(error.status).toBe(404);
-        expect(error.message).toBe(`Project not found`);
-      }
     });
   });
 });

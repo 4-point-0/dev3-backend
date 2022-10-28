@@ -45,19 +45,15 @@ export class ProjectService {
   }
 
   async findAll(
+    ownerId: Mongoose.Types.ObjectId,
     offset?: number,
     limit?: number,
     name?: string,
     slug?: string,
-    ownerId?: Mongoose.Types.ObjectId,
   ): Promise<ServiceResult<PaginatedDto<Project>>> {
     try {
-      const query = this.repo.find();
-      const totalQuery = this.repo.countDocuments();
-
-      if (ownerId) {
-        query.find({ owner: ownerId });
-      }
+      const query = this.repo.find({ owner: ownerId });
+      const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
 
       if (name) {
         query.find({ name: { $regex: name, $options: 'i' } });
@@ -69,7 +65,7 @@ export class ProjectService {
 
       const paginatedDto = await toPage<Project>(
         query,
-        totalQuery,
+        queryCount,
         offset,
         limit,
       );
@@ -83,7 +79,7 @@ export class ProjectService {
 
   async findBySlug(
     slug: string,
-    userUid: string,
+    ownerId: string,
   ): Promise<ServiceResult<Project>> {
     try {
       const project = await this.repo
@@ -95,7 +91,7 @@ export class ProjectService {
         return new NotFound<Project>('Project not found');
       }
 
-      if (project.owner.uid !== userUid) {
+      if (project.owner._id.toString() !== ownerId) {
         return new Unauthorized<Project>('Unauthorized access to user project');
       }
 
@@ -106,7 +102,7 @@ export class ProjectService {
     }
   }
 
-  async findOne(id: string, userUid: string): Promise<ServiceResult<Project>> {
+  async findOne(id: string, ownerId: string): Promise<ServiceResult<Project>> {
     try {
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<Project>('Project not found');
@@ -121,7 +117,7 @@ export class ProjectService {
         return new NotFound<Project>('Project not found');
       }
 
-      if (project.owner.uid !== userUid) {
+      if (project.owner._id.toString() !== ownerId) {
         return new Unauthorized<Project>('Unauthorized access to user project');
       }
 
@@ -134,7 +130,7 @@ export class ProjectService {
 
   async update(
     id: string,
-    userUid: string,
+    ownerId: string,
     dto: UpdateProjectDto,
   ): Promise<ServiceResult<Project>> {
     try {
@@ -151,7 +147,7 @@ export class ProjectService {
         return new NotFound<Project>('Project not found');
       }
 
-      if (project.owner.uid !== userUid) {
+      if (project.owner._id.toString() !== ownerId) {
         return new Unauthorized<Project>('Unauthorized access to user project');
       }
 

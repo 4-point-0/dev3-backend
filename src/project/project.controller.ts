@@ -74,11 +74,11 @@ export class ProjectController {
   ) {
     return handle<PaginatedDto<Project>>(
       await this.projectService.findAll(
+        request.user._id,
         offset,
         limit,
         name,
         slug,
-        request.user._id,
       ),
     );
   }
@@ -94,7 +94,7 @@ export class ProjectController {
   @ApiResponse({ status: 500, description: 'Server error' })
   async findById(@Req() request: AuthRequest, @Param('id') id: string) {
     return handle<Project>(
-      await this.projectService.findOne(id, request.user.uid),
+      await this.projectService.findOne(id, request.user._id.toString()),
     );
   }
 
@@ -109,7 +109,7 @@ export class ProjectController {
   @ApiResponse({ status: 500, description: 'Server error' })
   async findBySlug(@Req() request: AuthRequest, @Param('slug') slug: string) {
     return handle<Project>(
-      await this.projectService.findBySlug(slug, request.user.uid),
+      await this.projectService.findBySlug(slug, request.user._id.toString()),
     );
   }
 
@@ -127,6 +127,8 @@ export class ProjectController {
     @Param('id') id: string,
     @Body() dto: UpdateProjectDto,
   ) {
-    return handle(await this.projectService.update(id, request.user.uid, dto));
+    return handle(
+      await this.projectService.update(id, request.user._id.toString(), dto),
+    );
   }
 }

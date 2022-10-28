@@ -130,28 +130,28 @@ export const mockCreateProjectDto1: CreateProjectDto = {
   name: mockProject1.name,
   slug: mockProject1.slug,
   logoUrl: mockProject1.logoUrl,
-  owner: mockProject1._id,
+  owner: mockUser._id,
 };
 
 export const mockCreateProjectDto2: CreateProjectDto = {
   name: mockProject2.name,
   slug: mockProject2.slug,
   logoUrl: mockProject2.logoUrl,
-  owner: mockProject2._id,
+  owner: mockUser._id,
 };
 
 export const mockCreateProjectDto3: CreateProjectDto = {
   name: mockProject3.name,
   slug: mockProject3.slug,
   logoUrl: mockProject3.logoUrl,
-  owner: mockProject3._id,
+  owner: mockUser._id,
 };
 
 export const mockCreateProjectDto4: CreateProjectDto = {
   name: mockProject4.name,
   slug: mockProject4.slug,
   logoUrl: mockProject4.logoUrl,
-  owner: mockProject4._id,
+  owner: mockUser._id,
 };
 
 export const mockCreateProjectDtos = [
