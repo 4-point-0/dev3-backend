@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model } from 'mongoose';
+import { toPage } from '../helpers/pagination/pagination-helper';
+import { PaginatedDto } from '../common/pagination/paginated-dto';
 import {
   BadRequest,
   NotFound,
@@ -50,19 +52,37 @@ export class AddressService {
     }
   }
 
-  async findAll(): Promise<ServiceResult<Address[]>> {
+  async findAll(
+    ownerId: Mongoose.Types.ObjectId,
+    offset?: number,
+    limit?: number,
+    alias?: string,
+  ): Promise<ServiceResult<PaginatedDto<Address>>> {
     try {
-      const addresses = await this.repo.find().populate('owner').exec();
-      return new ServiceResult<Address[]>(addresses);
+      const query = this.repo.find({ owner: ownerId });
+      const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
+
+      if (alias) {
+        query.find({ alias: { $regex: alias, $options: 'i' } });
+      }
+
+      const paginatedDto = await toPage<Address>(
+        query,
+        queryCount,
+        offset,
+        limit,
+      );
+
+      return new ServiceResult<PaginatedDto<Address>>(paginatedDto);
     } catch (error) {
       this.logger.error('AddressService - findAll', error);
-      return new ServerError<Address[]>(`Can't get addresses`);
+      return new ServerError<PaginatedDto<Address>>(`Can't get addresses`);
     }
   }
 
   async update(
     id: string,
-    userUid: string,
+    ownerId: string,
     updateAddressDto: UpdateAddressDto,
   ): Promise<ServiceResult<Address>> {
     try {
@@ -79,7 +99,7 @@ export class AddressService {
         return new NotFound<Address>('Address not found');
       }
 
-      if (address.owner.uid !== userUid) {
+      if (address.owner._id.toString() !== ownerId) {
         return new Unauthorized<Address>('Unauthorized access to user address');
       }
 
@@ -94,7 +114,7 @@ export class AddressService {
     }
   }
 
-  async findOne(id: string): Promise<ServiceResult<Address>> {
+  async findOne(id: string, ownerId: string): Promise<ServiceResult<Address>> {
     try {
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<Address>('Address not found');
@@ -107,6 +127,11 @@ export class AddressService {
       if (!address) {
         return new NotFound<Address>('Address not found');
       }
+
+      if (address.owner._id.toString() !== ownerId) {
+        return new Unauthorized<Address>('Unauthorized access to user address');
+      }
+
       return new ServiceResult<Address>(address);
     } catch (error) {
       this.logger.error('AddressService - findOne', error);
@@ -114,7 +139,7 @@ export class AddressService {
     }
   }
 
-  async remove(id: string): Promise<ServiceResult<Address>> {
+  async remove(id: string, ownerId: string): Promise<ServiceResult<Address>> {
     try {
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<Address>('Address not found');
@@ -127,6 +152,10 @@ export class AddressService {
 
       if (!address) {
         return new NotFound<Address>('Address not found');
+      }
+
+      if (address.owner._id.toString() !== ownerId) {
+        return new Unauthorized<Address>('Unauthorized access to user address');
       }
 
       const result = await this.repo.findByIdAndDelete(id).exec();

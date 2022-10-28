@@ -9,7 +9,7 @@ import { AddressService } from './address.service';
 import { Address, AddressSchema } from './entities/address.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { connect, Connection, Model } from 'mongoose';
+import Mongoose, { connect, Connection, Model } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../helpers/response/errors';
 
 describe('AddressService', () => {
@@ -123,28 +123,54 @@ describe('AddressService', () => {
   });
 
   it(`FindAll - should findAll`, async () => {
+    await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
     await new addressModel(mockAddresses[1]).save();
-    const result = await addressService.findAll();
-    expect(result.data).toHaveLength(2);
+    const result = await addressService.findAll(mockUser._id);
+    expect(result.data.results).toHaveLength(1);
   });
 
   it(`FindOne - should findOne`, async () => {
+    await new userModel(mockUser).save();
     const createResult = await new addressModel(mockAddresses[0]).save();
-    const result = await addressService.findOne(createResult._id.toString());
+    const result = await addressService.findOne(
+      createResult._id.toString(),
+      mockUser._id.toString(),
+    );
     expect(result.data.wallet).toBe(mockCreateAddressDtos[0].wallet);
   });
 
   it(`FindOne - should return Address not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
-    const response = await addressService.findOne('12');
+    const response = await addressService.findOne(
+      '12',
+      mockUser._id.toString(),
+    );
     expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`FindOne - should return Address not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
-    const response = await addressService.findOne('634ff1e4bb85ed5475a1ff6d');
+    const response = await addressService.findOne(
+      '634ff1e4bb85ed5475a1ff6d',
+      mockUser._id.toString(),
+    );
     expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
+  });
+
+  it(`FindOne - should return Unauthorized access to user address (Unauthorized - 401) exception`, async () => {
+    await new userModel(mockUser).save();
+    const createResult = await new addressModel(mockAddresses[0]).save();
+    const response = await addressService.findOne(
+      createResult._id.toString(),
+      '123',
+    );
+
+    expect(response).toStrictEqual(
+      new Unauthorized<Address>('Unauthorized access to user address'),
+    );
   });
 
   it(`Update - should update`, async () => {
@@ -154,7 +180,7 @@ describe('AddressService', () => {
     const email = 'alice@email.com';
     const result = await addressService.update(
       createResult._id.toString(),
-      userResult.uid,
+      userResult._id.toString(),
       { phone: phone, email: email },
     );
     expect(result.data.phone).toBe(phone);
@@ -162,25 +188,29 @@ describe('AddressService', () => {
   });
 
   it(`Update - should return Address not found (Not Found - 404) exception`, async () => {
-    const userResult = await new userModel(mockUser).save();
+    await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
     const phone = '+38599345684';
     const email = 'alice@email.com';
-    const response = await addressService.update('12', userResult.uid, {
-      phone: phone,
-      email: email,
-    });
+    const response = await addressService.update(
+      '12',
+      new Mongoose.Types.ObjectId().toString(),
+      {
+        phone: phone,
+        email: email,
+      },
+    );
     expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Update - should return Address not found (Not Found - 404) exception`, async () => {
-    const userResult = await new userModel(mockUser).save();
+    await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
     const phone = '+38599345684';
     const email = 'alice@email.com';
     const response = await addressService.update(
       '634ff1e4bb85ed5475a1ff50',
-      userResult.uid,
+      new Mongoose.Types.ObjectId().toString(),
       {
         phone: phone,
         email: email,
@@ -196,7 +226,7 @@ describe('AddressService', () => {
     const email = 'alice@email.com';
     const response = await addressService.update(
       createResult._id.toString(),
-      'bobby.near',
+      new Mongoose.Types.ObjectId().toString(),
       {
         phone: phone,
         email: email,
@@ -208,24 +238,46 @@ describe('AddressService', () => {
   });
 
   it(`Remove - should delete one`, async () => {
+    await new userModel(mockUser).save();
     const createResult = await new addressModel(mockAddresses[0]).save();
-    await addressService.remove(createResult._id.toString());
-    const response = await addressService.findOne(createResult._id.toString());
+    await addressService.remove(
+      createResult._id.toString(),
+      mockUser._id.toString(),
+    );
+    const response = await addressService.findOne(
+      createResult._id.toString(),
+      mockUser._id.toString(),
+    );
 
     expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Remove - should return Address not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
     const response = await addressService.remove(
       mockAddresses[1]._id.toString(),
+      mockUser._id.toString(),
     );
     expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
   });
 
   it(`Remove - should return Address not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
-    const response = await addressService.remove('12');
+    const response = await addressService.remove('12', mockUser._id.toString());
     expect(response).toStrictEqual(new NotFound<Address>('Address not found'));
+  });
+
+  it(`Remove - should return Unauthorized access to user address (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    const createResult = await new addressModel(mockAddresses[0]).save();
+    const response = await addressService.remove(
+      createResult._id.toString(),
+      '12',
+    );
+    expect(response).toStrictEqual(
+      new Unauthorized<Address>('Unauthorized access to user address'),
+    );
   });
 });

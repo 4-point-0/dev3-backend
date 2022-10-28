@@ -2,15 +2,16 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   mockAddresses,
-  mockAuthUser,
   mockCreateAddressDto1,
   mockCreateAddressDtos,
+  mockUser,
 } from '../../test/mock-tests-data';
 import { ServiceResult } from '../helpers/response/result';
 import { AddressController } from './address.controller';
 import { AddressService } from './address.service';
 import { Address } from './entities/address.entity';
 import { BadRequest, NotFound } from '../helpers/response/errors';
+import { PaginatedDto } from '../common/pagination/paginated-dto';
 
 describe('AddressController', () => {
   let addressController: AddressController;
@@ -31,17 +32,30 @@ describe('AddressController', () => {
 
   describe('findAll', () => {
     it('should return all addresses', async () => {
-      const result = new ServiceResult<Address[]>(mockAddresses);
+      const result = new ServiceResult<PaginatedDto<Address>>({
+        total: 4,
+        limit: 0,
+        offset: 0,
+        results: mockAddresses,
+      });
       jest.spyOn(addressService, 'findAll').mockResolvedValue(result);
-      const response = await addressController.findAll();
+      const req: any = {
+        user: mockUser,
+      };
+      const response = await addressController.findAll(req);
       expect(response).toBe(result.data);
     });
+  });
 
+  describe('findOne', () => {
     it('should return one address', async () => {
       const result = new ServiceResult<Address>(mockAddresses[0]);
       jest.spyOn(addressService, 'findOne').mockResolvedValue(result);
-
-      const response = await addressController.findAll(
+      const req: any = {
+        user: mockUser,
+      };
+      const response = await addressController.findOne(
+        req,
         '634ff1e4bb85ed5475a1ff6d',
       );
       expect(response).toBe(result.data);
@@ -50,9 +64,11 @@ describe('AddressController', () => {
     it('should return Address not found (Not Found - 404) exception', async () => {
       const result = new NotFound<Address>('Address not found');
       jest.spyOn(addressService, 'findOne').mockResolvedValue(result);
-
+      const req: any = {
+        user: mockUser,
+      };
       try {
-        await addressController.findAll('634ff1e4bb85ed5475a1ff65');
+        await addressController.findOne(req, '634ff1e4bb85ed5475a1ff65');
       } catch (error) {
         expect(error.status).toBe(404);
         expect(error.message).toBe('Address not found');
@@ -65,7 +81,7 @@ describe('AddressController', () => {
       const result = new ServiceResult<Address>(mockAddresses[0]);
       jest.spyOn(addressService, 'create').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       const response = await addressController.create(
         req,
@@ -84,7 +100,7 @@ describe('AddressController', () => {
 
       jest.spyOn(addressService, 'create').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       try {
         await addressController.create(req, dto);
@@ -102,7 +118,7 @@ describe('AddressController', () => {
       const result = new BadRequest<Address>('alias should not be empty');
       jest.spyOn(addressService, 'create').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       try {
         await addressController.create(req, dto);
@@ -124,7 +140,7 @@ describe('AddressController', () => {
       const result = new ServiceResult<Address>(address);
       jest.spyOn(addressService, 'update').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
       const response = await addressController.update(
         req,
@@ -148,7 +164,7 @@ describe('AddressController', () => {
 
       jest.spyOn(addressService, 'update').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
 
       try {
@@ -172,7 +188,7 @@ describe('AddressController', () => {
       const result = new BadRequest<Address>('email must be an email');
       jest.spyOn(addressService, 'update').mockResolvedValue(result);
       const req: any = {
-        user: mockAuthUser,
+        user: mockUser,
       };
 
       try {
@@ -191,7 +207,12 @@ describe('AddressController', () => {
     it('should delete one address', async () => {
       const result = new ServiceResult<Address>(mockAddresses[0]);
       jest.spyOn(addressService, 'remove').mockResolvedValue(result);
+      const req: any = {
+        user: mockUser,
+      };
+
       const response = await addressController.remove(
+        req,
         mockAddresses[0]._id.toString(),
       );
       expect(response._id.toString()).toBe(mockAddresses[0]._id.toString());
@@ -200,9 +221,11 @@ describe('AddressController', () => {
     it('should return Address not found (Not found - 404) exception', async () => {
       const result = new NotFound<Address>('Address not found');
       jest.spyOn(addressService, 'remove').mockResolvedValue(result);
-
+      const req: any = {
+        user: mockUser,
+      };
       try {
-        await addressController.remove(mockAddresses[0]._id.toString());
+        await addressController.remove(req, mockAddresses[0]._id.toString());
       } catch (error) {
         expect(error.status).toBe(404);
         expect(error.message).toBe(`Address not found`);
