@@ -2,7 +2,7 @@ import { PaginatedDto } from '../../common/pagination/paginated-dto';
 
 export const toPage = async <TModel>(
   query: any,
-  totalQuery: any,
+  queryCount: any,
   offset?: number,
   limit?: number,
 ): Promise<PaginatedDto<TModel>> => {
@@ -12,7 +12,7 @@ export const toPage = async <TModel>(
   const items = await query.populate('owner').skip(offset).limit(limit).exec();
 
   return {
-    total: await totalQuery.exec(),
+    total: await queryCount.exec(),
     offset: _offset,
     limit: _limit,
     results: items,
