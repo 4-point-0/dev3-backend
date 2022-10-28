@@ -12,7 +12,13 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { handle } from '../helpers/response/handle';
 import { AuthRequest } from '../user/entities/user.entity';
@@ -21,13 +27,16 @@ import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
 import { HttpExceptionFilter } from '../helpers/filters/http-exception.filter';
+import { ApiPaginatedResponse } from '../common/pagination/api-paginated-response';
+import { PaginatedDto } from '../common/pagination/paginated-dto';
 
+@UseGuards(JwtAuthGuard)
 @ApiTags('address')
 @Controller('address')
+@ApiExtraModels(PaginatedDto)
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
@@ -44,25 +53,44 @@ export class AddressController {
     return handle(await this.addressService.create(dto));
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
-  @ApiQuery({ name: 'id', required: false })
-  @ApiResponse({ status: 200, type: [Address] })
+  @ApiQuery({ name: 'offset', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'alias', required: false })
+  @ApiPaginatedResponse(Address)
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findAll(@Query('id') id?: string) {
-    if (id) {
-      return handle<Address>(await this.addressService.findOne(id));
-    }
-    return handle(await this.addressService.findAll());
+  async findAll(
+    @Req() request: AuthRequest,
+    @Query('offset') offset?: number,
+    @Query('limit') limit?: number,
+    @Query('alias') alias?: string,
+  ) {
+    return handle(
+      await this.addressService.findAll(request.user._id, offset, limit, alias),
+    );
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: Address })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async findOne(@Req() request: AuthRequest, @Param('id') id: string) {
+    return handle<Address>(
+      await this.addressService.findOne(id, request.user._id.toString()),
+    );
+  }
+
   @Patch(':id')
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
@@ -78,11 +106,14 @@ export class AddressController {
     @Body() updateProjectDto: UpdateAddressDto,
   ) {
     return handle(
-      await this.addressService.update(id, request.user.uid, updateProjectDto),
+      await this.addressService.update(
+        id,
+        request.user._id.toString(),
+        updateProjectDto,
+      ),
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
@@ -92,7 +123,9 @@ export class AddressController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async remove(@Param('id') id: string) {
-    return handle(await this.addressService.remove(id));
+  async remove(@Req() request: AuthRequest, @Param('id') id: string) {
+    return handle(
+      await this.addressService.remove(id, request.user._id.toString()),
+    );
   }
 }
