@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import Mongoose, { Model, ObjectId } from 'mongoose';
+import Mongoose, { Model } from 'mongoose';
 import { ServiceResult } from '../helpers/response/result';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -80,10 +80,6 @@ export class ProjectService {
       return new ServerError<PaginatedDto<Project>>(`Can't get projects`);
     }
   }
-
-  // findBySlugForOwner(slug: string, ownerId: ObjectId): Promise<Project> {
-  //   return this.repo.findOne({ slug, owner: ownerId }).populate('owner').exec();
-  // }
 
   async findBySlug(
     slug: string,
