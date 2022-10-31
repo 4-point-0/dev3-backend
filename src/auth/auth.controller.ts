@@ -1,24 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { handle } from '../helpers/response/handle';
 import { AuthService } from './auth.service';
-
-class NearLoginDto {
-  @ApiProperty({
-    type: String,
-  })
-  username: string;
-  @ApiProperty({
-    type: String,
-  })
-  signedJsonString: string;
-}
-
-class NearLoginResponse {
-  @ApiProperty({
-    type: String,
-  })
-  token: string;
-}
+import { NearLoginRequestDto } from './dto/near-login-request.dto';
+import { NearLoginResponseDto } from './dto/near-login-response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -29,12 +14,19 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'The user has been logged in',
-    type: NearLoginResponse,
+    type: NearLoginResponseDto,
   })
-  nearLogin(@Body() data: NearLoginDto) {
-    return this.authService.getNearJwtToken(
-      data.username,
-      data.signedJsonString,
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async nearLogin(@Body() data: NearLoginRequestDto) {
+    return handle(
+      await this.authService.getNearJwtToken(
+        data.username,
+        data.signedJsonString,
+      ),
     );
   }
 }
