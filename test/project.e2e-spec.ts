@@ -6,7 +6,7 @@ import {
   mockAuthUser,
   mockCreateProjectDtos,
 } from './mock-tests-data';
-import { JwtAuthGuard } from '../src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../src/auth/common/jwt-auth.guard';
 import { ServiceResult } from '../src/helpers/response/result';
 import { Project } from '../src/project/entities/project.entity';
 import { PaginatedDto } from '../src/common/pagination/paginated-dto';

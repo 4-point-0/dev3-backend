@@ -8,7 +8,7 @@ import {
   mockCreateAddressDto1,
 } from './mock-tests-data';
 import { AddressModule } from '../src/address/address.module';
-import { JwtAuthGuard } from '../src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../src/auth/common/jwt-auth.guard';
 import { ServiceResult } from '../src/helpers/response/result';
 import { Address } from '../src/address/entities/address.entity';
 

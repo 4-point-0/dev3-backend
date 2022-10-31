@@ -19,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { handle } from '../helpers/response/handle';
 import { AuthRequest } from '../user/entities/user.entity';
 import { AddressService } from './address.service';
