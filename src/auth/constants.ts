@@ -1,3 +1,8 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+const { JWT_SECRET } = process.env;
+
 export const jwtConstants = {
-  secret: 'secretKey',
+  secret: JWT_SECRET,
 };
