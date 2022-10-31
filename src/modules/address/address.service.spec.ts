@@ -4,13 +4,17 @@ import {
   mockAddresses,
   mockCreateAddressDtos,
   mockUser,
-} from '../../test/mock-tests-data';
+} from '../../../test/mock-tests-data';
 import { AddressService } from './address.service';
 import { Address, AddressSchema } from './entities/address.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import Mongoose, { connect, Connection, Model } from 'mongoose';
-import { BadRequest, NotFound, Unauthorized } from '../helpers/response/errors';
+import {
+  BadRequest,
+  NotFound,
+  Unauthorized,
+} from '../../helpers/response/errors';
 
 describe('AddressService', () => {
   let addressService: AddressService;

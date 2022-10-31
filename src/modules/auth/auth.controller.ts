@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { handle } from '../helpers/response/handle';
+import { handle } from '../../helpers/response/handle';
 import { AuthService } from './auth.service';
 import { NearLoginRequestDto } from './dto/near-login-request.dto';
 import { NearLoginResponseDto } from './dto/near-login-response.dto';

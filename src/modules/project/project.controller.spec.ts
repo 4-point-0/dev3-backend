@@ -5,13 +5,13 @@ import {
   mockAuthUser,
   mockCreateProjectDtos,
   mockUser,
-} from '../../test/mock-tests-data';
-import { ServiceResult } from '../helpers/response/result';
+} from '../../../test/mock-tests-data';
+import { ServiceResult } from '../../helpers/response/result';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
 import { Project } from './entities/project.entity';
-import { BadRequest, NotFound } from '../helpers/response/errors';
-import { PaginatedDto } from '../common/pagination/paginated-dto';
+import { BadRequest, NotFound } from '../../helpers/response/errors';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
 
 describe('AddressController', () => {
   let projectController: ProjectController;

@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   Param,
@@ -19,38 +18,38 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
-import { handle } from '../helpers/response/handle';
 import { AuthRequest } from '../user/entities/user.entity';
-import { AddressService } from './address.service';
-import { CreateAddressDto } from './dto/create-address.dto';
-import { UpdateAddressDto } from './dto/update-address.dto';
-import { Address } from './entities/address.entity';
-import { HttpExceptionFilter } from '../helpers/filters/http-exception.filter';
-import { ApiPaginatedResponse } from '../common/pagination/api-paginated-response';
-import { PaginatedDto } from '../common/pagination/paginated-dto';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { Project } from './entities/project.entity';
+import { ProjectService } from './project.service';
+import { handle } from '../../helpers/response/handle';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 
 @UseGuards(JwtAuthGuard)
-@ApiTags('address')
-@Controller('address')
+@ApiTags('project')
+@Controller('project')
 @ApiExtraModels(PaginatedDto)
-export class AddressController {
-  constructor(private readonly addressService: AddressService) {}
+export class ProjectController {
+  constructor(private readonly projectService: ProjectService) {}
 
   @Post()
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: Address })
-  @ApiResponse({ status: 201, description: 'Address created' })
+  @ApiResponse({ status: 200, type: Project })
+  @ApiResponse({ status: 201, description: 'Project created' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   @HttpCode(200)
-  async create(@Req() request: AuthRequest, @Body() dto: CreateAddressDto) {
+  async create(@Req() request: AuthRequest, @Body() dto: CreateProjectDto) {
     dto.owner = request.user._id;
-    return handle(await this.addressService.create(dto));
+    return handle(await this.projectService.create(dto));
   }
 
   @Get()
@@ -58,8 +57,9 @@ export class AddressController {
   @UseFilters(new HttpExceptionFilter())
   @ApiQuery({ name: 'offset', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  @ApiQuery({ name: 'alias', required: false })
-  @ApiPaginatedResponse(Address)
+  @ApiQuery({ name: 'name', required: false })
+  @ApiQuery({ name: 'slug', required: false })
+  @ApiPaginatedResponse(Project)
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -69,32 +69,54 @@ export class AddressController {
     @Req() request: AuthRequest,
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
-    @Query('alias') alias?: string,
+    @Query('slug') slug?: string,
+    @Query('name') name?: string,
   ) {
-    return handle(
-      await this.addressService.findAll(request.user._id, offset, limit, alias),
+    return handle<PaginatedDto<Project>>(
+      await this.projectService.findAll(
+        request.user._id,
+        offset,
+        limit,
+        name,
+        slug,
+      ),
     );
   }
 
   @Get(':id')
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: Address })
+  @ApiResponse({ status: 200, type: Project })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findOne(@Req() request: AuthRequest, @Param('id') id: string) {
-    return handle<Address>(
-      await this.addressService.findOne(id, request.user._id.toString()),
+  async findById(@Req() request: AuthRequest, @Param('id') id: string) {
+    return handle<Project>(
+      await this.projectService.findOne(id, request.user._id.toString()),
+    );
+  }
+
+  @Get('slug/:slug')
+  @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: Project })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async findBySlug(@Req() request: AuthRequest, @Param('slug') slug: string) {
+    return handle<Project>(
+      await this.projectService.findBySlug(slug, request.user._id.toString()),
     );
   }
 
   @Patch(':id')
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: Address })
+  @ApiResponse({ status: 200, type: Project })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -103,29 +125,10 @@ export class AddressController {
   async update(
     @Req() request: AuthRequest,
     @Param('id') id: string,
-    @Body() updateProjectDto: UpdateAddressDto,
+    @Body() dto: UpdateProjectDto,
   ) {
     return handle(
-      await this.addressService.update(
-        id,
-        request.user._id.toString(),
-        updateProjectDto,
-      ),
-    );
-  }
-
-  @Delete(':id')
-  @ApiBearerAuth()
-  @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: Address })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 500, description: 'Server error' })
-  async remove(@Req() request: AuthRequest, @Param('id') id: string) {
-    return handle(
-      await this.addressService.remove(id, request.user._id.toString()),
+      await this.projectService.update(id, request.user._id.toString(), dto),
     );
   }
 }

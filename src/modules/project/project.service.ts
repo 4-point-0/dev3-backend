@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model } from 'mongoose';
-import { ServiceResult } from '../helpers/response/result';
+import { ServiceResult } from '../../helpers/response/result';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project, ProjectDocument } from './entities/project.entity';
@@ -10,10 +10,10 @@ import {
   NotFound,
   ServerError,
   Unauthorized,
-} from '../helpers/response/errors';
-import { PaginatedDto } from '../common/pagination/paginated-dto';
-import { toSlug } from '../utils/slug';
-import { toPage } from '../helpers/pagination/pagination-helper';
+} from '../../helpers/response/errors';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { toSlug } from '../../utils/slug';
+import { toPage } from '../../helpers/pagination/pagination-helper';
 
 @Injectable()
 export class ProjectService {

@@ -7,7 +7,7 @@ import {
   Matches,
 } from 'class-validator';
 import Mongoose from 'mongoose';
-import { nearWalletRegex } from '../../utils/regex';
+import { nearWalletRegex } from '../../../utils/regex';
 
 export class CreateAddressDto {
   @ApiProperty({

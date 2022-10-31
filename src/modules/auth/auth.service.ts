@@ -6,11 +6,15 @@ import { sha256 } from 'js-sha256';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../user/user.service';
 import * as nacl from 'tweetnacl';
-import { edsa } from '../common/constants';
+import { edsa } from '../../common/constants';
 import { JwtUser } from './dto/jwt-user';
-import { ServiceResult } from '../helpers/response/result';
+import { ServiceResult } from '../../helpers/response/result';
 import { JwtTokenDto } from './dto/jwt-token.dto';
-import { BadRequest, NotFound, ServerError } from '../helpers/response/errors';
+import {
+  BadRequest,
+  NotFound,
+  ServerError,
+} from '../../helpers/response/errors';
 import { mapJwtUserCreate } from './mappers/map-jwt-user-create';
 import { mapJwtUser } from './mappers/map-jwt-user';
 import { getRpcPostArguments } from './common/rpc-call-arguments';

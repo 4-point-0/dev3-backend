@@ -1,16 +1,17 @@
 import { Test } from '@nestjs/testing';
 import { ExecutionContext, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AddressService } from '../src/address/address.service';
 import {
   mockAddresses,
   mockAuthUser,
   mockCreateAddressDto1,
+  mockUser,
 } from './mock-tests-data';
-import { AddressModule } from '../src/address/address.module';
-import { JwtAuthGuard } from '../src/auth/common/jwt-auth.guard';
+import { AddressModule } from '../src/modules/address/address.module';
+import { JwtAuthGuard } from '../src/modules/auth/common/jwt-auth.guard';
 import { ServiceResult } from '../src/helpers/response/result';
-import { Address } from '../src/address/entities/address.entity';
+import { Address } from '../src/modules/address/entities/address.entity';
+import { AddressService } from '../src/modules/address/address.service';
 
 describe('AddressController (e2e)', () => {
   let app: INestApplication;
@@ -70,9 +71,7 @@ describe('AddressController (e2e)', () => {
 
   it('/address (GET) one', async () => {
     const id = '634ff1e4bb85ed5475a1ff5d';
-    const response = await request(app.getHttpServer()).get(
-      `/address?id=${id}`,
-    );
+    const response = await request(app.getHttpServer()).get(`/address/${id}`);
     expect(response.status).toEqual(200);
     expect(response.body._id).toEqual(id);
   });

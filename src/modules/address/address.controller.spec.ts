@@ -5,13 +5,13 @@ import {
   mockCreateAddressDto1,
   mockCreateAddressDtos,
   mockUser,
-} from '../../test/mock-tests-data';
-import { ServiceResult } from '../helpers/response/result';
+} from '../../../test/mock-tests-data';
+import { ServiceResult } from '../../helpers/response/result';
 import { AddressController } from './address.controller';
 import { AddressService } from './address.service';
 import { Address } from './entities/address.entity';
-import { BadRequest, NotFound } from '../helpers/response/errors';
-import { PaginatedDto } from '../common/pagination/paginated-dto';
+import { BadRequest, NotFound } from '../../helpers/response/errors';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
 
 describe('AddressController', () => {
   let addressController: AddressController;

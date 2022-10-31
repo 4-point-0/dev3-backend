@@ -4,13 +4,17 @@ import {
   mockCreateProjectDtos,
   mockProjects,
   mockUser,
-} from '../../test/mock-tests-data';
+} from '../../../test/mock-tests-data';
 import { ProjectService } from './project.service';
 import { Project, ProjectSchema } from './entities/project.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model } from 'mongoose';
-import { BadRequest, NotFound, Unauthorized } from '../helpers/response/errors';
+import {
+  BadRequest,
+  NotFound,
+  Unauthorized,
+} from '../../helpers/response/errors';
 import Mongoose from 'mongoose';
 
 describe('ProjectService', () => {

@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model } from 'mongoose';
-import { toPage } from '../helpers/pagination/pagination-helper';
-import { PaginatedDto } from '../common/pagination/paginated-dto';
+import { toPage } from '../../helpers/pagination/pagination-helper';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import {
   BadRequest,
   NotFound,
   ServerError,
   Unauthorized,
-} from '../helpers/response/errors';
-import { ServiceResult } from '../helpers/response/result';
-import { isNearWallet } from '../utils/near-wallet-validation';
+} from '../../helpers/response/errors';
+import { ServiceResult } from '../../helpers/response/result';
+import { isNearWallet } from '../../utils/near-wallet-validation';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address, AddressDocument } from './entities/address.entity';
@@ -119,6 +119,7 @@ export class AddressService {
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<Address>('Address not found');
       }
+
       const address = await this.repo
         .findOne({ _id: id })
         .populate('owner')

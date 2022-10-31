@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import Mongoose, { Document } from 'mongoose';
-import { toSlug } from '../../utils/slug';
+import { toSlug } from '../../../utils/slug';
 import { User } from '../../user/entities/user.entity';
 
 export type ProjectDocument = Project & Document;

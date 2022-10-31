@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { Document } from 'mongoose';
 import { User } from '../../user/entities/user.entity';
-import { emailRegex, nearWalletRegex } from '../../utils/regex';
+import { emailRegex, nearWalletRegex } from '../../../utils/regex';
 
 export type AddressDocument = Address & Document;
 
