@@ -1,12 +1,13 @@
 import Mongoose from 'mongoose';
-import { CreateProjectDto } from '../src/project/dto/create-project.dto';
-import { CreateAddressDto } from '../src/address/dto/create-address.dto';
+import { CreateProjectDto } from '../src/modules/project/dto/create-project.dto';
+import { CreateAddressDto } from '../src/modules/address/dto/create-address.dto';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
   username: 'rimatikdev.testnet',
   accountType: 'near',
   nearWalletAccountId: 'rimatikdev.testnet',
+  _id: new Mongoose.Types.ObjectId('634ff3d708393072d5daa871'),
 };
 
 export const mockUser = {

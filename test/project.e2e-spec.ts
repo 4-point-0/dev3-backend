@@ -6,12 +6,12 @@ import {
   mockAuthUser,
   mockCreateProjectDtos,
 } from './mock-tests-data';
-import { JwtAuthGuard } from '../src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../src/modules/auth/common/jwt-auth.guard';
 import { ServiceResult } from '../src/helpers/response/result';
-import { Project } from '../src/project/entities/project.entity';
+import { Project } from '../src/modules/project/entities/project.entity';
 import { PaginatedDto } from '../src/common/pagination/paginated-dto';
-import { ProjectService } from '../src/project/project.service';
-import { ProjectModule } from '../src/project/project.module';
+import { ProjectService } from '../src/modules/project/project.service';
+import { ProjectModule } from '../src/modules/project/project.module';
 
 describe('ProjectController (e2e)', () => {
   let app: INestApplication;
