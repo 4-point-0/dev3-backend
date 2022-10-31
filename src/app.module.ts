@@ -18,14 +18,17 @@ import { UserModule } from './user/user.module';
 import { AddressModule } from './address/address.module';
 import * as dotenv from 'dotenv';
 import { Address } from './address/entities/address.entity';
+import { dev3CompanyName, dev3LogoUrl } from './common/constants';
 dotenv.config();
+
+const { ADMIN_JS_USER, ADMIN_JS_PASS, DATABASE_URL } = process.env;
 
 AdminJS.registerAdapter(AdminJSMongoose);
 @Module({
   imports: [
     MongooseModule.forRootAsync({
       useFactory: () => ({
-        uri: process.env.DATABASE_URL,
+        uri: DATABASE_URL,
       }),
     }),
     ProjectModule,
@@ -123,16 +126,15 @@ AdminJS.registerAdapter(AdminJSMongoose);
             },
           ],
           branding: {
-            logo: 'http://dev3.sh/wp-content/uploads/2022/08/logo.png',
-            companyName: 'Dev3',
+            logo: dev3LogoUrl,
+            companyName: dev3CompanyName,
             withMadeWithLove: false,
           },
         },
         auth: {
-          authenticate: async (email, password) =>
-            Promise.resolve({ email: 'admin' }),
-          cookieName: 'dev3admin',
-          cookiePassword: 'admin',
+          authenticate: async () => Promise.resolve({ email: 'admin' }),
+          cookieName: ADMIN_JS_USER,
+          cookiePassword: ADMIN_JS_PASS,
         },
       }),
     }),

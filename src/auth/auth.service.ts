@@ -6,6 +6,8 @@ import { sha256 } from 'js-sha256';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../user/user.service';
 import * as nacl from 'tweetnacl';
+import { getRpc } from '../helpers/rpc/rpc-helper';
+import { edsa } from '../common/constants';
 
 export interface JwtUser {
   uid: string;
@@ -26,11 +28,10 @@ export class AuthService {
     accountId: string,
     pkArray: string | Uint8Array,
   ): Promise<boolean> {
-    const currentPublicKey = 'ed25519:' + borsh.baseEncode(pkArray);
-
+    const currentPublicKey = edsa + borsh.baseEncode(pkArray);
     const result = await firstValueFrom(
       this.httpService.post(
-        'https://rpc.testnet.near.org',
+        getRpc(),
         {
           jsonrpc: '2.0',
           method: 'query',
