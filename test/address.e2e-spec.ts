@@ -5,7 +5,6 @@ import {
   mockAddresses,
   mockAuthUser,
   mockCreateAddressDto1,
-  mockUser,
 } from './mock-tests-data';
 import { AddressModule } from '../src/modules/address/address.module';
 import { JwtAuthGuard } from '../src/modules/auth/common/jwt-auth.guard';
