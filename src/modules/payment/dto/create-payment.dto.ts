@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, Matches } from 'class-validator';
 import Mongoose from 'mongoose';
+import { nearWalletRegex } from '../../../utils/regex';
 
 export class CreatePaymentDto {
   @ApiProperty({
@@ -16,6 +17,9 @@ export class CreatePaymentDto {
 
   @ApiProperty({
     type: String,
+  })
+  @Matches(nearWalletRegex, {
+    message: 'receiver must be named or implicit near wallet',
   })
   readonly receiver?: string;
 
