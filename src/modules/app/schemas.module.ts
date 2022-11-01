@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Address, AddressSchema } from './address/entities/address.entity';
-import { Project, ProjectSchema } from './project/entities/project.entity';
-import { User, UserSchema } from './user/entities/user.entity';
+import { Address, AddressSchema } from '../address/entities/address.entity';
+import { Project, ProjectSchema } from '../project/entities/project.entity';
+import { User, UserSchema } from '../user/entities/user.entity';
 
 @Module({
   imports: [
