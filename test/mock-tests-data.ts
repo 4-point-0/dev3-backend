@@ -1,6 +1,7 @@
 import Mongoose from 'mongoose';
 import { CreateProjectDto } from '../src/modules/project/dto/create-project.dto';
 import { CreateAddressDto } from '../src/modules/address/dto/create-address.dto';
+import { Role } from '../src/common/enums/role.enum';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
@@ -18,7 +19,7 @@ export const mockUser = {
   isActive: true,
   uid: 'dev3.testnet',
   accountType: 'near',
-  roles: ['customer'],
+  roles: [Role.Customer],
   username: 'dev3.testnet',
   nearWalletAccountId: 'dev3.testnet',
 };
@@ -49,7 +50,7 @@ export const mockAddresses = [
       isActive: true,
       uid: 'dev4.testnet',
       accountType: 'near',
-      roles: ['customer'],
+      roles: [Role.Customer],
       username: 'dev4.testnet',
       nearWalletAccountId: 'dev4.testnet',
     },

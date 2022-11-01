@@ -18,6 +18,7 @@ import {
 import { mapJwtUserCreate } from './mappers/map-jwt-user-create';
 import { mapJwtUser } from './mappers/map-jwt-user';
 import { getRpcPostArguments } from './common/rpc-call-arguments';
+import { Role } from '../../common/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -117,7 +118,7 @@ export class AuthService {
         uid: username,
         username,
         accountType: 'near',
-        roles: ['customer'],
+        roles: [Role.Customer],
       };
     } catch (error) {
       this.logger.error('AuthService - nearValidate', error);
