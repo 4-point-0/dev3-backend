@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
+import { PaymentStatus } from '../../../common/enums/payment-status.enum';
+import { nearWalletRegex } from '../../../utils/regex';
 import { BaseEntity } from '../../../common/entities/base-entity';
 
 export type PaymentDocument = Payment & Document;
@@ -30,7 +32,7 @@ export class Payment extends BaseEntity {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: false })
+  @Prop({ required: false, match: nearWalletRegex })
   receiver: string;
 
   @ApiProperty({
@@ -40,10 +42,9 @@ export class Payment extends BaseEntity {
   receiver_fungible: string;
 
   @ApiProperty({
-    type: String,
-    enum: ['pending', 'paid'],
+    enum: [PaymentStatus.Pending, PaymentStatus.Paid],
   })
-  @Prop({ required: true, default: 'pending' })
+  @Prop({ required: true, default: PaymentStatus.Pending })
   status: string;
 }
 
