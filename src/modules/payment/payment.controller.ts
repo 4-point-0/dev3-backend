@@ -102,7 +102,7 @@ export class PaymentController {
     return handle<PaymentDto>(await this.paymentService.findOne(id));
   }
 
-  @Post('ft-transfer-update')
+  @Post('ft-transfer-update-event')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: PaymentDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
