@@ -31,6 +31,7 @@ import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-resp
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 import { PaymentDto } from './dto/payment.dto';
 import { jwtConstants } from '../auth/common/jwt-constants';
+import { PagodaDto } from './dto/pagoda.dto';
 
 @ApiTags('payment')
 @Controller('payment')
@@ -103,8 +104,7 @@ export class PaymentController {
     return handle<PaymentDto>(await this.paymentService.findOne(id));
   }
 
-  // @Patch(':id')
-  @Post('status')
+  @Post('ft-transfer')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: PaymentDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -112,8 +112,7 @@ export class PaymentController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async update(@Req() request: AuthRequest) {
-    console.log('body', request.body);
+  async ftTransferUpdate(@Req() request: AuthRequest, @Body() body: PagodaDto) {
     const bearer = request.headers['authorization'];
 
     if (!bearer) return new UnauthorizedException();
@@ -121,7 +120,9 @@ export class PaymentController {
     const token = bearer.split(' ')[1];
 
     if (token === jwtConstants.pagodaBearer) {
-      // return handle(await this.paymentService.update(id));
+      return handle(
+        await this.paymentService.update(body.payload.Events.data[0].memo),
+      );
     }
 
     return new UnauthorizedException();
