@@ -112,7 +112,8 @@ export class PaymentController {
   @ApiResponse({ status: 500, description: 'Server error' })
   async update(@Req() request: AuthRequest) {
     const bearer = request.headers['authorization'];
-    console.log(request.json());
+    const res = await request.json();
+    console.log('Res', res);
 
     if (!bearer) return new UnauthorizedException();
 
