@@ -112,7 +112,7 @@ export class PaymentController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async ftTransferUpdate(@Req() request: AuthRequest, @Body() body: PagodaDto) {
+  async ftTransfer(@Req() request: AuthRequest) {
     const bearer = request.headers['authorization'];
 
     if (!bearer) return new UnauthorizedException();
@@ -120,6 +120,7 @@ export class PaymentController {
     const token = bearer.split(' ')[1];
 
     if (token === jwtConstants.pagodaBearer) {
+      const body: any = request.body;
       return handle(
         await this.paymentService.update(body.payload.Events.data[0].memo),
       );
