@@ -118,7 +118,8 @@ export class PaymentController {
 
     if (token === jwtConstants.pagodaBearer) {
       const body = request.body as any;
-      const data = JSON.parse(body.payload.Events.data[0]);
+      const data = body.payload.Events.data[0];
+      console.log(data);
       return handle(await this.paymentService.update(data.memo));
     }
 
