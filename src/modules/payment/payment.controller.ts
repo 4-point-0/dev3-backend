@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   Param,
-  Patch,
   Post,
   Query,
   Req,
@@ -31,7 +30,6 @@ import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-resp
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 import { PaymentDto } from './dto/payment.dto';
 import { jwtConstants } from '../auth/common/jwt-constants';
-import { PagodaDto } from './dto/pagoda.dto';
 
 @ApiTags('payment')
 @Controller('payment')
@@ -104,7 +102,7 @@ export class PaymentController {
     return handle<PaymentDto>(await this.paymentService.findOne(id));
   }
 
-  @Post('transfer')
+  @Post('status')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: PaymentDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -112,7 +110,7 @@ export class PaymentController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async ftTransfer(@Req() request: AuthRequest) {
+  async update(@Req() request: AuthRequest) {
     const bearer = request.headers['authorization'];
 
     if (!bearer) return new UnauthorizedException();
