@@ -104,7 +104,7 @@ export class PaymentController {
   }
 
   // @Patch(':id')
-  @Patch()
+  @Post('status')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: PaymentDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
