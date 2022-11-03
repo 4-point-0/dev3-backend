@@ -112,23 +112,15 @@ export class PaymentController {
   @ApiResponse({ status: 500, description: 'Server error' })
   async update(@Req() request: AuthRequest) {
     const bearer = request.headers['authorization'];
-
-    if (!bearer) return new UnauthorizedException();
-
-    const token = bearer.split(' ')[1];
     const reader = request.body.getReader();
-
     while (true) {
       const { value, done } = await reader.read();
       console.log(value);
       if (done) break;
       console.log('Received', value);
     }
-    if (token === jwtConstants.pagodaBearer) {
-      // return handle(
-      //   await this.paymentService.update(body.payload.Events.data[0].memo),
-      // );
-    }
+
+    if (!bearer) return new UnauthorizedException();
 
     return new UnauthorizedException();
   }
