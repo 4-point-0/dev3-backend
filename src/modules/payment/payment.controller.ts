@@ -30,6 +30,7 @@ import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-resp
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 import { PaymentDto } from './dto/payment.dto';
 import { jwtConstants } from '../auth/common/jwt-constants';
+import { PagodaEventDataDto } from './dto/pagoda-event-data.dto';
 
 @ApiTags('payment')
 @Controller('payment')
@@ -118,9 +119,9 @@ export class PaymentController {
 
     if (token === jwtConstants.pagodaBearer) {
       const body = request.body as any;
-      const data = body.payload.Events.data[0];
-      console.log(data);
-      return handle(await this.paymentService.update(data.memo));
+      const eventData: PagodaEventDataDto = body.payload.Events.data[0];
+      console.log(eventData);
+      return handle(await this.paymentService.update(eventData.memo));
     }
 
     return new UnauthorizedException();
