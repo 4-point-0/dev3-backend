@@ -44,8 +44,8 @@ export class Payment extends BaseEntity {
   @ApiProperty({
     enum: [PaymentStatus.Pending, PaymentStatus.Paid],
   })
-  @Prop({ required: true, default: PaymentStatus.Pending })
-  status: string;
+  @Prop({ required: true, enum: PaymentStatus, default: PaymentStatus.Pending })
+  status: PaymentStatus;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { BadRequest } from '../../helpers/response/errors';
+import { BadRequest, NotFound } from '../../helpers/response/errors';
 import { ServiceResult } from '../../helpers/response/result';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Payment, PaymentDocument } from './entities/payment.entity';
@@ -11,6 +11,8 @@ import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { toPage } from '../../helpers/pagination/pagination-helper';
 import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { isNearWallet } from '../../utils/near-wallet-validation';
+import { PaymentDto } from './dto/payment.dto';
+import { mapPaymentGet } from './mappers/map-payment-get.ts';
 
 @Injectable()
 export class PaymentService {
@@ -50,6 +52,7 @@ export class PaymentService {
     ownerId: Mongoose.Types.ObjectId,
     offset?: number,
     limit?: number,
+    uid?: string,
     receiver?: string,
     receiver_fungible?: string,
     status?: PaymentStatus,
@@ -57,6 +60,10 @@ export class PaymentService {
     try {
       const query = this.repo.find({ owner: ownerId });
       const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
+
+      if (uid) {
+        query.find({ uid: { $regex: uid, $options: 'i' } });
+      }
 
       if (receiver) {
         query.find({ receiver: { $regex: receiver, $options: 'i' } });
@@ -83,6 +90,57 @@ export class PaymentService {
     } catch (error) {
       this.logger.error('PaymentService - findAll', error);
       return new ServerError<PaginatedDto<Payment>>(`Can't get payments`);
+    }
+  }
+
+  async findOne(id: string): Promise<ServiceResult<PaymentDto>> {
+    try {
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<PaymentDto>('Payment not found');
+      }
+
+      const payment = await this.repo
+        .findOne({ _id: id })
+        .populate('owner')
+        .exec();
+
+      if (!payment) {
+        return new NotFound<PaymentDto>('Payment not found');
+      }
+
+      return new ServiceResult<PaymentDto>(mapPaymentGet(payment));
+    } catch (error) {
+      this.logger.error('PaymentService - findOne', error);
+      return new ServerError<PaymentDto>(`Can't get payment`);
+    }
+  }
+
+  async update(id: string): Promise<ServiceResult<PaymentDto>> {
+    try {
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<PaymentDto>('Payment not found');
+      }
+
+      const payment = await this.repo
+        .findOne({ _id: id })
+        .populate('owner')
+        .exec();
+
+      if (!payment) {
+        return new NotFound<PaymentDto>('Payment not found');
+      }
+
+      if (PaymentStatus[payment.status] === PaymentStatus.Paid) {
+        return new NotFound<PaymentDto>('Payment aleary paid');
+      }
+
+      const updatePayment = await this.repo.findOne({ _id: id }).exec();
+      updatePayment.status = PaymentStatus.Paid;
+      await this.repo.updateOne({ _id: id }, updatePayment);
+      return new ServiceResult<PaymentDto>(mapPaymentGet(updatePayment));
+    } catch (error) {
+      this.logger.error('PaymentService - update', error);
+      return new ServerError<PaymentDto>(`Can't update payment`);
     }
   }
 }

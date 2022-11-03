@@ -4,6 +4,12 @@ import Mongoose from 'mongoose';
 import { nearWalletRegex } from '../../../utils/regex';
 
 export class CreatePaymentDto {
+  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+  })
+  readonly uid: string;
+
   @ApiProperty({
     type: String,
   })
@@ -28,6 +34,5 @@ export class CreatePaymentDto {
   })
   readonly receiver_fungible?: string;
 
-  uid: string;
   owner: Mongoose.Types.ObjectId;
 }
