@@ -119,9 +119,10 @@ export class PaymentController {
 
     if (token === jwtConstants.pagodaBearer) {
       const body = request.body as any;
-      const eventData: PagodaEventDataDto = body.payload.Events.data[0];
-      console.log(eventData);
-      return handle(await this.paymentService.update(eventData.memo));
+      const invalidJson = body.payload.Events.data;
+      const validJson = invalidJson.replaceAll(`'`, `"`);
+      const parsed: PagodaEventDataDto[] = JSON.parse(validJson);
+      return handle(await this.paymentService.update(parsed[0].memo));
     }
 
     return new UnauthorizedException();
