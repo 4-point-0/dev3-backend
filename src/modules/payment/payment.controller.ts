@@ -116,8 +116,14 @@ export class PaymentController {
     if (!bearer) return new UnauthorizedException();
 
     const token = bearer.split(' ')[1];
-    const jsonRes = await request.json();
-    console.log('Result test', jsonRes);
+    const reader = request.body.getReader();
+
+    while (true) {
+      const { value, done } = await reader.read();
+      console.log(value);
+      if (done) break;
+      console.log('Received', value);
+    }
     if (token === jwtConstants.pagodaBearer) {
       // return handle(
       //   await this.paymentService.update(body.payload.Events.data[0].memo),
