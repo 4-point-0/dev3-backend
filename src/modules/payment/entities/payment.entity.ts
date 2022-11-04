@@ -33,13 +33,13 @@ export class Payment extends BaseEntity {
     type: String,
   })
   @Prop({ required: false, match: nearWalletRegex })
-  receiver: string;
+  receiver?: string;
 
   @ApiProperty({
     type: String,
   })
   @Prop({ required: false })
-  receiver_fungible: string;
+  receiver_fungible?: string;
 
   @ApiProperty({
     enum: [PaymentStatus.Pending, PaymentStatus.Paid],

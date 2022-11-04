@@ -29,7 +29,7 @@ import { AuthRequest } from '../user/entities/user.entity';
 import { handle } from '../../helpers/response/handle';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
-import { PaymentStatus } from 'src/common/enums/payment-status.enum';
+import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { PaymentDto } from './dto/payment.dto';
 import { jwtConstants } from '../auth/common/jwt-constants';
 

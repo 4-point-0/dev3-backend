@@ -258,3 +258,12 @@ export const mockCreatePaymentDtos = [
   mockCreatePaymentDto3,
   mockCreatePaymentDto4,
 ];
+
+export const mockPaymentDto = {
+  _id: mockPayment1._id.toString(),
+  uid: mockPayment1.uid,
+  amount: mockPayment1.amount,
+  memo: mockPayment1.memo,
+  receiver: mockPayment1.receiver,
+  status: mockPayment1.status,
+};
