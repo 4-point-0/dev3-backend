@@ -3,6 +3,8 @@ import {
   Controller,
   Get,
   HttpCode,
+  InternalServerErrorException,
+  Logger,
   Param,
   Post,
   Query,
@@ -30,12 +32,12 @@ import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-resp
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 import { PaymentDto } from './dto/payment.dto';
 import { jwtConstants } from '../auth/common/jwt-constants';
-import { PagodaEventDataDto } from './dto/pagoda-event-data.dto';
 
 @ApiTags('payment')
 @Controller('payment')
 @ApiExtraModels(PaginatedDto)
 export class PaymentController {
+  private readonly logger = new Logger(PaymentController.name);
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
@@ -103,7 +105,7 @@ export class PaymentController {
     return handle<PaymentDto>(await this.paymentService.findOne(id));
   }
 
-  @Post('ft-transfer-update-event')
+  @Post('ft-transfer-pagoda')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: PaymentDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -111,20 +113,23 @@ export class PaymentController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async update(@Req() request: AuthRequest) {
-    const bearer = request.headers['authorization'];
-    if (!bearer) return new UnauthorizedException();
+  async pagodaEvent(@Req() request: Request) {
+    try {
+      const bearer = request.headers['authorization'];
+      if (!bearer) return new UnauthorizedException();
 
-    const token = bearer.split(' ')[1];
+      const token = bearer.split(' ')[1];
 
-    if (token === jwtConstants.pagodaBearer) {
-      const body = request.body as any;
-      const invalidJson = body.payload.Events.data;
-      const validJson = invalidJson.replaceAll(`'`, `"`);
-      const parsed: PagodaEventDataDto[] = JSON.parse(validJson);
-      return handle(await this.paymentService.update(parsed[0].memo));
+      if (token === jwtConstants.pagodaBearer) {
+        return handle(
+          await this.paymentService.updatePagoda(request.body as any),
+        );
+      }
+
+      return new UnauthorizedException();
+    } catch (error) {
+      this.logger.error('PaymentController - pagodaEvent', error);
+      return new InternalServerErrorException();
     }
-
-    return new UnauthorizedException();
   }
 }

@@ -13,6 +13,7 @@ import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { isNearWallet } from '../../utils/near-wallet-validation';
 import { PaymentDto } from './dto/payment.dto';
 import { mapPaymentGet } from './mappers/map-payment-get.ts';
+import { PagodaEventDataDto } from './dto/pagoda-event-data.dto';
 
 @Injectable()
 export class PaymentService {
@@ -115,8 +116,13 @@ export class PaymentService {
     }
   }
 
-  async update(id: string): Promise<ServiceResult<PaymentDto>> {
+  async updatePagoda(dto: any): Promise<ServiceResult<PaymentDto>> {
     try {
+      const invalidJson = dto.payload.Events.data;
+      const validJson = invalidJson.replaceAll(`'`, `"`);
+      const parsed: PagodaEventDataDto[] = JSON.parse(validJson);
+
+      const id = parsed[0].memo;
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<PaymentDto>('Payment not found');
       }
@@ -128,10 +134,6 @@ export class PaymentService {
 
       if (!payment) {
         return new NotFound<PaymentDto>('Payment not found');
-      }
-
-      if (PaymentStatus[payment.status] === PaymentStatus.Paid) {
-        return new NotFound<PaymentDto>('Payment aleary paid');
       }
 
       const updatePayment = await this.repo.findOne({ _id: id }).exec();
