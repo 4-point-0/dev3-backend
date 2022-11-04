@@ -120,7 +120,6 @@ export class PaymentController {
 
       const token = bearer.split(' ')[1];
 
-      console.log(request.body);
       if (token === jwtConstants.pagodaBearer) {
         return handle(
           await this.paymentService.updatePagoda(request.body as any),

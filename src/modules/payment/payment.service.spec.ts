@@ -175,85 +175,17 @@ describe('PaymentService', () => {
     expect(response).toStrictEqual(new NotFound<Payment>('Payment not found'));
   });
 
-  // it(`Update - should update`, async () => {
-  //   await new paymentModel(mockPayments[0]).save();
-  //   const res = new TextEncoder().encode(
-  //     "{payload:{Events:{data:'[{memo:784ff1e4bb85ed5475a1ff5d}]'}}}",
-  //   ); // => [194, 168]
+  it(`Update - should update`, async () => {
+    await new paymentModel(mockPayments[0]).save();
+    const res = {
+      payload: {
+        Events: {
+          data: '[{"amount":"12","memo":"784ff1e4bb85ed5475a1ff5d","new_owner_id":"bob.rimatikdev.testnet","old_owner_id":"rimatikdev.testnet"}]',
+        },
+      },
+    };
 
-  //   const result = await paymentService.updatePagoda(res as any);
-  //   console.log(result);
-  //   expect(result.data.status).toBe(PaymentStatus.Paid);
-  // });
-
-  // it(`Update - should return Payment event data not valid (Bad Request - 400) exception`, async () => {
-  //   await new paymentModel(mockPayments[0]).save();
-  //   const dto = {
-  //     payload: {
-  //       Events: {
-  //         data: [],
-  //       },
-  //     },
-  //   };
-  //   const response = await paymentService.updatePagoda(dto);
-  //   expect(response).toStrictEqual(
-  //     new BadRequest<Payment>('Payment event data not valid'),
-  //   );
-  // });
-
-  // it(`Update - should return Payment memo not valid (Bad Request - 400) exception`, async () => {
-  //   const createResult = await new paymentModel(mockPayments[0]).save();
-  //   const dto = {
-  //     payload: {
-  //       Events: {
-  //         data: [{ deno: createResult._id.toString() }],
-  //       },
-  //     },
-  //   };
-  //   const response = await paymentService.updatePagoda(dto);
-  //   expect(response).toStrictEqual(
-  //     new BadRequest<Payment>('Payment memo not valid'),
-  //   );
-  // });
-
-  // it(`Update - should return Payment not found (Not Found - 404) exception`, async () => {
-  //   await new paymentModel(mockPayments[0]).save();
-  //   const dto = {
-  //     payload: {
-  //       Events: {
-  //         data: [{ memo: '864ff1e4bb85ed5475a1ff5d' }],
-  //       },
-  //     },
-  //   };
-  //   const response = await paymentService.updatePagoda(dto);
-  //   expect(response).toStrictEqual(new NotFound<Payment>('Payment not found'));
-  // });
-
-  // it(`Update - should return Payment not found (Not Found - 404) exception`, async () => {
-  //   await new paymentModel(mockPayments[0]).save();
-  //   const dto = {
-  //     payload: {
-  //       Events: {
-  //         data: [{ memo: '12' }],
-  //       },
-  //     },
-  //   };
-  //   const response = await paymentService.updatePagoda(dto);
-  //   expect(response).toStrictEqual(new NotFound<Payment>('Payment not found'));
-  // });
-
-  // it(`Update - should return Payment memo invalid (Bad request - 400) exception`, async () => {
-  //   await new paymentModel(mockPayments[0]).save();
-  //   const dto = {
-  //     payload: {
-  //       Events: {
-  //         data: [],
-  //       },
-  //     },
-  //   };
-  //   const response = await paymentService.updatePagoda(dto);
-  //   expect(response).toStrictEqual(
-  //     new BadRequest<Payment>('Payment memo invalid'),
-  //   );
-  // });
+    const result = await paymentService.updatePagoda(res);
+    expect(result.data.status).toBe(PaymentStatus.Paid);
+  });
 });
