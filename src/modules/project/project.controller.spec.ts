@@ -13,7 +13,7 @@ import { Project } from './entities/project.entity';
 import { BadRequest, NotFound } from '../../helpers/response/errors';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 
-describe('AddressController', () => {
+describe('ProjectController', () => {
   let projectController: ProjectController;
   let projectService: ProjectService;
 
@@ -31,7 +31,7 @@ describe('AddressController', () => {
   });
 
   describe('findAll', () => {
-    it('should return all addresses', async () => {
+    it('should return all projects', async () => {
       const result = new ServiceResult<PaginatedDto<Project>>({
         total: 4,
         limit: 0,
@@ -135,7 +135,7 @@ describe('AddressController', () => {
   });
 
   describe('update', () => {
-    it('should update one address', async () => {
+    it('should update one project', async () => {
       const name = 'changed-name';
       const slug = 'koui';
       const project = { ...mockProjects[0] };
