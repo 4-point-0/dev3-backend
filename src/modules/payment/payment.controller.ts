@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UnauthorizedException,
   UseFilters,
   UseGuards,
@@ -113,13 +114,14 @@ export class PaymentController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async pagodaEvent(@Req() request: Request) {
+  async pagodaEvent(@Req() request: Request, @Res() res: Response) {
     try {
       const bearer = request.headers['authorization'];
       if (!bearer) return new UnauthorizedException();
 
       const token = bearer.split(' ')[1];
-
+      const result = res.json();
+      console.log(result);
       if (token === jwtConstants.pagodaBearer) {
         return handle(
           await this.paymentService.updatePagoda(request.body as any),

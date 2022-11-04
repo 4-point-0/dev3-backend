@@ -14,7 +14,7 @@ export class Payment extends BaseEntity {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: true })
+  @Prop({ required: true, match: nearWalletRegex })
   uid: string;
 
   @ApiProperty({

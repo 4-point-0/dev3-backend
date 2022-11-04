@@ -122,7 +122,16 @@ export class PaymentService {
       const validJson = invalidJson.replaceAll(`'`, `"`);
       const parsed: PagodaEventDataDto[] = JSON.parse(validJson);
 
+      if (parsed.length === 0) {
+        return new BadRequest<PaymentDto>('Payment event data not valid');
+      }
+
+      if (!parsed[0].memo) {
+        return new BadRequest<PaymentDto>('Payment memo not valid');
+      }
+
       const id = parsed[0].memo;
+
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<PaymentDto>('Payment not found');
       }
@@ -141,6 +150,7 @@ export class PaymentService {
       await this.repo.updateOne({ _id: id }, updatePayment);
       return new ServiceResult<PaymentDto>(mapPaymentGet(updatePayment));
     } catch (error) {
+      console.log(error);
       this.logger.error('PaymentService - update', error);
       return new ServerError<PaymentDto>(`Can't update payment`);
     }
