@@ -1,6 +1,9 @@
 import Mongoose from 'mongoose';
 import { CreateProjectDto } from '../src/modules/project/dto/create-project.dto';
 import { CreateAddressDto } from '../src/modules/address/dto/create-address.dto';
+import { Role } from '../src/common/enums/role.enum';
+import { PaymentStatus } from '../src/common/enums/payment-status.enum';
+import { CreatePaymentDto } from '../src/modules/payment/dto/create-payment.dto';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
@@ -18,7 +21,7 @@ export const mockUser = {
   isActive: true,
   uid: 'dev3.testnet',
   accountType: 'near',
-  roles: ['customer'],
+  roles: [Role.Customer],
   username: 'dev3.testnet',
   nearWalletAccountId: 'dev3.testnet',
 };
@@ -49,7 +52,7 @@ export const mockAddresses = [
       isActive: true,
       uid: 'dev4.testnet',
       accountType: 'near',
-      roles: ['customer'],
+      roles: [Role.Customer],
       username: 'dev4.testnet',
       nearWalletAccountId: 'dev4.testnet',
     },
@@ -161,3 +164,106 @@ export const mockCreateProjectDtos = [
   mockCreateProjectDto3,
   mockCreateProjectDto4,
 ];
+
+export const mockPayment1 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bb85ed5475a1ff5d'),
+  uid: 'bob.dev3.testnet',
+  memo: 'Pay 10 tokens',
+  amount: '10',
+  receiver: 'mary.dev3.testnet',
+  status: PaymentStatus.Pending,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockPayment2 = {
+  _id: new Mongoose.Types.ObjectId('784fe1e4cb85ed5475a1ff5d'),
+  uid: 'john.dev3.testnet',
+  memo: 'Pay 12 tokens',
+  amount: '12',
+  receiver: 'alice.dev3.testnet',
+  status: PaymentStatus.Pending,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockPayment3 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e2bb85fd5475a1ff5d'),
+  uid: 'alice.dev3.testnet',
+  memo: 'Pay 9 tokens',
+  amount: '9',
+  receiver: 'bob.dev3.testnet',
+  status: PaymentStatus.Pending,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockPayment4 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bb85ed5475a1ff5d'),
+  uid: 'bob.dev3.testnet',
+  memo: 'Pay 15 tokens',
+  amount: '15',
+  receiver: 'mary.dev3.testnet',
+  status: PaymentStatus.Pending,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockPayments = [
+  mockPayment1,
+  mockPayment2,
+  mockPayment3,
+  mockPayment4,
+];
+
+export const mockCreatePaymentDto1: CreatePaymentDto = {
+  uid: mockPayment1.uid,
+  memo: mockPayment1.memo,
+  amount: mockPayment1.amount,
+  receiver: mockPayment1.receiver,
+  owner: mockUser._id,
+};
+
+export const mockCreatePaymentDto2: CreatePaymentDto = {
+  uid: mockPayment2.uid,
+  memo: mockPayment2.memo,
+  amount: mockPayment2.amount,
+  receiver: mockPayment2.receiver,
+  owner: mockUser._id,
+};
+
+export const mockCreatePaymentDto3: CreatePaymentDto = {
+  uid: mockPayment3.uid,
+  memo: mockPayment3.memo,
+  amount: mockPayment3.amount,
+  receiver: mockPayment3.receiver,
+  owner: mockUser._id,
+};
+
+export const mockCreatePaymentDto4: CreatePaymentDto = {
+  uid: mockPayment4.uid,
+  memo: mockPayment4.memo,
+  amount: mockPayment4.amount,
+  receiver: mockPayment4.receiver,
+  owner: mockUser._id,
+};
+
+export const mockCreatePaymentDtos = [
+  mockCreatePaymentDto1,
+  mockCreatePaymentDto2,
+  mockCreatePaymentDto3,
+  mockCreatePaymentDto4,
+];
+
+export const mockPaymentDto = {
+  _id: mockPayment1._id.toString(),
+  uid: mockPayment1.uid,
+  amount: mockPayment1.amount,
+  memo: mockPayment1.memo,
+  receiver: mockPayment1.receiver,
+  status: mockPayment1.status,
+};

@@ -9,16 +9,18 @@ import { Model } from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from '../auth/auth.module';
-import { PassportJwtDuplicationFixInterceptor } from '../passport-fix.interceptor';
+import { PassportJwtDuplicationFixInterceptor } from './passport-fix.interceptor';
 import { Project } from '../project/entities/project.entity';
 import { ProjectModule } from '../project/project.module';
-import { MongooseSchemasModule } from '../schemas.module';
+import { MongooseSchemasModule } from './schemas.module';
 import { User } from '../user/entities/user.entity';
 import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
 import * as dotenv from 'dotenv';
 import { Address } from '../address/entities/address.entity';
 import { dev3CompanyName, dev3LogoUrl } from '../../common/constants';
+import { PaymentModule } from '../payment/payment.module';
+import { Payment } from '../payment/entities/payment.entity';
 dotenv.config();
 
 const { ADMIN_JS_USER, ADMIN_JS_PASS, DATABASE_URL } = process.env;
@@ -34,17 +36,21 @@ AdminJS.registerAdapter(AdminJSMongoose);
     ProjectModule,
     AuthModule,
     UserModule,
+    AddressModule,
+    PaymentModule,
     AdminModule.createAdminAsync({
       imports: [ConfigModule.forRoot(), MongooseSchemasModule],
       inject: [
         getModelToken('Project'),
         getModelToken('User'),
         getModelToken('Address'),
+        getModelToken('Payment'),
       ],
       useFactory: (
         projectModel: Model<Project>,
         userModel: Model<User>,
         addressModel: Model<Address>,
+        paymentModel: Model<Payment>,
       ) => ({
         adminJsOptions: {
           rootPath: '/admin',
@@ -124,6 +130,29 @@ AdminJS.registerAdapter(AdminJSMongoose);
                 parent: { name: 'Content', icon: 'Home' },
               },
             },
+            {
+              resource: paymentModel,
+              options: {
+                properties: {
+                  createdAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  updatedAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  owner: {
+                    isRequired: true,
+                  },
+                },
+                parent: { name: 'Content', icon: 'Home' },
+              },
+            },
           ],
           branding: {
             logo: dev3LogoUrl,
@@ -139,7 +168,6 @@ AdminJS.registerAdapter(AdminJSMongoose);
       }),
     }),
     MongooseSchemasModule,
-    AddressModule,
   ],
   controllers: [AppController],
   providers: [
