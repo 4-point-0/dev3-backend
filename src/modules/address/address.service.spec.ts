@@ -128,10 +128,10 @@ describe('AddressService', () => {
 
   it(`FindAll - should findAll`, async () => {
     await new userModel(mockUser).save();
-    await new addressModel(mockAddresses[0]).save();
-    await new addressModel(mockAddresses[1]).save();
+    await new addressModel(mockCreateAddressDtos[0]).save();
+    await new addressModel(mockCreateAddressDtos[1]).save();
     const result = await addressService.findAll(mockUser._id);
-    expect(result.data.results).toHaveLength(1);
+    expect(result.data.results).toHaveLength(2);
   });
 
   it(`FindOne - should findOne`, async () => {

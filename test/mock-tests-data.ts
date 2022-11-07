@@ -67,7 +67,7 @@ export const mockCreateAddressDto1: CreateAddressDto = {
   alias: mockAddresses[0].alias,
   email: mockAddresses[0].email,
   phone: mockAddresses[0].phone,
-  owner: new Mongoose.Types.ObjectId(mockAddresses[0]._id),
+  owner: mockUser._id,
 };
 
 export const mockCreateAddressDto2: CreateAddressDto = {
@@ -75,7 +75,7 @@ export const mockCreateAddressDto2: CreateAddressDto = {
   alias: mockAddresses[1].alias,
   email: mockAddresses[1].email,
   phone: mockAddresses[1].phone,
-  owner: new Mongoose.Types.ObjectId(mockAddresses[1]._id),
+  owner: mockUser._id,
 };
 
 export const mockCreateAddressDtos = [
