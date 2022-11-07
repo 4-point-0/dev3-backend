@@ -1,38 +1,67 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+# DEV3 NEAR REST API
+
+<p align="middle">
+  <a href="http://nestjs.com/" target="blank"><img src="./public/tech-stack/nestjs.png" width="200" alt="Nest Logo" /></a>
+    <a href="https://nodejs.org/" target="blank"><img src="./public/tech-stack/nodejs.png" width="200" alt="Node Logo" /></a>
+  <a href="https://www.mongodb.com/" target="blank"><img src="./public/tech-stack/mongo.png" width="200" alt="Mongo Logo" /></a>
+    <a href="https://swagger.io/" target="blank"><img src="./public/tech-stack/swagger.png" width="200" alt="Swagger Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Setup
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Install the latest version of NodeJS and Yarn.
 
-## Description
+Install the latest version of MongoDB.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Environment Variables
 
-## Installation
+Copy `env.example` to the `.env` and populate it with proper values.
+
+## Folder Structure
+
+### /
+
+The root folder contains `env.example` file for configuring environment variables
+
+The`.eslintrc.json` file contains ESLint configuration.
+
+The `.gitignore` file specifying which files GIT should ignore.
+
+The `.prettierrc` config file is used for prettier code formatter.
+
+The `nest-cli.json` contains config for `@nestjs/cli` command-line interface tool.
+
+The `Procfile` file is config for heroku.
+
+The `tsconfig.json` and `tsconfig.build.json` files are used for configuring project to use typescript.
+
+The `README.md` file is the current file you are reading and `yarn.lock` file is the lock file for Yarn.
+
+### /.adminjs
+
+This folder contains files to customize the AdminJs interface.
+
+### /public
+
+This folder contains files that are served by the built-in web server and any images used in the `README.md`.
+
+### /src
+
+This folder contains all backend code files.
+
+### /tests
+
+This folder contains all e2e tests.
+
+## Dependencies
+
+Install the dependencies by running:
 
 ```bash
-$ npm install
+$ yarn install
 ```
 
-## Running the app
+## Launch
 
 ```bash
 # development
@@ -58,16 +87,34 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+## Specification
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+This backend uses specification under the OpenAPI 3.0 standard.
 
-## Stay in touch
+## Modules
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Add new module to `modules` folder and refer to nestjs documentation or on other modules how to configure it.
 
-## License
+## Linting
 
-Nest is [MIT licensed](LICENSE).
+To lint your changes, run the following in the project root folder:
+
+```bash
+$ yarn lint
+```
+
+### API
+
+The REST API can be accessed at `http://{host}:{port}/api/v1/{endpoint}`.
+
+Where `{host}` is the hostname of your server and `{port}` is the port on which the API is running. The `{endpoint}` is the specific endpoint you are attempting to access.
+
+### Admin
+
+The backend has an administrative panel that can be used for back-office operations. It can be accessed at `http://{host}:{port}/admin/`. Where `{host}` is the hostname of your server and `{port}` is the port on which the API is running.
+
+To authenticate, you will need an admin account on the backend.
+
+## Nest docs
+
+[https://nestjs.com](https://nestjs.com/)
