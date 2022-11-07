@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Document } from 'mongoose';
+import Mongoose, { Document } from 'mongoose';
 import { PaymentStatus } from '../../../common/enums/payment-status.enum';
 import { nearWalletRegex } from '../../../utils/regex';
 import { BaseEntity } from '../../../common/entities/base-entity';
+import { User } from '../../../modules/user/entities/user.entity';
 
 export type PaymentDocument = Payment & Document;
 
@@ -46,6 +47,12 @@ export class Payment extends BaseEntity {
   })
   @Prop({ required: true, enum: PaymentStatus, default: PaymentStatus.Pending })
   status: PaymentStatus;
+
+  @ApiProperty({
+    type: User,
+  })
+  @Prop({ type: Mongoose.Types.ObjectId, ref: User.name })
+  owner: User;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

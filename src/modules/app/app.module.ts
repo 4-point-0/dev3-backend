@@ -23,7 +23,18 @@ import { PaymentModule } from '../payment/payment.module';
 import { Payment } from '../payment/entities/payment.entity';
 dotenv.config();
 
-const { ADMIN_JS_USER, ADMIN_JS_PASS, DATABASE_URL } = process.env;
+const {
+  COOKIE_NAME,
+  COOKIE_PASS,
+  ADMIN_JS_EMAIL,
+  ADMIN_JS_PASS,
+  DATABASE_URL,
+} = process.env;
+
+const DEFAULT_ADMIN = {
+  email: ADMIN_JS_EMAIL,
+  password: ADMIN_JS_PASS,
+};
 
 AdminJS.registerAdapter(AdminJSMongoose);
 @Module({
@@ -79,6 +90,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
                   },
                   owner: {
                     isRequired: true,
+                    reference: 'User',
                   },
                 },
                 parent: { name: 'Content', icon: 'Home' },
@@ -125,6 +137,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
                   },
                   owner: {
                     isRequired: true,
+                    reference: 'User',
                   },
                 },
                 parent: { name: 'Content', icon: 'Home' },
@@ -148,6 +161,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
                   },
                   owner: {
                     isRequired: true,
+                    reference: 'User',
                   },
                 },
                 parent: { name: 'Content', icon: 'Home' },
@@ -161,9 +175,19 @@ AdminJS.registerAdapter(AdminJSMongoose);
           },
         },
         auth: {
-          authenticate: async () => Promise.resolve({ email: 'admin' }),
-          cookieName: ADMIN_JS_USER,
-          cookiePassword: ADMIN_JS_PASS,
+          authenticate: async (email: string, password: string) => {
+            if (email === ADMIN_JS_EMAIL && password === ADMIN_JS_PASS) {
+              return Promise.resolve(DEFAULT_ADMIN);
+            }
+            return null;
+          },
+          cookieName: COOKIE_NAME,
+          cookiePassword: COOKIE_PASS,
+        },
+        sessionOptions: {
+          resave: false,
+          saveUninitialized: true,
+          secret: COOKIE_PASS,
         },
       }),
     }),

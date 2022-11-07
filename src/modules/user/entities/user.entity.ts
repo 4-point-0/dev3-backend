@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import Mongoose from 'mongoose';
+import { BaseEntity } from '../../../common/entities/base-entity';
 import { Role } from '../../../common/enums/role.enum';
 
 export type UserDocument = User & Document;
@@ -8,21 +8,7 @@ export type UserDocument = User & Document;
 export type AuthRequest = Request & { user: User };
 
 @Schema()
-export class User {
-  _id: Mongoose.Types.ObjectId;
-
-  @ApiProperty({
-    type: Date,
-  })
-  @Prop({ type: Date, default: Date.now })
-  updatedAt: Date;
-
-  @ApiProperty({
-    type: Date,
-  })
-  @Prop({ type: Date, default: Date.now })
-  createdAt: Date;
-
+export class User extends BaseEntity {
   @ApiProperty({
     type: Boolean,
   })
