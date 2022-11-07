@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import mongoose, { Document } from 'mongoose';
-import { User } from '../../user/entities/user.entity';
+import Mongoose, { Document } from 'mongoose';
 import { emailRegex, nearWalletRegex } from '../../../utils/regex';
+import { BaseEntity } from '../../../common/entities/base-entity';
+import { User } from '../../../modules/user/entities/user.entity';
 
 export type AddressDocument = Address & Document;
 
@@ -10,21 +11,7 @@ export type AddressDocument = Address & Document;
   _id: true,
   autoIndex: true,
 })
-export class Address {
-  _id: mongoose.Types.ObjectId;
-
-  @ApiProperty({
-    type: Date,
-  })
-  @Prop({ type: Date, default: Date.now })
-  updatedAt: Date;
-
-  @ApiProperty({
-    type: Date,
-  })
-  @Prop({ type: Date, default: Date.now })
-  createdAt: Date;
-
+export class Address extends BaseEntity {
   @ApiProperty({
     type: String,
   })
@@ -52,7 +39,7 @@ export class Address {
   @ApiProperty({
     type: User,
   })
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  @Prop({ type: Mongoose.Types.ObjectId, ref: User.name })
   owner: User;
 }
 

@@ -1,32 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import Mongoose, { Document } from 'mongoose';
+import { User } from '../../../modules/user/entities/user.entity';
+import { BaseEntity } from '../../../common/entities/base-entity';
 import { toSlug } from '../../../utils/slug';
-import { User } from '../../user/entities/user.entity';
 
 export type ProjectDocument = Project & Document;
 
 @Schema({
   _id: true,
 })
-export class Project {
-  _id: Mongoose.Types.ObjectId;
-
-  @ApiProperty({
-    type: Date,
-  })
-  @Prop({ type: Date, default: Date.now })
-  updatedAt: Date;
-
-  @ApiProperty({
-    type: Date,
-  })
-  @Prop({ type: Date, default: Date.now })
-  createdAt: Date;
-
-  @ApiProperty({
-    type: Boolean,
-  })
+export class Project extends BaseEntity {
   @ApiProperty({
     type: String,
   })
