@@ -38,6 +38,3 @@ jobs:
 
       - name: run serice and controller tests
         run: yarn test
-
-      - name: run e2e tests
-        run: yarn test:e2e
