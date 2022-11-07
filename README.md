@@ -15,14 +15,19 @@ Install the latest version of MongoDB.
 
 ## Environment Variables
 
-Copy `env.example` to the `.env`
+Copy `env.example` to the `.env` and populate it with proper values.
 
 ## Folder Structure
 
 ### /
 
-The root folder contains `env.example` and the ESLint configuration files under `.eslintrc.json`. It also contains the `.gitignore` file specifying which files GIT should ignore.
-There is an `.prettierrc` config file used for prettier code formatter.
+The root folder contains `env.example` file for configuring environment variables
+
+The`.eslintrc.json` file contains ESLint configuration.
+
+The `.gitignore` file specifying which files GIT should ignore.
+
+The `.prettierrc` config file is used for prettier code formatter.
 
 The `nest-cli.json` contains config for `@nestjs/cli` command-line interface tool.
 
