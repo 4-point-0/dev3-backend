@@ -52,7 +52,7 @@ export class ProjectService {
     slug?: string,
   ): Promise<ServiceResult<PaginatedDto<Project>>> {
     try {
-      const query = this.repo.find({ owner: ownerId });
+      const query = this.repo.find({ owner: ownerId }).populate('owner');
       const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
 
       if (name) {

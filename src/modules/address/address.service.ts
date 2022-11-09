@@ -59,7 +59,7 @@ export class AddressService {
     alias?: string,
   ): Promise<ServiceResult<PaginatedDto<Address>>> {
     try {
-      const query = this.repo.find({ owner: ownerId });
+      const query = this.repo.find({ owner: ownerId }).populate('owner');
       const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
 
       if (alias) {
