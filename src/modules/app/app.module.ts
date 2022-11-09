@@ -21,6 +21,7 @@ import { Address } from '../address/entities/address.entity';
 import { dev3CompanyName, dev3LogoUrl } from '../../common/constants';
 import { PaymentModule } from '../payment/payment.module';
 import { Payment } from '../payment/entities/payment.entity';
+import { ContractModule } from '../contract/contract.module';
 dotenv.config();
 
 const {
@@ -49,6 +50,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     UserModule,
     AddressModule,
     PaymentModule,
+    ContractModule,
     AdminModule.createAdminAsync({
       imports: [ConfigModule.forRoot(), MongooseSchemasModule],
       inject: [
