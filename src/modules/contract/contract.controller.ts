@@ -27,8 +27,10 @@ import { ContractService } from './contract.service';
 import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 import { handle } from '../../helpers/response/handle';
 import { ContractDto } from './dto/contract.dto';
-import { jwtConstants } from '../auth/common/jwt-constants';
 import { Response } from 'express';
+import crypto from 'node:crypto';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @ApiTags('contract')
 @Controller('contract')
@@ -71,23 +73,31 @@ export class ContractController {
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async updateContracts(
-    @Req() request,
+    @Req() req,
     @Res() res: Response,
     @Body() body: ContractDto[],
   ) {
     try {
-      const bearer = request.headers['authorization'];
-      if (!bearer) {
+      const sigHeaderName = 'X-Hub-Signature-256';
+      const sigHashAlg = 'sha256';
+      const secret = process.env.GITHUB_WEBHOOK_SECRET;
+
+      const data = JSON.stringify(req.body);
+      const sig = Buffer.from(req.get(sigHeaderName) || '', 'utf8');
+      const hmac = crypto.createHmac(sigHashAlg, secret);
+      const digest = Buffer.from(
+        `${sigHashAlg}=${hmac.update(data).digest('hex')}`,
+        'utf8',
+      );
+      if (
+        sig.length !== digest.length ||
+        !crypto.timingSafeEqual(digest, sig)
+      ) {
         throw new UnauthorizedException();
       }
 
-      const token = bearer.split(' ')[1];
-      if (token === jwtConstants.githubBearer) {
-        await this.contractService.saveContracts(body);
-        return res.status(HttpStatus.OK).send();
-      }
-
-      throw new UnauthorizedException();
+      await this.contractService.saveContracts(body);
+      return res.status(HttpStatus.OK).send();
     } catch (error) {
       this.logger.error('ContractController - updateContracts', error);
       throw new InternalServerErrorException();
