@@ -71,11 +71,7 @@ export class ContractController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async updateContracts(
-    @Req() req,
-    @Res() res: Response,
-    @Body() body: ContractDto[],
-  ) {
+  async updateContracts(@Req() req, @Res() res: Response) {
     try {
       const { createHmac, timingSafeEqual } = await import('crypto');
       const sigHeaderName = 'X-Hub-Signature-256';
@@ -93,7 +89,7 @@ export class ContractController {
         throw new UnauthorizedException();
       }
 
-      await this.contractService.saveContracts(body);
+      await this.contractService.saveContracts();
       return res.status(HttpStatus.OK).send();
     } catch (error) {
       this.logger.error('ContractController - updateContracts', error);

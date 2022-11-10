@@ -4,7 +4,7 @@ export class ContractDto {
   @ApiProperty({
     type: String,
   })
-  readonly _id: string;
+  readonly _id?: string;
 
   @ApiProperty({
     type: String,
