@@ -77,18 +77,20 @@ export class ContractController {
   ) {
     try {
       const bearer = request.headers['authorization'];
-      if (!bearer) return new UnauthorizedException();
+      if (!bearer) {
+        throw new UnauthorizedException();
+      }
 
       const token = bearer.split(' ')[1];
       if (token === jwtConstants.githubBearer) {
         await this.contractService.saveContracts(body);
-        res.status(HttpStatus.OK).send();
+        return res.status(HttpStatus.OK).send();
       }
 
-      return new UnauthorizedException();
+      throw new UnauthorizedException();
     } catch (error) {
       this.logger.error('ContractController - updateContracts', error);
-      return new InternalServerErrorException();
+      throw new InternalServerErrorException();
     }
   }
 }
