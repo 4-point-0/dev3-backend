@@ -43,9 +43,15 @@ export class Payment extends BaseEntity {
   receiver_fungible?: string;
 
   @ApiProperty({
+    type: String,
     enum: [PaymentStatus.Pending, PaymentStatus.Paid],
   })
-  @Prop({ required: true, enum: PaymentStatus, default: PaymentStatus.Pending })
+  @Prop({
+    type: String,
+    required: true,
+    enum: PaymentStatus,
+    default: PaymentStatus.Pending,
+  })
   status: PaymentStatus;
 
   @ApiProperty({
