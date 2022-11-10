@@ -9,7 +9,19 @@ import { Model } from 'mongoose';
 import { mapDtoToContract } from './mappers/map-dto-to-contract';
 import { toPage } from '../../helpers/pagination/pagination-helper';
 import * as dotenv from 'dotenv';
+import {
+  fetchApi,
+  fetchRepo,
+  githubApi,
+  infoFileName,
+  manifestFileName,
+} from './constants';
+import { GithubRepoDto } from './dto/github-repo.dto';
+import { mapRepoToContractDto } from './mappers/map-repo-to-contract-dto';
+import { ManifestInfoDto } from './dto/manifest-info.dto';
 dotenv.config();
+
+const { GITHUB_TOKEN } = process.env;
 
 @Injectable()
 export class ContractService {
@@ -53,132 +65,8 @@ export class ContractService {
 
   async saveContracts(): Promise<void> {
     try {
-      const jsonDate = new Date().toJSON();
-      const owner = '4-point-0';
-      const repoName = 'dev3-contracts';
-      const manifestFileName = 'manifest.json';
-      const infoFileName = 'info.md';
-      const githubGraphQlApi = 'https://api.github.com/graphql';
-      const githubApi = `https://api.github.com/repos/${owner}/${repoName}/contents`;
-      const githubRepoUrl = `https://github.com/${owner}/${repoName}/tree/main/`;
-      const query = `
-      query{
-        repository(owner: "${owner}", name: "${repoName}") {
-          defaultBranchRef {
-            target {
-              ... on Commit {
-                history(first: 1 until: "${jsonDate}") {
-                  nodes {
-                    tree {
-                      entries {
-                        name
-                        object {
-                          ... on Tree {
-                            entries {
-                              name
-                              object{
-                                ...on Tree{
-                                  entries{
-                                    name
-                                    object{
-                                      ...on Tree{
-                                        entries{
-                                          name
-                                        }                                  
-                                      }
-                                    }
-                                  }   
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      `;
-
-      const response = await fetch(githubGraphQlApi, {
-        method: 'POST',
-        body: JSON.stringify({ query }),
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-        },
-      });
-
-      const { data } = await response.json();
-      const contracts: ContractDto[] = [];
-      for (const node of data.repository.defaultBranchRef.target.history
-        .nodes) {
-        for (const treeEntry of node.tree.entries) {
-          if (treeEntry.object && treeEntry.object.entries) {
-            for (const entry of treeEntry.object.entries) {
-              if (entry.object && entry.object.entries) {
-                for (const subEntry of entry.object.entries) {
-                  if (subEntry.object && subEntry.object.entries) {
-                    for (const subSubEntry of subEntry.object.entries) {
-                      if (treeEntry.name && entry.name && subSubEntry.name) {
-                        const tokenInfoResp = await fetch(
-                          `${githubApi}/${treeEntry.name}/${entry.name}/${subEntry.name}/${manifestFileName}`,
-                          {
-                            method: 'GET',
-                            headers: {
-                              Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-                            },
-                          },
-                        );
-
-                        const tokenInfoResult = await tokenInfoResp.json();
-
-                        const { download_url } = tokenInfoResult;
-
-                        const manifestJsonResp = await fetch(download_url, {
-                          method: 'GET',
-                          headers: {
-                            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-                          },
-                        });
-
-                        const manifestJsonResult =
-                          await manifestJsonResp.json();
-
-                        const markdownInfoResp = await fetch(
-                          `${githubApi}/${treeEntry.name}/${entry.name}/${subEntry.name}/${infoFileName}`,
-                          {
-                            method: 'GET',
-                            headers: {
-                              Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-                            },
-                          },
-                        );
-
-                        const markdownInfoResult =
-                          await markdownInfoResp.json();
-                        contracts.push({
-                          name: manifestJsonResult.name,
-                          description: manifestJsonResult.description,
-                          tags: manifestJsonResult.tags,
-                          creator_name: entry.name,
-                          github_url: `${githubRepoUrl}/tree/main/${tokenInfoResult.path}`,
-                          info_markdown_url: markdownInfoResult.download_url,
-                          is_audited: false,
-                        });
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
+      const data = await fetchRepo(GITHUB_TOKEN);
+      const contracts = await this.getContracts(data);
       for (let index = 0; index < contracts.length; index++) {
         const dto = contracts[index];
         const contractDb = await this.repo.findOne({ name: dto.name }).exec();
@@ -193,5 +81,82 @@ export class ContractService {
     } catch (error) {
       this.logger.error('ContractService - saveContracts', error);
     }
+  }
+
+  async getContracts(data: GithubRepoDto): Promise<ContractDto[]> {
+    try {
+      const contracts: ContractDto[] = [];
+      for (const node of data.repository.defaultBranchRef.target.history
+        .nodes) {
+        for (const treeEntry of node.tree.entries) {
+          if (treeEntry.object && treeEntry.object.entries) {
+            for (const entry of treeEntry.object.entries) {
+              if (entry.object && entry.object.entries) {
+                for (const subEntry of entry.object.entries) {
+                  if (subEntry.object && subEntry.object.entries) {
+                    for (const subSubEntry of subEntry.object.entries) {
+                      if (treeEntry.name && entry.name && subSubEntry.name) {
+                        const manifestInfo = await this.getManifestInfo(
+                          treeEntry.name,
+                          entry.name,
+                          subEntry.name,
+                        );
+
+                        const info_markdown_url = await this.getDownloadUrl(
+                          treeEntry.name,
+                          entry.name,
+                          subEntry.name,
+                          infoFileName,
+                        );
+                        const contract = mapRepoToContractDto(
+                          manifestInfo,
+                          entry.name,
+                          info_markdown_url,
+                        );
+                        contracts.push(contract);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      return contracts;
+    } catch (error) {
+      this.logger.error('ContractService - getContracts', error);
+    }
+  }
+
+  async getManifestInfo(
+    root: string,
+    contractOwner: string,
+    contractType: string,
+  ): Promise<ManifestInfoDto> {
+    const url = await this.getDownloadUrl(
+      root,
+      contractOwner,
+      contractType,
+      manifestFileName,
+    );
+    const manifestJsonResp = await fetchApi(GITHUB_TOKEN, url);
+    const json = await manifestJsonResp.json();
+    return json as ManifestInfoDto;
+  }
+
+  async getDownloadUrl(
+    root: string,
+    contractOwner: string,
+    contractType: string,
+    fileName: string,
+  ): Promise<string> {
+    const tokenInfoResp = await fetchApi(
+      GITHUB_TOKEN,
+      `${githubApi}/${root} /${contractOwner}/$${contractType}/${fileName}`,
+    );
+    const tokenInfoResult = await tokenInfoResp.json();
+    const { download_url } = tokenInfoResult;
+    return download_url;
   }
 }

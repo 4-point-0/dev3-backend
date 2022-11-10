@@ -30,6 +30,7 @@ import { ContractDto } from './dto/contract.dto';
 import { Response } from 'express';
 import * as dotenv from 'dotenv';
 dotenv.config();
+const { GITHUB_WEBHOOK_SECRET } = process.env;
 
 @ApiTags('contract')
 @Controller('contract')
@@ -76,11 +77,10 @@ export class ContractController {
       const { createHmac, timingSafeEqual } = await import('crypto');
       const sigHeaderName = 'X-Hub-Signature-256';
       const sigHashAlg = 'sha256';
-      const secret = process.env.GITHUB_WEBHOOK_SECRET;
 
       const data = JSON.stringify(req.body);
       const sig = Buffer.from(req.get(sigHeaderName) || '', 'utf8');
-      const hmac = createHmac(sigHashAlg, secret);
+      const hmac = createHmac(sigHashAlg, GITHUB_WEBHOOK_SECRET);
       const digest = Buffer.from(
         `${sigHashAlg}=${hmac.update(data).digest('hex')}`,
         'utf8',
