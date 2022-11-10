@@ -20,18 +20,18 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
-import { PaginatedDto } from '../../common/pagination/paginated-dto';
-import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
-import { PaymentService } from './payment.service';
-import { Payment } from './entities/payment.entity';
-import { AuthRequest } from '../user/entities/user.entity';
-import { handle } from '../../helpers/response/handle';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 import { PaymentStatus } from '../../common/enums/payment-status.enum';
-import { PaymentDto } from './dto/payment.dto';
+import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
+import { handle } from '../../helpers/response/handle';
+import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { jwtConstants } from '../auth/common/jwt-constants';
+import { AuthRequest } from '../user/entities/user.entity';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { PaymentDto } from './dto/payment.dto';
+import { Payment } from './entities/payment.entity';
+import { PaymentService } from './payment.service';
 
 @ApiTags('payment')
 @Controller('payment')
@@ -103,6 +103,18 @@ export class PaymentController {
   @ApiResponse({ status: 500, description: 'Server error' })
   async findById(@Param('id') id: string) {
     return handle<PaymentDto>(await this.paymentService.findOne(id));
+  }
+
+  @Get('uid/:uid')
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: PaymentDto })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async findByUid(@Param('uid') uid: string) {
+    return handle<PaymentDto>(await this.paymentService.findByUid(uid));
   }
 
   @Post('ft-transfer-pagoda')

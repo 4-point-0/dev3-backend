@@ -18,16 +18,17 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
+import { handle } from '../../helpers/response/handle';
+import { BypassAuth } from '../auth/common/bypass-auth';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { AuthRequest } from '../user/entities/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
 import { ProjectService } from './project.service';
-import { handle } from '../../helpers/response/handle';
-import { PaginatedDto } from '../../common/pagination/paginated-dto';
-import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('project')
@@ -99,18 +100,16 @@ export class ProjectController {
   }
 
   @Get('slug/:slug')
-  @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
+  @BypassAuth()
   @ApiResponse({ status: 200, type: Project })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findBySlug(@Req() request: AuthRequest, @Param('slug') slug: string) {
-    return handle<Project>(
-      await this.projectService.findBySlug(slug, request.user._id.toString()),
-    );
+  async findBySlug(@Param('slug') slug: string) {
+    return handle<Project>(await this.projectService.findBySlug(slug));
   }
 
   @Patch(':id')
