@@ -28,7 +28,6 @@ import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-resp
 import { handle } from '../../helpers/response/handle';
 import { ContractDto } from './dto/contract.dto';
 import { Response } from 'express';
-import crypto from 'node:crypto';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -78,21 +77,19 @@ export class ContractController {
     @Body() body: ContractDto[],
   ) {
     try {
+      const { createHmac, timingSafeEqual } = await import('crypto');
       const sigHeaderName = 'X-Hub-Signature-256';
       const sigHashAlg = 'sha256';
       const secret = process.env.GITHUB_WEBHOOK_SECRET;
 
       const data = JSON.stringify(req.body);
       const sig = Buffer.from(req.get(sigHeaderName) || '', 'utf8');
-      const hmac = crypto.createHmac(sigHashAlg, secret);
+      const hmac = createHmac(sigHashAlg, secret);
       const digest = Buffer.from(
         `${sigHashAlg}=${hmac.update(data).digest('hex')}`,
         'utf8',
       );
-      if (
-        sig.length !== digest.length ||
-        !crypto.timingSafeEqual(digest, sig)
-      ) {
+      if (sig.length !== digest.length || !timingSafeEqual(digest, sig)) {
         throw new UnauthorizedException();
       }
 
