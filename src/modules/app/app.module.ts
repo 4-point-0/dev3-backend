@@ -58,6 +58,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         getModelToken('User'),
         getModelToken('Address'),
         getModelToken('Payment'),
+        getModelToken('Contract'),
       ],
       useFactory: (
         projectModel: Model<Project>,
