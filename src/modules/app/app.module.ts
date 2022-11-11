@@ -22,6 +22,7 @@ import { dev3CompanyName, dev3LogoUrl } from '../../common/constants';
 import { PaymentModule } from '../payment/payment.module';
 import { Payment } from '../payment/entities/payment.entity';
 import { ContractModule } from '../contract/contract.module';
+import { Contract } from '../contract/entities/contract.entity';
 dotenv.config();
 
 const {
@@ -65,6 +66,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         userModel: Model<User>,
         addressModel: Model<Address>,
         paymentModel: Model<Payment>,
+        contractModel: Model<Contract>,
       ) => ({
         adminJsOptions: {
           rootPath: '/admin',
@@ -165,6 +167,26 @@ AdminJS.registerAdapter(AdminJSMongoose);
                   owner: {
                     isRequired: true,
                     reference: 'User',
+                  },
+                },
+                parent: { name: 'Content', icon: 'Home' },
+              },
+            },
+            {
+              resource: contractModel,
+              options: {
+                properties: {
+                  createdAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  updatedAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
                   },
                 },
                 parent: { name: 'Content', icon: 'Home' },
