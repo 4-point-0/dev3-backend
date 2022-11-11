@@ -187,11 +187,11 @@ AdminJS.registerAdapter(AdminJSMongoose);
           cookieName: COOKIE_NAME,
           cookiePassword: COOKIE_PASS,
         },
-        sessionOptions: {
-          resave: false,
-          saveUninitialized: true,
-          secret: COOKIE_PASS,
-        },
+        // sessionOptions: {
+        //   resave: false,
+        //   saveUninitialized: true,
+        //   secret: COOKIE_PASS,
+        // },
       }),
     }),
     MongooseSchemasModule,
