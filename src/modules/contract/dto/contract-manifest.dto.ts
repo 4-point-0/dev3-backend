@@ -1,6 +1,5 @@
-export class ManifestInfoDto {
+export class ContractManifestDto {
   name: string;
   description: string;
   tags: string[];
-  path: string;
 }

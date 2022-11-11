@@ -1,8 +1,8 @@
-import { githubRepoUrl } from '../constants';
-import { ManifestInfoDto } from '../dto/manifest-info.dto';
+import { ContractManifestDto } from '../dto/contract-manifest.dto';
 
 export const mapRepoToContractDto = (
-  manifestInfo: ManifestInfoDto,
+  manifestInfo: ContractManifestDto,
+  path: string,
   creatorName: string,
   info_markdown_url: string,
 ) => {
@@ -11,7 +11,7 @@ export const mapRepoToContractDto = (
     description: manifestInfo.description,
     tags: manifestInfo.tags,
     creator_name: creatorName,
-    github_url: `${githubRepoUrl}/tree/main/${manifestInfo.path}`,
+    github_url: path,
     info_markdown_url: info_markdown_url,
     is_audited: false,
   };

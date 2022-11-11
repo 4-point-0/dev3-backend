@@ -1,3 +1,7 @@
+export class RepoResponseDto {
+  data: GithubRepoDto;
+}
+
 export class GithubRepoDto {
   repository: Repository;
 }

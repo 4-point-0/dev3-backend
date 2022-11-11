@@ -13,12 +13,14 @@ import {
   fetchApi,
   fetchRepo,
   githubApi,
+  githubRepoUrl,
   infoFileName,
   manifestFileName,
 } from './constants';
 import { GithubRepoDto } from './dto/github-repo.dto';
 import { mapRepoToContractDto } from './mappers/map-repo-to-contract-dto';
-import { ManifestInfoDto } from './dto/manifest-info.dto';
+import { GithubFileDto } from './dto/github-file.dto';
+import { ContractManifestDto } from './dto/contract-manifest.dto';
 dotenv.config();
 
 const { GITHUB_TOKEN } = process.env;
@@ -96,22 +98,10 @@ export class ContractService {
                   if (subEntry.object && subEntry.object.entries) {
                     for (const subSubEntry of subEntry.object.entries) {
                       if (treeEntry.name && entry.name && subSubEntry.name) {
-                        const manifestInfo = await this.getManifestInfo(
+                        const contract = await this.getContract(
                           treeEntry.name,
                           entry.name,
                           subEntry.name,
-                        );
-
-                        const info_markdown_url = await this.getDownloadUrl(
-                          treeEntry.name,
-                          entry.name,
-                          subEntry.name,
-                          infoFileName,
-                        );
-                        const contract = mapRepoToContractDto(
-                          manifestInfo,
-                          entry.name,
-                          info_markdown_url,
                         );
                         contracts.push(contract);
                       }
@@ -129,34 +119,48 @@ export class ContractService {
     }
   }
 
-  async getManifestInfo(
-    root: string,
-    contractOwner: string,
-    contractType: string,
-  ): Promise<ManifestInfoDto> {
-    const url = await this.getDownloadUrl(
-      root,
-      contractOwner,
-      contractType,
+  async getContract(
+    treeEntryName: string,
+    entryName: string,
+    subEntryName: string,
+  ) {
+    const githubManifestFileDto = await this.getFileInfo<GithubFileDto>(
+      treeEntryName,
+      entryName,
+      subEntryName,
       manifestFileName,
     );
-    const manifestJsonResp = await fetchApi(GITHUB_TOKEN, url);
-    const json = await manifestJsonResp.json();
-    return json as ManifestInfoDto;
+    const manifestDto = await fetchApi<ContractManifestDto>(
+      GITHUB_TOKEN,
+      githubManifestFileDto.download_url,
+    );
+
+    const githubInfoFileDto = await this.getFileInfo<GithubFileDto>(
+      treeEntryName,
+      entryName,
+      subEntryName,
+      infoFileName,
+    );
+
+    return mapRepoToContractDto(
+      manifestDto,
+      `${githubRepoUrl}${githubManifestFileDto.path}`,
+      entryName,
+      githubInfoFileDto.download_url,
+    );
   }
 
-  async getDownloadUrl(
+  async getFileInfo<T>(
     root: string,
     contractOwner: string,
     contractType: string,
     fileName: string,
-  ): Promise<string> {
-    const tokenInfoResp = await fetchApi(
+  ): Promise<T> {
+    const data = await fetchApi<T>(
       GITHUB_TOKEN,
-      `${githubApi}/${root} /${contractOwner}/$${contractType}/${fileName}`,
+      `${githubApi}/${root}/${contractOwner}/${contractType}/${fileName}`,
     );
-    const tokenInfoResult = await tokenInfoResp.json();
-    const { download_url } = tokenInfoResult;
-    return download_url;
+
+    return data;
   }
 }
