@@ -46,7 +46,7 @@ export class ContractController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'name', required: false })
   @ApiQuery({ name: 'isAudited', required: false })
-  @ApiPaginatedResponse(ContractDto)
+  @ApiResponse({ status: 200, type: PaginatedDto<ContractDto> })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

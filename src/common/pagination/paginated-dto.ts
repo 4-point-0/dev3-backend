@@ -16,5 +16,8 @@ export class PaginatedDto<TData> {
   })
   offset: number;
 
+  @ApiProperty({
+    type: 'array',
+  })
   results: TData[];
 }
