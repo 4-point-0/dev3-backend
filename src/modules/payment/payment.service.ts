@@ -1,19 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { BadRequest, NotFound } from '../../helpers/response/errors';
-import { ServiceResult } from '../../helpers/response/result';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { Payment, PaymentDocument } from './entities/payment.entity';
-import { ServerError } from '../../helpers/response/errors';
-import Mongoose from 'mongoose';
+import Mongoose, { Model } from 'mongoose';
+import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { toPage } from '../../helpers/pagination/pagination-helper';
-import { PaymentStatus } from '../../common/enums/payment-status.enum';
+import {
+  BadRequest,
+  NotFound,
+  ServerError,
+} from '../../helpers/response/errors';
+import { ServiceResult } from '../../helpers/response/result';
 import { isNearWallet } from '../../utils/near-wallet-validation';
-import { PaymentDto } from './dto/payment.dto';
-import { mapPaymentGet } from './mappers/map-payment-get.ts';
+import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PagodaEventDataDto } from './dto/pagoda-event-data.dto';
+import { PaymentDto } from './dto/payment.dto';
+import { Payment, PaymentDocument } from './entities/payment.entity';
+import { mapPaymentGet } from './mappers/map-payment-get.ts';
 
 @Injectable()
 export class PaymentService {
@@ -91,6 +93,21 @@ export class PaymentService {
     } catch (error) {
       this.logger.error('PaymentService - findAll', error);
       return new ServerError<PaginatedDto<Payment>>(`Can't get payments`);
+    }
+  }
+
+  async findByUid(uid: string): Promise<ServiceResult<PaymentDto>> {
+    try {
+      const payment = await this.repo.findOne({ uid }).exec();
+
+      if (!payment) {
+        return new NotFound<PaymentDto>('Payment not found');
+      }
+
+      return new ServiceResult<PaymentDto>(payment);
+    } catch (error) {
+      this.logger.error('PaymentService - findByUid', error);
+      return new ServerError<PaymentDto>(`Can't get Payment`);
     }
   }
 

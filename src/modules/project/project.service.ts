@@ -1,19 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model } from 'mongoose';
-import { ServiceResult } from '../../helpers/response/result';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
-import { Project, ProjectDocument } from './entities/project.entity';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { toPage } from '../../helpers/pagination/pagination-helper';
 import {
   BadRequest,
   NotFound,
   ServerError,
   Unauthorized,
 } from '../../helpers/response/errors';
-import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { ServiceResult } from '../../helpers/response/result';
 import { toSlug } from '../../utils/slug';
-import { toPage } from '../../helpers/pagination/pagination-helper';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { Project, ProjectDocument } from './entities/project.entity';
 
 @Injectable()
 export class ProjectService {
@@ -77,22 +77,12 @@ export class ProjectService {
     }
   }
 
-  async findBySlug(
-    slug: string,
-    ownerId: string,
-  ): Promise<ServiceResult<Project>> {
+  async findBySlug(slug: string): Promise<ServiceResult<Project>> {
     try {
-      const project = await this.repo
-        .findOne({ slug: slug })
-        .populate('owner')
-        .exec();
+      const project = await this.repo.findOne({ slug: slug }).exec();
 
       if (!project) {
         return new NotFound<Project>('Project not found');
-      }
-
-      if (project.owner._id.toString() !== ownerId) {
-        return new Unauthorized<Project>('Unauthorized access to user project');
       }
 
       return new ServiceResult<Project>(project);
