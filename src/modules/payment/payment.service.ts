@@ -61,7 +61,7 @@ export class PaymentService {
     status?: PaymentStatus,
   ): Promise<ServiceResult<PaginatedDto<Payment>>> {
     try {
-      const query = this.repo.find({ owner: ownerId });
+      const query = this.repo.find({ owner: ownerId }).populate('owner');
       const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
 
       if (uid) {

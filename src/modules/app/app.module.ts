@@ -21,6 +21,8 @@ import { Address } from '../address/entities/address.entity';
 import { dev3CompanyName, dev3LogoUrl } from '../../common/constants';
 import { PaymentModule } from '../payment/payment.module';
 import { Payment } from '../payment/entities/payment.entity';
+import { ContractModule } from '../contract/contract.module';
+import { Contract } from '../contract/entities/contract.entity';
 dotenv.config();
 
 const {
@@ -49,6 +51,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     UserModule,
     AddressModule,
     PaymentModule,
+    ContractModule,
     AdminModule.createAdminAsync({
       imports: [ConfigModule.forRoot(), MongooseSchemasModule],
       inject: [
@@ -56,12 +59,14 @@ AdminJS.registerAdapter(AdminJSMongoose);
         getModelToken('User'),
         getModelToken('Address'),
         getModelToken('Payment'),
+        getModelToken('Contract'),
       ],
       useFactory: (
         projectModel: Model<Project>,
         userModel: Model<User>,
         addressModel: Model<Address>,
         paymentModel: Model<Payment>,
+        contractModel: Model<Contract>,
       ) => ({
         adminJsOptions: {
           rootPath: '/admin',
@@ -167,6 +172,26 @@ AdminJS.registerAdapter(AdminJSMongoose);
                 parent: { name: 'Content', icon: 'Home' },
               },
             },
+            {
+              resource: contractModel,
+              options: {
+                properties: {
+                  createdAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  updatedAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                },
+                parent: { name: 'Content', icon: 'Home' },
+              },
+            },
           ],
           branding: {
             logo: dev3LogoUrl,
@@ -184,11 +209,11 @@ AdminJS.registerAdapter(AdminJSMongoose);
           cookieName: COOKIE_NAME,
           cookiePassword: COOKIE_PASS,
         },
-        sessionOptions: {
-          resave: false,
-          saveUninitialized: true,
-          secret: COOKIE_PASS,
-        },
+        // sessionOptions: {
+        //   resave: false,
+        //   saveUninitialized: true,
+        //   secret: COOKIE_PASS,
+        // },
       }),
     }),
     MongooseSchemasModule,
