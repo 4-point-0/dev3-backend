@@ -9,11 +9,12 @@ import { Model } from 'mongoose';
 import { mapDtoToContract } from './mappers/map-dto-to-contract';
 import { toPage } from '../../helpers/pagination/pagination-helper';
 import * as dotenv from 'dotenv';
+dotenv.config();
 import {
+  branch,
   fetchApi,
   fetchRepo,
   githubApi,
-  githubRepoUrl,
   infoFileName,
   manifestFileName,
 } from './constants';
@@ -21,7 +22,6 @@ import { GithubRepoDto } from './dto/github-repo.dto';
 import { mapRepoToContractDto } from './mappers/map-repo-to-contract-dto';
 import { GithubFileDto } from './dto/github-file.dto';
 import { ContractManifestDto } from './dto/contract-manifest.dto';
-dotenv.config();
 
 const { GITHUB_TOKEN } = process.env;
 
@@ -69,15 +69,16 @@ export class ContractService {
     try {
       const data = await fetchRepo(GITHUB_TOKEN);
       const contracts = await this.getContracts(data);
-      for (let index = 0; index < contracts.length; index++) {
-        const dto = contracts[index];
-        const contractDb = await this.repo.findOne({ name: dto.name }).exec();
+      for (const contract of contracts) {
+        const contractDb = await this.repo
+          .findOne({ name: contract.name })
+          .exec();
 
         if (contractDb) {
-          const entity = mapDtoToContract(contractDb, dto);
+          const entity = mapDtoToContract(contractDb, contract);
           await this.repo.updateOne({ _id: contractDb._id }, entity);
         } else {
-          await new this.repo(dto).save();
+          await new this.repo(contract).save();
         }
       }
     } catch (error) {
@@ -88,8 +89,7 @@ export class ContractService {
   async getContracts(data: GithubRepoDto): Promise<ContractDto[]> {
     try {
       const contracts: ContractDto[] = [];
-      for (const node of data.repository.defaultBranchRef.target.history
-        .nodes) {
+      for (const node of data.repository.object.history.nodes) {
         for (const treeEntry of node.tree.entries) {
           if (treeEntry.object && treeEntry.object.entries) {
             for (const entry of treeEntry.object.entries) {
@@ -124,30 +124,35 @@ export class ContractService {
     entryName: string,
     subEntryName: string,
   ) {
-    const githubManifestFileDto = await this.getFileInfo<GithubFileDto>(
-      treeEntryName,
-      entryName,
-      subEntryName,
-      manifestFileName,
-    );
-    const manifestDto = await fetchApi<ContractManifestDto>(
-      GITHUB_TOKEN,
-      githubManifestFileDto.download_url,
-    );
+    try {
+      const githubManifestFileDto = await this.getFileInfo<GithubFileDto>(
+        treeEntryName,
+        entryName,
+        subEntryName,
+        manifestFileName,
+      );
 
-    const githubInfoFileDto = await this.getFileInfo<GithubFileDto>(
-      treeEntryName,
-      entryName,
-      subEntryName,
-      infoFileName,
-    );
+      const manifestDto = await fetchApi<ContractManifestDto>(
+        GITHUB_TOKEN,
+        githubManifestFileDto.download_url,
+      );
 
-    return mapRepoToContractDto(
-      manifestDto,
-      `${githubRepoUrl}${githubManifestFileDto.path}`,
-      entryName,
-      githubInfoFileDto.download_url,
-    );
+      const githubInfoFileDto = await this.getFileInfo<GithubFileDto>(
+        treeEntryName,
+        entryName,
+        subEntryName,
+        infoFileName,
+      );
+
+      return mapRepoToContractDto(
+        manifestDto,
+        githubManifestFileDto._links.html,
+        entryName,
+        githubInfoFileDto.download_url ? githubInfoFileDto.download_url : '',
+      );
+    } catch (error) {
+      this.logger.error('ContractService - getContract', error);
+    }
   }
 
   async getFileInfo<T>(
@@ -158,7 +163,7 @@ export class ContractService {
   ): Promise<T> {
     const data = await fetchApi<T>(
       GITHUB_TOKEN,
-      `${githubApi}/${root}/${contractOwner}/${contractType}/${fileName}`,
+      `${githubApi}/${root}/${contractOwner}/${contractType}/${fileName}?ref=${branch}`,
     );
 
     return data;

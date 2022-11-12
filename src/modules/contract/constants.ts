@@ -1,43 +1,49 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import { GithubRepoDto, RepoResponseDto } from './dto/github-repo.dto';
+const { NODE_ENV } = process.env;
 
 const jsonDate = new Date().toJSON();
 const owner = '4-point-0';
 const repoName = 'dev3-contracts';
-const variables = { owner: owner, name: repoName, until: jsonDate };
+export const branch = NODE_ENV === 'dev' ? 'dev' : 'main';
+const variables = {
+  owner: owner,
+  name: repoName,
+  until: jsonDate,
+  branch: branch,
+};
 
 export const manifestFileName = 'manifest.json';
 export const infoFileName = 'info.md';
 export const githubGraphQlApi = 'https://api.github.com/graphql';
 export const githubApi = `https://api.github.com/repos/${owner}/${repoName}/contents`;
-export const githubRepoUrl = `https://github.com/${owner}/${repoName}/tree/main/`;
 
 const query = `
-query GetRepo($owner:String!,$name: String!,$until: GitTimestamp){
-  repository(owner:$owner,name: $name) {
-    defaultBranchRef {
-      target {
-        ... on Commit {
-          history(first: 1 until:$until) {
-            nodes {
-              tree {
-                entries {
-                  name
-                  object {
-                    ... on Tree {
-                      entries {
-                        name
-                        object{
-                          ...on Tree{
-                            entries{
-                              name
-                              object{
-                                ...on Tree{
-                                  entries{
-                                    name
-                                  }                                  
+query GetRepo($owner:String!,$name: String!,$until: GitTimestamp,$branch: String!){
+  repository(owner: $owner, name: $name) {
+    object(expression: $branch) {
+      ... on Commit {
+        history(first: 1, until: $until) {
+          nodes {
+            tree {
+              entries {
+                name
+                object {
+                  ... on Tree {
+                    entries {
+                      name
+                      object {
+                        ... on Tree {
+                          entries {
+                            name
+                            object {
+                              ... on Tree {
+                                entries {
+                                  name
                                 }
                               }
-                            }   
+                            }
                           }
                         }
                       }
@@ -51,8 +57,7 @@ query GetRepo($owner:String!,$name: String!,$until: GitTimestamp){
       }
     }
   }
-}
-`;
+}`;
 
 export const fetchRepo = async (token: string): Promise<GithubRepoDto> => {
   const response = await fetch(githubGraphQlApi, {

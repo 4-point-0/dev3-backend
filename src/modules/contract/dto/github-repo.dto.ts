@@ -7,14 +7,10 @@ export class GithubRepoDto {
 }
 
 class Repository {
-  defaultBranchRef: Branch;
+  object: RepoObject;
 }
 
-class Branch {
-  target: Target;
-}
-
-class Target {
+class RepoObject {
   history: History;
 }
 
