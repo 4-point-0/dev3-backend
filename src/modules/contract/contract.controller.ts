@@ -23,7 +23,6 @@ import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { ContractService } from './contract.service';
-import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 import { handle } from '../../helpers/response/handle';
 import { ContractDto } from './dto/contract.dto';
 import { Response } from 'express';
