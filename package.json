@@ -79,6 +79,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^8.0.2",
     "jest": "28.1.2",
+    "lint-staged": "^13.0.3",
     "mongodb-memory-server": "^8.9.3",
     "prettier": "^2.3.2",
     "source-map-support": "^0.5.20",
@@ -112,7 +113,7 @@
     }
   },
   "lint-staged": {
-    ".{js,ts,tsx}": [
+    ".{js,ts}": [
       "eslint --fix",
       "git add"
     ],
