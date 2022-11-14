@@ -29,7 +29,6 @@ import { Address } from './entities/address.entity';
 import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
 import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
-import { Project } from '../project/entities/project.entity';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('address')
