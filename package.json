@@ -76,6 +76,7 @@
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^8.0.2",
     "jest": "28.1.2",
     "mongodb-memory-server": "^8.9.3",
     "prettier": "^2.3.2",
@@ -103,5 +104,20 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    ".{js,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ],
+    ".{js,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
