@@ -27,7 +27,6 @@ import { handle } from '../../helpers/response/handle';
 import { ContractDto } from './dto/contract.dto';
 import { Response } from 'express';
 import * as dotenv from 'dotenv';
-import { Project } from '../project/entities/project.entity';
 dotenv.config();
 const { GITHUB_WEBHOOK_SECRET } = process.env;
 
