@@ -31,6 +31,7 @@ import { AuthRequest } from '../user/entities/user.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { Payment } from './entities/payment.entity';
+import { Project } from '../project/entities/project.entity';
 import { PaymentService } from './payment.service';
 
 @ApiTags('payment')
