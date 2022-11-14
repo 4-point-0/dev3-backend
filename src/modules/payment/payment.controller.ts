@@ -32,7 +32,6 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { Payment } from './entities/payment.entity';
 import { PaymentService } from './payment.service';
-import { Project } from '../project/entities/project.entity';
 
 @ApiTags('payment')
 @Controller('payment')
