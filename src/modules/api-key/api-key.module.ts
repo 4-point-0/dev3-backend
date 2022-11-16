@@ -13,6 +13,11 @@ dotenv.config();
       { name: ApiKey.name, schema: ApiKeySchema },
       { name: Project.name, schema: ProjectSchema },
     ]),
+    MongooseModule.forRootAsync({
+      useFactory: () => ({
+        uri: process.env.DATABASE_URL,
+      }),
+    }),
   ],
 
   controllers: [ApiKeyController],

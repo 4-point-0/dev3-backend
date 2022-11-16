@@ -113,14 +113,19 @@ export class ApiKeyService {
       return new ServiceResult<PaginatedDto<ApiKeyDto>>(paginatedApiKeyDto);
     } catch (error) {
       this.logger.error('ApiKeyService - findAll', error);
-      return new ServerError<PaginatedDto<ApiKeyDto>>(`Can't get api keys`);
+      return error.errors
+        ? new BadRequest<PaginatedDto<ApiKeyDto>>(error.toString())
+        : new ServerError<PaginatedDto<ApiKeyDto>>(`Can't get api keys`);
     }
   }
 
-  async getFirstActive(projectId: string): Promise<ServiceResult<ApiKeyDto>> {
+  async getFirstActive(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ServiceResult<ApiKeyDto>> {
     try {
       if (!Mongoose.Types.ObjectId.isValid(projectId)) {
-        return new NotFound<ApiKeyDto>('Project not found');
+        return new NotFound<ApiKeyDto>('Api key not found');
       }
 
       const apiKey = await this.apiKeyRepo
@@ -129,16 +134,25 @@ export class ApiKeyService {
           expires: { $gt: new Date() },
           is_revoked: false,
         })
+        .populate('owner')
         .exec();
 
       if (!apiKey) {
         return new NotFound<ApiKeyDto>('Api key not found');
       }
 
+      if (apiKey.owner._id.toString() !== ownerId) {
+        return new Unauthorized<ApiKeyDto>(
+          'Unauthorized access to user apiKey',
+        );
+      }
+
       return new ServiceResult<ApiKeyDto>(mapToApiKeyDto(apiKey));
     } catch (error) {
       this.logger.error('ApiKeyService - getFirstActive', error);
-      return new ServerError<ApiKeyDto>(`Can't get api key`);
+      return error.errors
+        ? new BadRequest<ApiKeyDto>(error.toString())
+        : new ServerError<ApiKeyDto>(`Can't get api key`);
     }
   }
 
@@ -149,21 +163,23 @@ export class ApiKeyService {
         .exec();
 
       if (!apiKeyDb) {
-        return new NotFound<boolean>('Api key not found!');
+        return new NotFound<boolean>('Api key not found');
       }
 
       if (apiKeyDb.is_revoked) {
-        return new BadRequest<boolean>('Api key revoked!');
+        return new BadRequest<boolean>('Api key revoked');
       }
 
-      if (apiKeyDb.expires < apiKeyDb.createdAt) {
-        return new BadRequest<boolean>('Api key expired!');
+      if (apiKeyDb.expires <= new Date()) {
+        return new BadRequest<boolean>('Api key expired');
       }
 
       return new ServiceResult<boolean>(true);
     } catch (error) {
       this.logger.error('ApiKeyService - isValid', error);
-      return new ServerError<boolean>(`Can't validate api key`);
+      return error.errors
+        ? new BadRequest<boolean>(error.toString())
+        : new ServerError<boolean>(`Can't validate api key`);
     }
   }
 
@@ -175,21 +191,21 @@ export class ApiKeyService {
     try {
       const apiKeyDb = await this.apiKeyRepo
         .findOne({ api_key: apiKey })
-        .populate('project')
+        .populate('owner')
         .exec();
 
       if (!apiKeyDb) {
-        return new NotFound<ApiKeyDto>('Api key not found!');
+        return new NotFound<ApiKeyDto>('Api key not found');
       }
 
-      if (apiKeyDb.project.owner._id.toString() !== ownerId) {
+      if (apiKeyDb.owner._id.toString() !== ownerId) {
         return new Unauthorized<ApiKeyDto>(
           'Unauthorized access to user apiKey',
         );
       }
 
       if (apiKeyDb.is_revoked) {
-        return new BadRequest<ApiKeyDto>('Api key revoked!');
+        return new BadRequest<ApiKeyDto>('Api key revoked');
       }
 
       apiKeyDb.api_key = await generateKey();
@@ -214,18 +230,18 @@ export class ApiKeyService {
     try {
       const apiKeyDb = await this.apiKeyRepo
         .findOne({ api_key: apiKey })
-        .populate('project')
+        .populate('owner')
         .exec();
 
       if (!apiKeyDb) {
-        return new NotFound<ApiKeyDto>('Api key not found!');
+        return new NotFound<ApiKeyDto>('Api key not found');
       }
 
-      if (apiKeyDb.expires < apiKeyDb.createdAt) {
-        return new BadRequest<ApiKeyDto>('Api key expired!');
+      if (apiKeyDb.expires <= new Date()) {
+        return new BadRequest<ApiKeyDto>('Api key expired');
       }
 
-      if (apiKeyDb.project.owner._id.toString() !== ownerId) {
+      if (apiKeyDb.owner._id.toString() !== ownerId) {
         return new Unauthorized<ApiKeyDto>(
           'Unauthorized access to user apiKey',
         );
@@ -241,6 +257,33 @@ export class ApiKeyService {
       return error.errors
         ? new BadRequest<ApiKeyDto>(error.toString())
         : new ServerError<ApiKeyDto>(`Can't revoke api key`);
+    }
+  }
+
+  async remove(id: string, ownerId: string): Promise<ServiceResult<ApiKey>> {
+    try {
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<ApiKey>('Api key not found');
+      }
+
+      const apiKey = await this.apiKeyRepo
+        .findOne({ _id: id })
+        .populate('owner')
+        .exec();
+
+      if (!apiKey) {
+        return new NotFound<ApiKey>('Api key not found');
+      }
+
+      if (apiKey.owner._id.toString() !== ownerId) {
+        return new Unauthorized<ApiKey>('Unauthorized access to user api key');
+      }
+
+      const result = await this.apiKeyRepo.findByIdAndDelete(id).exec();
+      return new ServiceResult<ApiKey>(result);
+    } catch (error) {
+      this.logger.error('ApiKeyService - remove', error);
+      return new ServerError<ApiKey>(`Can't remove api key`);
     }
   }
 }

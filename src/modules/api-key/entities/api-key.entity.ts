@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import Mongoose, { Document } from 'mongoose';
-import { Project } from 'src/modules/project/entities/project.entity';
+import { Project } from '../../../modules/project/entities/project.entity';
 import { User } from '../../../modules/user/entities/user.entity';
 import { BaseEntity } from '../../../common/entities/base-entity';
 

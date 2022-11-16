@@ -9,7 +9,7 @@ export const mapToApiKeyDto = (apiKey: any): ApiKeyDto => {
     expires: apiKey.expires,
     is_revoked: apiKey.is_revoked,
     api_key: apiKey.api_key,
-    project_id: apiKey.project._id,
+    project_id: apiKey.project._id.toString(),
   };
 };
 

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -21,6 +22,8 @@ import { ApiKeyDto } from './dto/api-key.dto';
 import { CreateApiKeyDto } from './dto/ create-api-key.dto';
 import { RevokeApiKeyDto } from './dto/revoke-api-key.dto';
 import { RegenerateApiKeyDto } from './dto/regenerate-api-key.dto';
+import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { ApiKey } from './entities/api-key.entity';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('api-key')
@@ -51,6 +54,7 @@ export class ApiKeyController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'project_id', required: false })
   @ApiQuery({ name: 'api_key', required: false })
+  @ApiResponse({ status: 200, type: PaginatedDto<ApiKeyDto> })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -83,9 +87,15 @@ export class ApiKeyController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findOne(@Param('projectId') projectId: string) {
+  async findOne(
+    @Req() request: AuthRequest,
+    @Param('projectId') projectId: string,
+  ) {
     return handle<ApiKeyDto>(
-      await this.apiKeyService.getFirstActive(projectId),
+      await this.apiKeyService.getFirstActive(
+        projectId,
+        request.user._id.toString(),
+      ),
     );
   }
 
@@ -143,6 +153,21 @@ export class ApiKeyController {
   ) {
     return handle(
       await this.apiKeyService.revoke(apiKey, dto, request.user._id.toString()),
+    );
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: ApiKey })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async remove(@Req() request: AuthRequest, @Param('id') id: string) {
+    return handle(
+      await this.apiKeyService.remove(id, request.user._id.toString()),
     );
   }
 }
