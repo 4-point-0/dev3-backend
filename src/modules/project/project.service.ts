@@ -145,6 +145,7 @@ export class ProjectService {
       updateProject.name = dto.name ?? dto.name;
       updateProject.logoUrl = dto.logoUrl ?? dto.logoUrl;
       updateProject.slug = toSlug(dto.slug ? dto.slug : dto.name);
+      updateProject.updatedAt = new Date();
       await this.repo.updateOne({ _id: id }, updateProject);
       return new ServiceResult<Project>(updateProject);
     } catch (error) {
