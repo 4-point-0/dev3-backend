@@ -164,6 +164,7 @@ export class PaymentService {
 
       const updatePayment = await this.repo.findOne({ _id: id }).exec();
       updatePayment.status = PaymentStatus.Paid;
+      updatePayment.updatedAt = new Date();
       await this.repo.updateOne({ _id: id }, updatePayment);
       return new ServiceResult<PaymentDto>(mapPaymentGet(updatePayment));
     } catch (error) {
