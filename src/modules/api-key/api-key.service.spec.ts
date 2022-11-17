@@ -120,7 +120,7 @@ describe('ApiKeyService', () => {
     await apiKeyService.create(mockCreateApiKeyDtos[0]);
     await apiKeyService.create(mockCreateApiKeyDtos[1]);
     const result = await apiKeyService.findAll(mockUser._id);
-    expect(result.data.results).toHaveLength(2);
+    expect(result.data.results).toHaveLength(1);
   });
 
   it(`GetFirstActive - should getFirstActive`, async () => {

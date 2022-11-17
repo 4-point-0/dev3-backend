@@ -19,7 +19,7 @@ import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { AuthRequest } from '../user/entities/user.entity';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyDto } from './dto/api-key.dto';
-import { CreateApiKeyDto } from './dto/ create-api-key.dto';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { RevokeApiKeyDto } from './dto/revoke-api-key.dto';
 import { RegenerateApiKeyDto } from './dto/regenerate-api-key.dto';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';

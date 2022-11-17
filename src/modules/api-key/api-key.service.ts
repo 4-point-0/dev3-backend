@@ -11,7 +11,7 @@ import { generateKey } from '../../helpers/api-key/api-key-generator';
 import { ApiKey, ApiKeyDocument } from './entities/api-key.entity';
 import { ServiceResult } from '../../helpers/response/result';
 import { Project, ProjectDocument } from '../project/entities/project.entity';
-import { CreateApiKeyDto } from './dto/ create-api-key.dto';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { ApiKeyDto } from './dto/api-key.dto';
 import { mapToApiKeyDto, mapToPaginatedApiKeyDto } from './mappers/mappers';
 import { RevokeApiKeyDto } from './dto/revoke-api-key.dto';

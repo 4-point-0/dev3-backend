@@ -1,8 +1,16 @@
 import { PaginatedDto } from '../../../common/pagination/paginated-dto';
 import { ApiKeyDto } from '../dto/api-key.dto';
 import { ApiKey } from '../entities/api-key.entity';
+import Mongoose from 'mongoose';
 
-export const mapToApiKeyDto = (apiKey: any): ApiKeyDto => {
+export const mapToApiKeyDto = (
+  apiKey: Partial<
+    ApiKey &
+      Mongoose.Document<any, any, any> & {
+        _id: Mongoose.Types.ObjectId;
+      }
+  >,
+): ApiKeyDto => {
   return {
     id: apiKey.id,
     created_at: apiKey.createdAt,
