@@ -168,7 +168,6 @@ export class PaymentService {
       await this.repo.updateOne({ _id: id }, updatePayment);
       return new ServiceResult<PaymentDto>(mapPaymentGet(updatePayment));
     } catch (error) {
-      console.log(error);
       this.logger.error('PaymentService - update', error);
       return new ServerError<PaymentDto>(`Can't update payment`);
     }
