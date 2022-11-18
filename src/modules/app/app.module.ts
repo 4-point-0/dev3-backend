@@ -23,6 +23,8 @@ import { PaymentModule } from '../payment/payment.module';
 import { Payment } from '../payment/entities/payment.entity';
 import { ContractModule } from '../contract/contract.module';
 import { Contract } from '../contract/entities/contract.entity';
+import { ApiKeyModule } from '../api-key/api-key.module';
+import { ApiKey } from '../api-key/entities/api-key.entity';
 dotenv.config();
 
 const {
@@ -52,6 +54,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     AddressModule,
     PaymentModule,
     ContractModule,
+    ApiKeyModule,
     AdminModule.createAdminAsync({
       imports: [ConfigModule.forRoot(), MongooseSchemasModule],
       inject: [
@@ -60,6 +63,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         getModelToken('Address'),
         getModelToken('Payment'),
         getModelToken('Contract'),
+        getModelToken('ApiKey'),
       ],
       useFactory: (
         projectModel: Model<Project>,
@@ -67,6 +71,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         addressModel: Model<Address>,
         paymentModel: Model<Payment>,
         contractModel: Model<Contract>,
+        apiKeyModel: Model<ApiKey>,
       ) => ({
         adminJsOptions: {
           rootPath: '/admin',
@@ -174,6 +179,26 @@ AdminJS.registerAdapter(AdminJSMongoose);
             },
             {
               resource: contractModel,
+              options: {
+                properties: {
+                  createdAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  updatedAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                },
+                parent: { name: 'Content', icon: 'Home' },
+              },
+            },
+            {
+              resource: apiKeyModel,
               options: {
                 properties: {
                   createdAt: {

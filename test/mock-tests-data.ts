@@ -4,6 +4,9 @@ import { CreateAddressDto } from '../src/modules/address/dto/create-address.dto'
 import { Role } from '../src/common/enums/role.enum';
 import { PaymentStatus } from '../src/common/enums/payment-status.enum';
 import { CreatePaymentDto } from '../src/modules/payment/dto/create-payment.dto';
+import { addDays } from '../src/helpers/date/date-helper';
+import { CreateApiKeyDto } from '../src/modules/api-key/dto/create-api-key.dto';
+import { ApiKeyDto } from '../src/modules/api-key/dto/api-key.dto';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
@@ -267,3 +270,111 @@ export const mockPaymentDto = {
   receiver: mockPayment1.receiver,
   status: mockPayment1.status,
 };
+
+export const mockApiKey1 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bc85ed5475a1ff5d'),
+  expires: addDays(new Date(), 30),
+  is_revoked: false,
+  project: mockProject1._id,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockApiKey2 = {
+  _id: new Mongoose.Types.ObjectId('784fe1e4cd85ed5475a1ff5d'),
+  expires: addDays(new Date(), 30),
+  is_revoked: false,
+  project: mockProject2._id,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockApiKey3 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e3bb85fd5475a1ff5d'),
+  expires: addDays(new Date(), 30),
+  is_revoked: false,
+  project: mockProject3._id,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockApiKey4 = {
+  _id: new Mongoose.Types.ObjectId('784ff2e4bb85fd4475a1ff5d'),
+  expires: addDays(new Date(), 30),
+  is_revoked: false,
+  project: mockProject4._id,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockApiKeys = [mockApiKey1, mockApiKey2, mockApiKey3, mockApiKey4];
+
+export const mockCreateApiKeyDto1: CreateApiKeyDto = {
+  project_id: mockApiKey1.project.toString(),
+  expires: mockApiKey1.expires,
+  owner: mockUser._id,
+};
+
+export const mockCreateApiKeyDto2: CreateApiKeyDto = {
+  project_id: mockApiKey2.project.toString(),
+  expires: mockApiKey2.expires,
+  owner: mockUser._id,
+};
+
+export const mockCreateApiKeyDto3: CreateApiKeyDto = {
+  project_id: mockApiKey3.project.toString(),
+  expires: mockApiKey3.expires,
+  owner: mockUser._id,
+};
+
+export const mockCreateApiKeyDto4: CreateApiKeyDto = {
+  project_id: mockApiKey4.project.toString(),
+  expires: mockApiKey4.expires,
+  owner: mockUser._id,
+};
+
+export const mockCreateApiKeyDtos = [
+  mockCreateApiKeyDto1,
+  mockCreateApiKeyDto2,
+  mockCreateApiKeyDto3,
+  mockCreateApiKeyDto4,
+];
+
+export const mockApiKeyDtos: ApiKeyDto[] = [
+  {
+    id: mockApiKey1._id.toString(),
+    created_at: mockApiKey1.createdAt,
+    expires: mockApiKey1.expires,
+    is_revoked: mockApiKey1.is_revoked,
+    api_key: '123',
+    project_id: mockApiKey1.project.toString(),
+  },
+  {
+    id: mockApiKey2._id.toString(),
+    created_at: mockApiKey2.createdAt,
+    expires: mockApiKey2.expires,
+    is_revoked: mockApiKey2.is_revoked,
+    api_key: '123',
+    project_id: mockApiKey2.project.toString(),
+  },
+  {
+    id: mockApiKey3._id.toString(),
+    created_at: mockApiKey3.createdAt,
+    expires: mockApiKey3.expires,
+    is_revoked: mockApiKey3.is_revoked,
+    api_key: '123',
+    project_id: mockApiKey3.project.toString(),
+  },
+  {
+    id: mockApiKey4._id.toString(),
+    created_at: mockApiKey4.createdAt,
+    expires: mockApiKey4.expires,
+    is_revoked: mockApiKey4.is_revoked,
+    api_key: '123',
+    project_id: mockApiKey4.project.toString(),
+  },
+];

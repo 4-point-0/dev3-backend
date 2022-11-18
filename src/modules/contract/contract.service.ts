@@ -76,6 +76,7 @@ export class ContractService {
 
         if (contractDb) {
           const entity = mapDtoToContract(contractDb, contract);
+          entity.updatedAt = new Date();
           await this.repo.updateOne({ _id: contractDb._id }, entity);
         } else {
           await new this.repo(contract).save();
