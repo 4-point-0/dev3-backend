@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model } from 'mongoose';
+import { sendNotification } from 'src/helpers/novu';
 import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { toPage } from '../../helpers/pagination/pagination-helper';
@@ -137,35 +138,25 @@ export class PaymentService {
     try {
       const invalidJson = dto.payload.Events.data;
       const validJson = invalidJson.replaceAll(`'`, `"`);
-      const parsed: PagodaEventDataDto[] = JSON.parse(validJson);
+      const parsed: PagodaEventDataDto = JSON.parse(validJson);
 
-      if (parsed.length === 0) {
-        return new BadRequest<PaymentDto>('Payment event data not valid');
-      }
+      const uid = parsed.id;
 
-      if (!parsed[0].memo) {
-        return new BadRequest<PaymentDto>('Payment memo not valid');
-      }
-
-      const id = parsed[0].memo;
-
-      if (!Mongoose.Types.ObjectId.isValid(id)) {
-        return new NotFound<PaymentDto>('Payment not found');
-      }
-
-      const payment = await this.repo
-        .findOne({ _id: id })
-        .populate('owner')
-        .exec();
+      const payment = await this.repo.findOne({ uid }).populate('owner').exec();
 
       if (!payment) {
         return new NotFound<PaymentDto>('Payment not found');
       }
 
-      const updatePayment = await this.repo.findOne({ _id: id }).exec();
+      const updatePayment = await this.repo.findOne({ uid }).exec();
       updatePayment.status = PaymentStatus.Paid;
       updatePayment.updatedAt = new Date();
-      await this.repo.updateOne({ _id: id }, updatePayment);
+      await this.repo.updateOne({ uid }, updatePayment);
+
+      sendNotification('payments', payment.owner.nearWalletAccountId, {
+        message: `Payment to ${parsed.receiver_account_id} was paid by ${parsed.sender_account_id}.`,
+      });
+
       return new ServiceResult<PaymentDto>(mapPaymentGet(updatePayment));
     } catch (error) {
       this.logger.error('PaymentService - update', error);

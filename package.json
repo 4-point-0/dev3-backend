@@ -38,6 +38,7 @@
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.0.5",
+    "@novu/node": "^0.9.0",
     "adminjs": "^6.1.1",
     "aws-sdk": "^2.1205.0",
     "borsh": "^0.7.0",

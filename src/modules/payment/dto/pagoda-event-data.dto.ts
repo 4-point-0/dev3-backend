@@ -1,6 +1,7 @@
 export class PagodaEventDataDto {
+  id?: string;
   amount?: string;
   memo?: string;
-  new_owner_id?: string;
-  old_owner_id?: string;
+  sender_account_id?: string;
+  receiver_account_id?: string;
 }
