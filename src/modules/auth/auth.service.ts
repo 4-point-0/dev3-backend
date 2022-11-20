@@ -4,21 +4,21 @@ import { JwtService } from '@nestjs/jwt';
 import * as borsh from 'borsh';
 import { sha256 } from 'js-sha256';
 import { firstValueFrom } from 'rxjs';
-import { UserService } from '../user/user.service';
 import * as nacl from 'tweetnacl';
 import { edsa } from '../../common/constants';
-import { JwtUser } from './dto/jwt-user';
-import { ServiceResult } from '../../helpers/response/result';
-import { JwtTokenDto } from './dto/jwt-token.dto';
+import { Role } from '../../common/enums/role.enum';
 import {
   BadRequest,
   NotFound,
   ServerError,
 } from '../../helpers/response/errors';
-import { mapJwtUserCreate } from './mappers/map-jwt-user-create';
-import { mapJwtUser } from './mappers/map-jwt-user';
+import { ServiceResult } from '../../helpers/response/result';
+import { UserService } from '../user/user.service';
 import { getRpcPostArguments } from './common/rpc-call-arguments';
-import { Role } from '../../common/enums/role.enum';
+import { JwtTokenDto } from './dto/jwt-token.dto';
+import { JwtUser } from './dto/jwt-user';
+import { mapJwtUser } from './mappers/map-jwt-user';
+import { mapJwtUserCreate } from './mappers/map-jwt-user-create';
 
 @Injectable()
 export class AuthService {
@@ -60,7 +60,7 @@ export class AuthService {
       const currentPublicKey = edsa + borsh.baseEncode(pkArray);
       const { url, payload, config } = getRpcPostArguments(accountId);
       const result = await firstValueFrom(
-        this.httpService.post(url, payload, config),
+        this.httpService.post(url, payload, config as any),
       );
 
       const data = result.data;
