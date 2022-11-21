@@ -118,6 +118,7 @@ describe('PaymentService', () => {
       mockCreatePaymentDtos[0].project_id,
     );
     expect(result.data.total).toEqual(2);
+    expect(result.data.count).toEqual(2);
   });
 
   it(`FindAll - should findAll with total count, limit, offset`, async () => {
@@ -136,6 +137,7 @@ describe('PaymentService', () => {
     expect(result.data.total).toEqual(4);
     expect(result.data.offset).toEqual(offset);
     expect(result.data.limit).toEqual(limit);
+    expect(result.data.count).toEqual(limit);
     expect(result.data.results).toHaveLength(limit);
   });
 
@@ -161,7 +163,7 @@ describe('PaymentService', () => {
     expect(result.data.total).toEqual(4);
     expect(result.data.offset).toEqual(offset);
     expect(result.data.limit).toEqual(limit);
-    expect(result.data.results.length).toEqual(limit);
+    expect(result.data.count).toEqual(limit);
     expect(result.data.results[0].uid).toMatch(mockCreatePaymentDtos[0].uid);
     expect(result.data.results[0].status).toEqual(status);
     expect(result.data.results[1].uid).toMatch(mockCreatePaymentDtos[3].uid);

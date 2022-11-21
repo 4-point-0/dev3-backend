@@ -27,6 +27,7 @@ export const mapToPaginatedApiKeyDto = (
 ): PaginatedDto<ApiKeyDto> => {
   return {
     total: dto.total,
+    count: dto.count,
     limit: dto.limit,
     offset: dto.offset,
     results: results,

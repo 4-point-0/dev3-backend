@@ -132,6 +132,7 @@ describe('AddressService', () => {
     await new addressModel(mockCreateAddressDtos[1]).save();
     const result = await addressService.findAll(mockUser._id);
     expect(result.data.results).toHaveLength(2);
+    expect(result.data.count).toBe(2);
   });
 
   it(`FindOne - should findOne`, async () => {

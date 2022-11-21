@@ -37,6 +37,7 @@ describe('PaymentController', () => {
     it('should return all payments', async () => {
       const result = new ServiceResult<PaginatedDto<Payment>>({
         total: 4,
+        count: 4,
         limit: 0,
         offset: 0,
         results: mockPayments,

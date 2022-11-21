@@ -34,6 +34,7 @@ describe('AddressController', () => {
     it('should return all addresses', async () => {
       const result = new ServiceResult<PaginatedDto<Address>>({
         total: 4,
+        count: 4,
         limit: 0,
         offset: 0,
         results: mockAddresses,

@@ -124,6 +124,7 @@ describe('ApiKeyController', () => {
     it('should return all api keys', async () => {
       const result = new ServiceResult<PaginatedDto<ApiKeyDto>>({
         total: 4,
+        count: 4,
         limit: 0,
         offset: 0,
         results: mockApiKeyDtos,
