@@ -178,6 +178,7 @@ export const mockPayment1 = {
   owner: mockUser,
   updatedAt: new Date(),
   createdAt: new Date(),
+  project: mockProject1,
 };
 
 export const mockPayment2 = {
@@ -190,6 +191,7 @@ export const mockPayment2 = {
   owner: mockUser,
   updatedAt: new Date(),
   createdAt: new Date(),
+  project: mockProject1,
 };
 
 export const mockPayment3 = {
@@ -202,6 +204,7 @@ export const mockPayment3 = {
   owner: mockUser,
   updatedAt: new Date(),
   createdAt: new Date(),
+  project: mockProject1,
 };
 
 export const mockPayment4 = {
@@ -214,6 +217,7 @@ export const mockPayment4 = {
   owner: mockUser,
   updatedAt: new Date(),
   createdAt: new Date(),
+  project: mockProject1,
 };
 
 export const mockPayments = [
@@ -228,7 +232,7 @@ export const mockCreatePaymentDto1: CreatePaymentDto = {
   memo: mockPayment1.memo,
   amount: mockPayment1.amount,
   receiver: mockPayment1.receiver,
-  owner: mockUser._id,
+  project_id: mockPayment1.project._id.toString(),
 };
 
 export const mockCreatePaymentDto2: CreatePaymentDto = {
@@ -236,7 +240,7 @@ export const mockCreatePaymentDto2: CreatePaymentDto = {
   memo: mockPayment2.memo,
   amount: mockPayment2.amount,
   receiver: mockPayment2.receiver,
-  owner: mockUser._id,
+  project_id: mockPayment1.project._id.toString(),
 };
 
 export const mockCreatePaymentDto3: CreatePaymentDto = {
@@ -244,7 +248,7 @@ export const mockCreatePaymentDto3: CreatePaymentDto = {
   memo: mockPayment3.memo,
   amount: mockPayment3.amount,
   receiver: mockPayment3.receiver,
-  owner: mockUser._id,
+  project_id: mockPayment1.project._id.toString(),
 };
 
 export const mockCreatePaymentDto4: CreatePaymentDto = {
@@ -252,7 +256,7 @@ export const mockCreatePaymentDto4: CreatePaymentDto = {
   memo: mockPayment4.memo,
   amount: mockPayment4.amount,
   receiver: mockPayment4.receiver,
-  owner: mockUser._id,
+  project_id: mockPayment1.project._id.toString(),
 };
 
 export const mockCreatePaymentDtos = [
@@ -269,6 +273,7 @@ export const mockPaymentDto = {
   memo: mockPayment1.memo,
   receiver: mockPayment1.receiver,
   status: mockPayment1.status,
+  project_id: mockPayment1.project._id.toString(),
 };
 
 export const mockApiKey1 = {

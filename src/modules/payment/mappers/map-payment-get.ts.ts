@@ -10,5 +10,6 @@ export const mapPaymentGet = (payment: Payment): PaymentDto => {
     receiver: payment.receiver,
     receiver_fungible: payment.receiver_fungible,
     status: payment.status,
+    project_id: payment.project._id.toString(),
   };
 };

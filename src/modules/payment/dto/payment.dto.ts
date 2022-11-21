@@ -10,6 +10,11 @@ export class PaymentDto {
   @ApiProperty({
     type: String,
   })
+  readonly project_id: string;
+
+  @ApiProperty({
+    type: String,
+  })
   readonly uid: string;
 
   @ApiProperty({

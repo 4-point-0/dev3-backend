@@ -27,7 +27,6 @@ import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter
 import { handle } from '../../helpers/response/handle';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { jwtConstants } from '../auth/common/jwt-constants';
-import { AuthRequest } from '../user/entities/user.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { Payment } from './entities/payment.entity';
@@ -52,8 +51,7 @@ export class PaymentController {
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   @HttpCode(200)
-  async create(@Req() request: AuthRequest, @Body() dto: CreatePaymentDto) {
-    dto.owner = request.user._id;
+  async create(@Body() dto: CreatePaymentDto) {
     return handle(await this.paymentService.create(dto));
   }
 
@@ -61,6 +59,7 @@ export class PaymentController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
+  @ApiQuery({ name: 'project_id', required: true })
   @ApiQuery({ name: 'offset', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'uid', required: false })
@@ -74,7 +73,7 @@ export class PaymentController {
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async findAll(
-    @Req() request: AuthRequest,
+    @Query('project_id') project_id: string,
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
     @Query('uid') uid?: string,
@@ -84,7 +83,7 @@ export class PaymentController {
   ) {
     return handle(
       await this.paymentService.findAll(
-        request.user._id,
+        project_id,
         offset,
         limit,
         uid,
