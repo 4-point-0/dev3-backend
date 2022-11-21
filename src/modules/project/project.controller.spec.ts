@@ -34,6 +34,7 @@ describe('ProjectController', () => {
     it('should return all projects', async () => {
       const result = new ServiceResult<PaginatedDto<Project>>({
         total: 4,
+        count: 4,
         limit: 0,
         offset: 0,
         results: mockProjects,

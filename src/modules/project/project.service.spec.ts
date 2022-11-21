@@ -107,6 +107,7 @@ describe('ProjectService', () => {
     expect(result.data.total).toEqual(4);
     expect(result.data.offset).toEqual(offset);
     expect(result.data.limit).toEqual(limit);
+    expect(result.data.count).toEqual(limit);
     expect(result.data.results).toHaveLength(limit);
   });
 
@@ -128,6 +129,7 @@ describe('ProjectService', () => {
     );
     expect(result.data.total).toEqual(4);
     expect(result.data.offset).toEqual(offset);
+    expect(result.data.count).toEqual(limit);
     expect(result.data.limit).toEqual(limit);
     expect(result.data.results.length).toEqual(limit);
     expect(result.data.results[0].name).toMatch(mockCreateProjectDtos[1].name);
