@@ -2,7 +2,6 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   mockAuthUser,
-  mockUser,
   mockPayments,
   mockPaymentDto,
   mockCreatePaymentDtos,
@@ -14,6 +13,7 @@ import { Payment } from './entities/payment.entity';
 import { BadRequest, NotFound } from '../../helpers/response/errors';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { PaymentDto } from './dto/payment.dto';
+import { Project } from '../project/entities/project.entity';
 
 describe('PaymentController', () => {
   let paymentController: PaymentController;
@@ -25,6 +25,7 @@ describe('PaymentController', () => {
         PaymentController,
         PaymentService,
         { provide: getModelToken(Payment.name), useValue: jest.fn() },
+        { provide: getModelToken(Project.name), useValue: jest.fn() },
       ],
     }).compile();
 
@@ -74,13 +75,7 @@ describe('PaymentController', () => {
     it('should create one payment', async () => {
       const result = new ServiceResult<Payment>(mockPayments[0]);
       jest.spyOn(paymentService, 'create').mockResolvedValue(result);
-      const req: any = {
-        user: mockUser,
-      };
-      const response = await paymentController.create(
-        req,
-        mockCreatePaymentDtos[0],
-      );
+      const response = await paymentController.create(mockCreatePaymentDtos[0]);
       expect(response).toBe(result.data);
     });
 
@@ -89,11 +84,8 @@ describe('PaymentController', () => {
       dto.uid = undefined;
       const result = new BadRequest<Payment>(`Uid can't be empty`);
       jest.spyOn(paymentService, 'create').mockResolvedValue(result);
-      const req: any = {
-        user: mockUser,
-      };
       try {
-        await paymentController.create(req, dto);
+        await paymentController.create(dto);
       } catch (error) {
         expect(error.status).toBe(400);
         expect(error.message).toBe(`Uid can't be empty`);
