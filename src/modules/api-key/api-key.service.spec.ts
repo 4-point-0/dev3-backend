@@ -208,6 +208,38 @@ describe('ApiKeyService', () => {
     expect(response).toStrictEqual(new BadRequest<boolean>('Api key revoked'));
   });
 
+  it(`getUserByApiKey - should get user by api key`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const result = await apiKeyService.create(mockCreateApiKeyDtos[0]);
+    const response = await apiKeyService.getUserByApiKey(result.data.api_key);
+
+    expect(response.data.uid).toBe(mockUser.uid);
+  });
+
+  it(`getUserByApiKey - should return Api key not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await apiKeyService.create(mockCreateApiKeyDtos[0]);
+    const response = await apiKeyService.getUserByApiKey('123');
+
+    expect(response).toStrictEqual(new NotFound<User>('Api key not found'));
+  });
+
+  it(`getUserByApiKey - should return Api key revoked (Bad Request - 400) exception`, async () => {
+    const user = await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const apiKey = await apiKeyService.create(mockCreateApiKeyDtos[0]);
+    await apiKeyService.revoke(
+      apiKey.data.api_key,
+      { is_revoked: true },
+      user._id.toString(),
+    );
+    const response = await apiKeyService.getUserByApiKey(apiKey.data.api_key);
+
+    expect(response).toStrictEqual(new BadRequest<User>('Api key revoked'));
+  });
+
   it(`Regenerate - should get regenerated api key`, async () => {
     const user = await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();

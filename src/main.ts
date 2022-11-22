@@ -18,6 +18,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .addBearerAuth()
+    .addApiKey({ type: 'apiKey', name: 'api-key', in: 'header' }, 'api-key')
     .setTitle('Dev3 API')
     .setDescription('Dev3 platform API description')
     .setVersion('1.0')
