@@ -17,9 +17,9 @@ import {
   ApiExtraModels,
   ApiQuery,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { handle } from '../../helpers/response/handle';
 import { AuthRequest } from '../user/entities/user.entity';
 import { AddressService } from './address.service';
@@ -29,8 +29,9 @@ import { Address } from './entities/address.entity';
 import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
 import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { AuthGuard } from '@nestjs/passport';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard(['jwt', 'api-key']))
 @ApiTags('address')
 @Controller('address')
 @ApiExtraModels(PaginatedDto)
@@ -39,6 +40,7 @@ export class AddressController {
 
   @Post()
   @ApiBearerAuth()
+  @ApiSecurity('api-key')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Address })
   @ApiResponse({ status: 201, description: 'Address created' })
@@ -55,6 +57,7 @@ export class AddressController {
 
   @Get()
   @ApiBearerAuth()
+  @ApiSecurity('api-key')
   @UseFilters(new HttpExceptionFilter())
   @ApiQuery({ name: 'offset', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -78,6 +81,7 @@ export class AddressController {
 
   @Get(':id')
   @ApiBearerAuth()
+  @ApiSecurity('api-key')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Address })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -93,6 +97,7 @@ export class AddressController {
 
   @Patch(':id')
   @ApiBearerAuth()
+  @ApiSecurity('api-key')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Address })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -116,6 +121,7 @@ export class AddressController {
 
   @Delete(':id')
   @ApiBearerAuth()
+  @ApiSecurity('api-key')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Address })
   @ApiResponse({ status: 400, description: 'Bad request' })

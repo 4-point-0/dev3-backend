@@ -18,6 +18,7 @@ import { RevokeApiKeyDto } from './dto/revoke-api-key.dto';
 import { RegenerateApiKeyDto } from './dto/regenerate-api-key.dto';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { toPage } from '../../helpers/pagination/pagination-helper';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class ApiKeyService {
@@ -180,6 +181,34 @@ export class ApiKeyService {
       return error.errors
         ? new BadRequest<boolean>(error.toString())
         : new ServerError<boolean>(`Can't validate api key`);
+    }
+  }
+
+  async getUserByApiKey(apiKey: string): Promise<ServiceResult<User>> {
+    try {
+      const apiKeyDb = await this.apiKeyRepo
+        .findOne({ api_key: apiKey })
+        .populate('owner')
+        .exec();
+
+      if (!apiKeyDb) {
+        return new NotFound<User>('Api key not found');
+      }
+
+      if (apiKeyDb.is_revoked) {
+        return new BadRequest<User>('Api key revoked');
+      }
+
+      if (apiKeyDb.expires <= new Date()) {
+        return new BadRequest<User>('Api key expired');
+      }
+
+      return new ServiceResult<User>(apiKeyDb.owner);
+    } catch (error) {
+      this.logger.error('ApiKeyService - getUserByApiKey', error);
+      return error.errors
+        ? new BadRequest<User>(error.toString())
+        : new ServerError<User>(`Can't get user by api key`);
     }
   }
 
