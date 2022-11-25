@@ -26,16 +26,17 @@ import { ContractService } from './contract.service';
 import { handle } from '../../helpers/response/handle';
 import { ContractDto } from './dto/contract.dto';
 import { Response } from 'express';
-import * as dotenv from 'dotenv';
-dotenv.config();
-const { GITHUB_WEBHOOK_SECRET } = process.env;
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('contract')
 @Controller('contract')
 @ApiExtraModels(PaginatedDto)
 export class ContractController {
   private readonly logger = new Logger(ContractController.name);
-  constructor(private readonly contractService: ContractService) {}
+  constructor(
+    private readonly contractService: ContractService,
+    private configService: ConfigService,
+  ) {}
 
   @Get()
   @ApiBearerAuth()
@@ -78,7 +79,10 @@ export class ContractController {
 
       const data = JSON.stringify(req.body);
       const sig = Buffer.from(req.get(sigHeaderName) || '', 'utf8');
-      const hmac = createHmac(sigHashAlg, GITHUB_WEBHOOK_SECRET);
+      const hmac = createHmac(
+        sigHashAlg,
+        this.configService.get<string>('github.webhook_secret'),
+      );
       const digest = Buffer.from(
         `${sigHashAlg}=${hmac.update(data).digest('hex')}`,
         'utf8',

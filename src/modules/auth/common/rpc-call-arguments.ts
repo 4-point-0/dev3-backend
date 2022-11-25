@@ -1,9 +1,12 @@
 import { getRpc } from '../../../helpers/rpc/rpc-helper';
 import { AxiosPostDto } from '../dto/axios-post.dto';
 
-export const getRpcPostArguments = (accountId: string): AxiosPostDto => {
+export const getRpcPostArguments = (
+  accountId: string,
+  NODE_ENV: string,
+): AxiosPostDto => {
   return {
-    url: getRpc(),
+    url: getRpc(NODE_ENV),
     payload: {
       jsonrpc: '2.0',
       method: 'query',

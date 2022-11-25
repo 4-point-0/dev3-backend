@@ -4,20 +4,15 @@ import { Payment, PaymentSchema } from './entities/payment.entity';
 import { PaymentController } from './payment.controller';
 import { PaymentService } from './payment.service';
 import { Project, ProjectSchema } from '../project/entities/project.entity';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule,
     MongooseModule.forFeature([
       { name: Payment.name, schema: PaymentSchema },
       { name: Project.name, schema: ProjectSchema },
     ]),
-    MongooseModule.forRootAsync({
-      useFactory: () => ({
-        uri: process.env.DATABASE_URL,
-      }),
-    }),
   ],
   controllers: [PaymentController],
   providers: [PaymentService],

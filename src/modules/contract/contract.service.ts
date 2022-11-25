@@ -8,10 +8,8 @@ import { Contract, ContractDocument } from './entities/contract.entity';
 import { Model } from 'mongoose';
 import { mapDtoToContract } from './mappers/map-dto-to-contract';
 import { toPage } from '../../helpers/pagination/pagination-helper';
-import * as dotenv from 'dotenv';
-dotenv.config();
+
 import {
-  branch,
   fetchApi,
   fetchRepo,
   githubApi,
@@ -22,8 +20,7 @@ import { GithubRepoDto } from './dto/github-repo.dto';
 import { mapRepoToContractDto } from './mappers/map-repo-to-contract-dto';
 import { GithubFileDto } from './dto/github-file.dto';
 import { ContractManifestDto } from './dto/contract-manifest.dto';
-
-const { GITHUB_TOKEN } = process.env;
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ContractService {
@@ -31,7 +28,12 @@ export class ContractService {
 
   constructor(
     @InjectModel(Contract.name) private repo: Model<ContractDocument>,
+    private configService: ConfigService,
   ) {}
+
+  github_token = this.configService.get<string>('github.token');
+  branch =
+    this.configService.get<string>('NODE_ENV') === 'dev' ? 'dev' : 'main';
 
   async findAll(
     offset?: number,
@@ -67,7 +69,7 @@ export class ContractService {
 
   async saveContracts(): Promise<void> {
     try {
-      const data = await fetchRepo(GITHUB_TOKEN);
+      const data = await fetchRepo(this.github_token, this.branch);
       const contracts = await this.getContracts(data);
       for (const contract of contracts) {
         const contractDb = await this.repo
@@ -134,7 +136,7 @@ export class ContractService {
       );
 
       const manifestDto = await fetchApi<ContractManifestDto>(
-        GITHUB_TOKEN,
+        this.github_token,
         githubManifestFileDto.download_url,
       );
 
@@ -163,8 +165,8 @@ export class ContractService {
     fileName: string,
   ): Promise<T> {
     const data = await fetchApi<T>(
-      GITHUB_TOKEN,
-      `${githubApi}/${root}/${contractOwner}/${contractType}/${fileName}?ref=${branch}`,
+      this.github_token,
+      `${githubApi}/${root}/${contractOwner}/${contractType}/${fileName}?ref=${this.branch}`,
     );
 
     return data;

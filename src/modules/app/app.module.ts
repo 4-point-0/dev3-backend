@@ -1,7 +1,7 @@
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { AdminModule } from '@adminjs/nestjs';
 import { Module, Scope } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import AdminJS from 'adminjs';
@@ -16,7 +16,6 @@ import { MongooseSchemasModule } from './schemas.module';
 import { User } from '../user/entities/user.entity';
 import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
-import * as dotenv from 'dotenv';
 import { Address } from '../address/entities/address.entity';
 import { dev3CompanyName, dev3LogoUrl } from '../../common/constants';
 import { PaymentModule } from '../payment/payment.module';
@@ -25,28 +24,30 @@ import { ContractModule } from '../contract/contract.module';
 import { Contract } from '../contract/entities/contract.entity';
 import { ApiKeyModule } from '../api-key/api-key.module';
 import { ApiKey } from '../api-key/entities/api-key.entity';
-dotenv.config();
-
-const {
-  COOKIE_NAME,
-  COOKIE_PASS,
-  ADMIN_JS_EMAIL,
-  ADMIN_JS_PASS,
-  DATABASE_URL,
-} = process.env;
-
-const DEFAULT_ADMIN = {
-  email: ADMIN_JS_EMAIL,
-  password: ADMIN_JS_PASS,
-};
+import { configuration } from 'src/config/configuration';
+import { existsSync } from 'fs';
+import * as dotenv from 'dotenv';
+import { envValidationSchema } from '../../config/validation';
+dotenv.config({
+  path: existsSync(`.env.${process.env.NODE_ENV}`)
+    ? `.env.${process.env.NODE_ENV}`
+    : '.env',
+});
 
 AdminJS.registerAdapter(AdminJSMongoose);
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: `.env.${process.env.NODE_ENV}`,
+      isGlobal: true,
+      load: [configuration],
+      validationSchema: envValidationSchema,
+    }),
     MongooseModule.forRootAsync({
-      useFactory: () => ({
-        uri: DATABASE_URL,
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('database_uri'),
       }),
+      inject: [ConfigService],
     }),
     ProjectModule,
     AuthModule,
@@ -56,7 +57,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     ContractModule,
     ApiKeyModule,
     AdminModule.createAdminAsync({
-      imports: [ConfigModule.forRoot(), MongooseSchemasModule],
+      imports: [MongooseSchemasModule],
       inject: [
         getModelToken('Project'),
         getModelToken('User'),
@@ -64,6 +65,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         getModelToken('Payment'),
         getModelToken('Contract'),
         getModelToken('ApiKey'),
+        ConfigService,
       ],
       useFactory: (
         projectModel: Model<Project>,
@@ -72,6 +74,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         paymentModel: Model<Payment>,
         contractModel: Model<Contract>,
         apiKeyModel: Model<ApiKey>,
+        configService: ConfigService,
       ) => ({
         adminJsOptions: {
           rootPath: '/admin',
@@ -226,13 +229,19 @@ AdminJS.registerAdapter(AdminJSMongoose);
         },
         auth: {
           authenticate: async (email: string, password: string) => {
-            if (email === ADMIN_JS_EMAIL && password === ADMIN_JS_PASS) {
-              return Promise.resolve(DEFAULT_ADMIN);
+            if (
+              email === configService.get<string>('admin_js.admin_email') &&
+              password === configService.get<string>('admin_js.admin_pass')
+            ) {
+              return Promise.resolve({
+                email: configService.get<string>('admin_js.admin_email'),
+                password: configService.get<string>('admin_js.admin_pass'),
+              });
             }
             return null;
           },
-          cookieName: COOKIE_NAME,
-          cookiePassword: COOKIE_PASS,
+          cookieName: configService.get<string>('admin_js.cookie_name'),
+          cookiePassword: configService.get<string>('admin_js.cookie_pass'),
         },
         // sessionOptions: {
         //   resave: false,
