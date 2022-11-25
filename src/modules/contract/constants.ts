@@ -1,12 +1,9 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
 import { GithubRepoDto, RepoResponseDto } from './dto/github-repo.dto';
-const { NODE_ENV } = process.env;
 
 const jsonDate = new Date().toJSON();
 const owner = '4-point-0';
 const repoName = 'dev3-contracts';
-export const branch = NODE_ENV === 'dev' ? 'dev' : 'main';
+const branch = 'main';
 const variables = {
   owner: owner,
   name: repoName,
@@ -59,7 +56,11 @@ query GetRepo($owner:String!,$name: String!,$until: GitTimestamp,$branch: String
   }
 }`;
 
-export const fetchRepo = async (token: string): Promise<GithubRepoDto> => {
+export const fetchRepo = async (
+  token: string,
+  branch: string,
+): Promise<GithubRepoDto> => {
+  variables.branch = branch;
   const response = await fetch(githubGraphQlApi, {
     method: 'POST',
     body: JSON.stringify({ query, variables }),

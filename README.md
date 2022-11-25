@@ -16,6 +16,7 @@ Install the latest version of MongoDB.
 ## Environment Variables
 
 Copy `env.example` to the `.env` and populate it with proper values.
+Project also works with multi-environment configurations, so also `.env.dev`,`.env.staging` and `.env.production` files are supported.
 
 ## Folder Structure
 

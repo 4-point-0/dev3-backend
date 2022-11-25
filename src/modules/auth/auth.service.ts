@@ -19,6 +19,7 @@ import { mapJwtUserCreate } from './mappers/map-jwt-user-create';
 import { mapJwtUser } from './mappers/map-jwt-user';
 import { getRpcPostArguments } from './common/rpc-call-arguments';
 import { Role } from '../../common/enums/role.enum';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly httpService: HttpService,
     private jwtService: JwtService,
     private readonly userService: UserService,
+    private configService: ConfigService,
   ) {}
 
   async getNearJwtToken(
@@ -58,7 +60,10 @@ export class AuthService {
   ): Promise<boolean> {
     try {
       const currentPublicKey = edsa + borsh.baseEncode(pkArray);
-      const { url, payload, config } = getRpcPostArguments(accountId);
+      const { url, payload, config } = getRpcPostArguments(
+        accountId,
+        this.configService.get('NODE_ENV'),
+      );
       const result = await firstValueFrom(
         this.httpService.post(url, payload, config),
       );

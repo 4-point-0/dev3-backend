@@ -14,6 +14,7 @@ import { BadRequest, NotFound } from '../../helpers/response/errors';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { PaymentDto } from './dto/payment.dto';
 import { Project } from '../project/entities/project.entity';
+import { ConfigModule } from '@nestjs/config';
 
 describe('PaymentController', () => {
   let paymentController: PaymentController;
@@ -21,6 +22,13 @@ describe('PaymentController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({
+          ignoreEnvVars: true,
+          ignoreEnvFile: true,
+          load: [() => ({ pagoda_bearer: '123' })],
+        }),
+      ],
       providers: [
         PaymentController,
         PaymentService,

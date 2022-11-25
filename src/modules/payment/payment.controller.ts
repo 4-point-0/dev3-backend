@@ -13,6 +13,7 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -26,7 +27,6 @@ import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
 import { handle } from '../../helpers/response/handle';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
-import { jwtConstants } from '../auth/common/jwt-constants';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { Payment } from './entities/payment.entity';
@@ -37,7 +37,10 @@ import { PaymentService } from './payment.service';
 @ApiExtraModels(PaginatedDto)
 export class PaymentController {
   private readonly logger = new Logger(PaymentController.name);
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private configService: ConfigService,
+    private readonly paymentService: PaymentService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -131,7 +134,7 @@ export class PaymentController {
 
       const token = bearer.split(' ')[1];
 
-      if (token === jwtConstants.pagodaBearer) {
+      if (token === this.configService.get('pagoda_bearer')) {
         return handle(
           await this.paymentService.updatePagoda(request.body as any),
         );
