@@ -28,6 +28,8 @@ import { configuration } from 'src/config/configuration';
 import { existsSync } from 'fs';
 import * as dotenv from 'dotenv';
 import { envValidationSchema } from '../../config/validation';
+import { TransactionRequestModule } from '../transaction-request/tranasction-request.module';
+import { TransactionRequest } from '../transaction-request/entities/transaction-request.entity';
 dotenv.config({
   path: existsSync(`.env.${process.env.NODE_ENV}`)
     ? `.env.${process.env.NODE_ENV}`
@@ -56,6 +58,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     PaymentModule,
     ContractModule,
     ApiKeyModule,
+    TransactionRequestModule,
     AdminModule.createAdminAsync({
       imports: [MongooseSchemasModule],
       inject: [
@@ -65,6 +68,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         getModelToken('Payment'),
         getModelToken('Contract'),
         getModelToken('ApiKey'),
+        getModelToken('TransactionRequest'),
         ConfigService,
       ],
       useFactory: (
@@ -74,6 +78,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         paymentModel: Model<Payment>,
         contractModel: Model<Contract>,
         apiKeyModel: Model<ApiKey>,
+        transactionRequestModel: Model<TransactionRequest>,
         configService: ConfigService,
       ) => ({
         adminJsOptions: {
@@ -202,6 +207,26 @@ AdminJS.registerAdapter(AdminJSMongoose);
             },
             {
               resource: apiKeyModel,
+              options: {
+                properties: {
+                  createdAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                  updatedAt: {
+                    isVisible: {
+                      edit: false,
+                      new: false,
+                    },
+                  },
+                },
+                parent: { name: 'Content', icon: 'Home' },
+              },
+            },
+            {
+              resource: transactionRequestModel,
               options: {
                 properties: {
                   createdAt: {

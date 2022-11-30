@@ -1,0 +1,281 @@
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+import { User, UserSchema } from '../user/entities/user.entity';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import Mongoose, { connect, Connection, Model } from 'mongoose';
+
+import {
+  TransactionRequest,
+  TransactionRequestSchema,
+} from './entities/transaction-request.entity';
+import { TransactionRequestService } from './transaction-request.service';
+import { Project, ProjectSchema } from '../project/entities/project.entity';
+import {
+  mockCreateTransactionRequestDtos,
+  mockProjects,
+  mockTransactionRequests,
+  mockUser,
+} from '../../../test/mock-tests-data';
+import {
+  BadRequest,
+  NotFound,
+  Unauthorized,
+} from '../../helpers/response/errors';
+import { TransactionRequestStatus } from '../../common/enums/transaction-request.enum';
+
+describe('TransactionRequestService', () => {
+  let transactionRequestService: TransactionRequestService;
+  let mongod: MongoMemoryServer;
+  let mongoConnection: Connection;
+  let projectModel: Model<Project>;
+  let userModel: Model<User>;
+  let transactionRequestModel: Model<TransactionRequest>;
+
+  beforeAll(async () => {
+    mongod = await MongoMemoryServer.create();
+    const uri = mongod.getUri();
+    mongoConnection = (await connect(uri)).connection;
+    projectModel = mongoConnection.model(Project.name, ProjectSchema);
+    userModel = mongoConnection.model(User.name, UserSchema);
+    transactionRequestModel = mongoConnection.model(
+      TransactionRequest.name,
+      TransactionRequestSchema,
+    );
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TransactionRequestService,
+        { provide: getModelToken(Project.name), useValue: projectModel },
+        { provide: getModelToken(User.name), useValue: userModel },
+        {
+          provide: getModelToken(TransactionRequest.name),
+          useValue: transactionRequestModel,
+        },
+      ],
+    }).compile();
+
+    transactionRequestService = module.get<TransactionRequestService>(
+      TransactionRequestService,
+    );
+  });
+
+  afterAll(async () => {
+    await mongoConnection.dropDatabase();
+    await mongoConnection.close();
+    await mongod.stop();
+  });
+
+  afterEach(async () => {
+    const collections = mongoConnection.collections;
+    for (const key in collections) {
+      const collection = collections[key];
+      await collection.deleteMany({});
+    }
+  });
+
+  it('Create - should return the saved object', async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const createdTransactionRequest = await transactionRequestService.create(
+      mockCreateTransactionRequestDtos[0],
+    );
+
+    expect(createdTransactionRequest.data.contractId).toBe(
+      mockCreateTransactionRequestDtos[0].contractId,
+    );
+    expect(createdTransactionRequest.data.uuid).toBeDefined();
+  });
+
+  it(`Create - should return project_id can't be empty (Bad Request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const dto = { ...mockCreateTransactionRequestDtos[0] };
+    delete dto.project_id;
+    const response = await transactionRequestService.create(dto);
+    expect(response).toStrictEqual(
+      new BadRequest<TransactionRequest>(`project_id can't be empty`),
+    );
+  });
+
+  it(`Create - should return contractId can't be empty (Bad Request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const dto = { ...mockCreateTransactionRequestDtos[0] };
+    delete dto.contractId;
+    const response = await transactionRequestService.create(dto);
+    expect(response).toStrictEqual(
+      new BadRequest<TransactionRequest>(`ContractId can't be empty`),
+    );
+  });
+
+  it(`Create - should return method can't be empty (Bad Request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const dto = { ...mockCreateTransactionRequestDtos[0] };
+    delete dto.method;
+    const response = await transactionRequestService.create(dto);
+    expect(response).toStrictEqual(
+      new BadRequest<TransactionRequest>(`Method can't be empty`),
+    );
+  });
+
+  it(`Create - should return Project not found (Bad Request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const dto = { ...mockCreateTransactionRequestDtos[0] };
+    dto.project_id = '613ff1e4bb85ed5475a1ff5d';
+    const response = await transactionRequestService.create(dto);
+    expect(response).toStrictEqual(
+      new NotFound<TransactionRequest>('Project not found'),
+    );
+  });
+
+  it(`Create - should return Unauthorized access to user project (Unauthorized - 401) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const dto = { ...mockCreateTransactionRequestDtos[0] };
+    dto.owner = new Mongoose.Types.ObjectId('613ff1e4bb85ed5475a1ff5d');
+    const response = await transactionRequestService.create(dto);
+    expect(response).toStrictEqual(
+      new Unauthorized<TransactionRequest>(
+        'Unauthorized access to user project',
+      ),
+    );
+  });
+
+  it(`FindAll - should findAll`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await transactionRequestService.create(mockCreateTransactionRequestDtos[0]);
+    await transactionRequestService.create(mockCreateTransactionRequestDtos[1]);
+    const result = await transactionRequestService.findAll(mockUser._id);
+    expect(result.data.results).toHaveLength(1);
+    expect(result.data.count).toBe(1);
+  });
+
+  it(`FindAll - should findAll`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new projectModel(mockProjects[1]).save();
+    await transactionRequestService.create(mockCreateTransactionRequestDtos[0]);
+    await transactionRequestService.create(mockCreateTransactionRequestDtos[1]);
+
+    const result = await transactionRequestService.findAll(
+      mockUser._id,
+      null,
+      null,
+      null,
+      '123',
+    );
+    expect(result.data.results).toHaveLength(2);
+    expect(result.data.count).toBe(2);
+  });
+
+  it(`FindByUuid - should find by uuid`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+
+    const res = await transactionRequestService.create(
+      mockCreateTransactionRequestDtos[0],
+    );
+
+    const result = await transactionRequestService.findByUuid(res.data.uuid);
+    expect(result.data.uuid).toBe(res.data.uuid);
+  });
+
+  it(`FindOne - should findOne`, async () => {
+    await new userModel(mockUser).save();
+    const createResult = await new transactionRequestModel(
+      mockTransactionRequests[0],
+    ).save();
+    const result = await transactionRequestService.findOne(
+      createResult._id.toString(),
+      mockUser._id.toString(),
+    );
+    expect(result.data._id.toString()).toBe(
+      mockTransactionRequests[0]._id.toString(),
+    );
+  });
+
+  it(`FindOne - should return Transaction request not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new transactionRequestModel(mockTransactionRequests[0]).save();
+    const response = await transactionRequestService.findOne(
+      '12',
+      mockUser._id.toString(),
+    );
+    expect(response).toStrictEqual(
+      new NotFound<TransactionRequest>('Transaction request not found'),
+    );
+  });
+
+  it(`FindOne - should return Transaction request not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new transactionRequestModel(mockTransactionRequests[0]).save();
+    const response = await transactionRequestService.findOne(
+      '634ff1e4bb85ed5475a1ff6d',
+      mockUser._id.toString(),
+    );
+    expect(response).toStrictEqual(
+      new NotFound<TransactionRequest>('Transaction request not found'),
+    );
+  });
+
+  it(`FindOne - should return Unauthorized access to user address (Unauthorized - 401) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const createResult = await new transactionRequestModel(
+      mockTransactionRequests[0],
+    ).save();
+    const response = await transactionRequestService.findOne(
+      createResult._id.toString(),
+      '123',
+    );
+
+    expect(response).toStrictEqual(
+      new Unauthorized<TransactionRequest>(
+        'Unauthorized access to user transaction request',
+      ),
+    );
+  });
+
+  it(`Update - should update`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const createResult = await new transactionRequestModel(
+      mockTransactionRequests[0],
+    ).save();
+    const result = await transactionRequestService.update(createResult.uuid, {
+      status: TransactionRequestStatus.Excecuted,
+    });
+    expect(result.data.status).toBe(TransactionRequestStatus.Excecuted);
+  });
+
+  it(`Update - should return Transaction request not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new transactionRequestModel(mockTransactionRequests[0]).save();
+    const response = await transactionRequestService.update('12', {
+      status: TransactionRequestStatus.Excecuted,
+    });
+    expect(response).toStrictEqual(
+      new NotFound<TransactionRequest>('Transaction request not found'),
+    );
+  });
+
+  it(`Update - should return Transaction request not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new transactionRequestModel(mockTransactionRequests[0]).save();
+    const response = await transactionRequestService.update(
+      '634ff1e4bb85ed5475a1ff6d',
+      {
+        status: TransactionRequestStatus.Excecuted,
+      },
+    );
+    expect(response).toStrictEqual(
+      new NotFound<TransactionRequest>('Transaction request not found'),
+    );
+  });
+});
