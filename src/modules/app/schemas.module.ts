@@ -5,6 +5,10 @@ import { ApiKey, ApiKeySchema } from '../api-key/entities/api-key.entity';
 import { Contract, ContractSchema } from '../contract/entities/contract.entity';
 import { Payment, PaymentSchema } from '../payment/entities/payment.entity';
 import { Project, ProjectSchema } from '../project/entities/project.entity';
+import {
+  TransactionRequest,
+  TransactionRequestSchema,
+} from '../transaction-request/entities/transaction-request.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 
 @Module({
@@ -17,6 +21,9 @@ import { User, UserSchema } from '../user/entities/user.entity';
       { name: Contract.name, schema: ContractSchema },
     ]),
     MongooseModule.forFeature([{ name: ApiKey.name, schema: ApiKeySchema }]),
+    MongooseModule.forFeature([
+      { name: TransactionRequest.name, schema: TransactionRequestSchema },
+    ]),
   ],
   exports: [MongooseModule],
 })

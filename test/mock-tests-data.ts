@@ -7,6 +7,10 @@ import { CreatePaymentDto } from '../src/modules/payment/dto/create-payment.dto'
 import { addDays } from '../src/helpers/date/date-helper';
 import { CreateApiKeyDto } from '../src/modules/api-key/dto/create-api-key.dto';
 import { ApiKeyDto } from '../src/modules/api-key/dto/api-key.dto';
+import { TransactionRequestStatus } from '../src/common/enums/transaction-request.enum';
+import { CreateTransactionRequestDto } from '../src/modules/transaction-request/dto/create-transaction-request.dto';
+import { v4 as uuidv4 } from 'uuid';
+import { TransactionRequestDto } from '../src/modules/transaction-request/dto/transaction-request.dto';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
@@ -383,3 +387,124 @@ export const mockApiKeyDtos: ApiKeyDto[] = [
     project_id: mockApiKey4.project.toString(),
   },
 ];
+
+export const mockTransactionRequest1 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bc85ec5475a1ff5d'),
+  uuid: uuidv4(),
+  status: TransactionRequestStatus.Pending,
+  contractId: '123',
+  method: 'withdraw',
+  args: JSON.stringify({ arg1: 1, arg2: '2', arg3: ['12', '1'] }),
+  gas: '1000000000000000000000000',
+  project: mockProject1,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockTransactionRequest2 = {
+  _id: new Mongoose.Types.ObjectId('784fe1e4cd85ed4355a1ff5d'),
+  uuid: uuidv4(),
+  status: TransactionRequestStatus.Pending,
+  contractId: '123',
+  method: 'deposit',
+  args: JSON.stringify({ arg1: 1, arg2: '2', arg3: ['12', '1'] }),
+  project: mockProject2,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockTransactionRequest3 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e3bb85fd2135a1ff5d'),
+  uuid: uuidv4(),
+  status: TransactionRequestStatus.Pending,
+  contractId: '125',
+  method: 'withdraw',
+  gas: '1000000000000000000000000',
+  project: mockProject3,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockTransactionRequest4 = {
+  _id: new Mongoose.Types.ObjectId('784ff2e4bb85fd1125a1ff5d'),
+  uuid: uuidv4(),
+  status: TransactionRequestStatus.Pending,
+  contractId: '123',
+  method: 'deposit',
+  project: mockProject4,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockTransactionRequests = [
+  mockTransactionRequest1,
+  mockTransactionRequest2,
+  mockTransactionRequest3,
+  mockTransactionRequest4,
+];
+
+export const mockCreateTransactionRequestDto1: CreateTransactionRequestDto = {
+  contractId: mockTransactionRequest1.contractId,
+  uuid: mockTransactionRequest1.uuid,
+  method: mockTransactionRequest1.method,
+  args: mockTransactionRequest1.args,
+  gas: mockTransactionRequest1.gas,
+  project_id: mockTransactionRequest1.project._id.toString(),
+  project: mockTransactionRequest1.project._id,
+  owner: mockUser._id,
+};
+
+export const mockCreateTransactionRequestDto2: CreateTransactionRequestDto = {
+  contractId: mockTransactionRequest2.contractId,
+  uuid: mockTransactionRequest2.uuid,
+  method: mockTransactionRequest2.method,
+  args: mockTransactionRequest2.args,
+  project_id: mockTransactionRequest2.project._id.toString(),
+  project: mockTransactionRequest2.project._id,
+  owner: mockUser._id,
+};
+
+export const mockCreateTransactionRequestDto3: CreateTransactionRequestDto = {
+  contractId: mockTransactionRequest3.contractId,
+  uuid: mockTransactionRequest3.uuid,
+  method: mockTransactionRequest3.method,
+  gas: mockTransactionRequest3.gas,
+  project_id: mockTransactionRequest3.project._id.toString(),
+  project: mockTransactionRequest3.project._id,
+  owner: mockUser._id,
+};
+
+export const mockCreateTransactionRequestDto4: CreateTransactionRequestDto = {
+  contractId: mockTransactionRequest4.contractId,
+  uuid: mockTransactionRequest4.uuid,
+  method: mockTransactionRequest4.method,
+  project_id: mockTransactionRequest4.project._id.toString(),
+  project: mockTransactionRequest4.project._id,
+  owner: mockUser._id,
+};
+
+export const mockCreateTransactionRequestDtos = [
+  mockCreateTransactionRequestDto1,
+  mockCreateTransactionRequestDto2,
+  mockCreateTransactionRequestDto3,
+  mockCreateTransactionRequestDto4,
+];
+
+export const mockTransactionRequestDto: TransactionRequestDto = {
+  contractId: mockTransactionRequest1.contractId,
+  uuid: mockTransactionRequest1.uuid,
+  method: mockTransactionRequest1.method,
+  args: mockTransactionRequest1.args,
+  gas: mockTransactionRequest1.gas,
+  txHash: '123',
+  receiptId: '1233212',
+  txDetails: JSON.stringify({ name: '123', lastname: '222' }),
+  project_id: mockTransactionRequest1.project._id.toString(),
+  created_at: mockTransactionRequest1.createdAt,
+  status: mockTransactionRequest1.status,
+  caller_address: 'bob.testnet',
+};
