@@ -105,7 +105,7 @@ export class TransactionRequestController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findByUid(@Param('uuid') uuid: string) {
+  async findByUuid(@Param('uuid') uuid: string) {
     return handle<TransactionRequestDto>(
       await this.transactionRequestService.findByUuid(uuid),
     );
@@ -117,7 +117,7 @@ export class TransactionRequestController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findById(@Req() request: AuthRequest, @Param('id') id: string) {
+  async findOne(@Req() request: AuthRequest, @Param('id') id: string) {
     return handle<TransactionRequest>(
       await this.transactionRequestService.findOne(
         id,
@@ -130,7 +130,7 @@ export class TransactionRequestController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: TransactionRequest })
+  @ApiResponse({ status: 200, type: TransactionRequestDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

@@ -6,8 +6,12 @@ export class TransactionRequestDto {
   status: TransactionRequestStatus;
   contractId: string;
   method: string;
-  args: any;
-  gas: string;
-  deposit: string;
+  args?: any;
+  gas?: string;
+  deposit?: string;
+  caller_address?: string;
+  txHash: string;
+  receiptId: string;
+  txDetails: string;
   project_id: string;
 }

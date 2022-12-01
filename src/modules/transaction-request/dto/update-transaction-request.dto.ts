@@ -1,15 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined } from 'class-validator';
-import { TransactionRequestStatus } from '../../../common/enums/transaction-request.enum';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateTransactionRequestDto {
-  @IsDefined()
-  @ApiProperty({
-    enum: [
-      TransactionRequestStatus.Excecuted,
-      TransactionRequestStatus.Pending,
-    ],
-    required: true,
-  })
-  readonly status: TransactionRequestStatus;
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  readonly txHash: string;
+
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  readonly receiptId: string;
+
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  readonly caller_address: string;
+
+  @IsOptional()
+  @ApiProperty({ required: false })
+  readonly txDetails?: any;
 }

@@ -13,6 +13,10 @@ export const mapTransactionRequestDto = (
     args: entity.args,
     gas: entity.gas,
     deposit: entity.deposit,
+    txHash: entity.txHash,
+    receiptId: entity.receiptId,
+    txDetails: entity.txDetails,
+    caller_address: entity.caller_address,
     project_id: entity.project._id.toString(),
   };
 };

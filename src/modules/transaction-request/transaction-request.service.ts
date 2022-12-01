@@ -197,28 +197,45 @@ export class TransactionRequestService {
   async update(
     uuid: string,
     dto: UpdateTransactionRequestDto,
-  ): Promise<ServiceResult<TransactionRequest>> {
+  ): Promise<ServiceResult<TransactionRequestDto>> {
     try {
       const updateTransactionRequest = await this.transactionRequestRepo
         .findOne({ uuid })
         .exec();
 
       if (!updateTransactionRequest) {
-        return new NotFound<TransactionRequest>(
+        return new NotFound<TransactionRequestDto>(
           'Transaction request not found',
         );
       }
 
-      updateTransactionRequest.status = dto.status;
+      if (
+        updateTransactionRequest.txHash ||
+        updateTransactionRequest.receiptId
+      ) {
+        return new BadRequest<TransactionRequestDto>(
+          'Transaction request already confirmed',
+        );
+      }
+
+      updateTransactionRequest.status = TransactionRequestStatus.Excecuted;
+      updateTransactionRequest.txHash = dto.txHash;
+      updateTransactionRequest.receiptId = dto.receiptId;
+      updateTransactionRequest.txDetails = dto.txDetails;
+      updateTransactionRequest.caller_address = dto.caller_address;
       updateTransactionRequest.updatedAt = new Date();
+
       await this.transactionRequestRepo.updateOne(
         { uuid },
         updateTransactionRequest,
       );
-      return new ServiceResult<TransactionRequest>(updateTransactionRequest);
+
+      return new ServiceResult<TransactionRequestDto>(
+        mapTransactionRequestDto(updateTransactionRequest),
+      );
     } catch (error) {
       this.logger.error('TransactionRequestService - update', error);
-      return new ServerError<TransactionRequest>(
+      return new ServerError<TransactionRequestDto>(
         `Can't update transaction request`,
       );
     }

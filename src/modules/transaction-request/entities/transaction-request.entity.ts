@@ -65,13 +65,47 @@ export class TransactionRequest extends BaseEntity {
     type: String,
   })
   @Prop({ required: false })
-  gas: string;
+  gas?: string;
 
   @ApiProperty({
     type: String,
   })
   @Prop({ required: false })
   deposit?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @Prop({ required: false })
+  txHash?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @Prop({ required: false })
+  receiptId?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @Prop({ required: false })
+  caller_address?: string;
+
+  @ApiProperty()
+  @Prop({
+    required: false,
+    get: (txDetails: string) => {
+      try {
+        return JSON.parse(txDetails);
+      } catch (err) {
+        return txDetails;
+      }
+    },
+    set: (txDetails: any) => {
+      return JSON.stringify(txDetails);
+    },
+  })
+  txDetails?: string;
 
   @ApiProperty({
     type: User,
