@@ -22,6 +22,7 @@ import {
   Unauthorized,
 } from '../../helpers/response/errors';
 import { TransactionRequestStatus } from '../../common/enums/transaction-request.enum';
+import { TransactionRequestDto } from './dto/transaction-request.dto';
 
 describe('TransactionRequestService', () => {
   let transactionRequestService: TransactionRequestService;
@@ -246,10 +247,57 @@ describe('TransactionRequestService', () => {
     const createResult = await new transactionRequestModel(
       mockTransactionRequests[0],
     ).save();
-    const result = await transactionRequestService.update(createResult.uuid, {
-      status: TransactionRequestStatus.Excecuted,
-    });
+
+    const updateDto = {
+      txHash: '123',
+      receiptId: '222',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      caller_address: 'bob.testnet',
+    };
+    const result = await transactionRequestService.update(
+      createResult.uuid,
+      updateDto,
+    );
     expect(result.data.status).toBe(TransactionRequestStatus.Excecuted);
+    expect(result.data.txHash).toBe(updateDto.txHash);
+    expect(result.data.txDetails).toStrictEqual(updateDto.txDetails);
+    expect(result.data.receiptId).toBe(updateDto.receiptId);
+    expect(result.data.caller_address).toBe(updateDto.caller_address);
+  });
+
+  it(`Update - should return Transaction request already confirmed (Bad request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const createResult = await new transactionRequestModel(
+      mockTransactionRequests[0],
+    ).save();
+    await transactionRequestService.update(createResult.uuid, {
+      txHash: '123',
+      receiptId: '222',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      caller_address: 'bob.testnet',
+    });
+
+    const result = await transactionRequestService.update(createResult.uuid, {
+      txHash: '123',
+      receiptId: '222',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      caller_address: 'bob.testnet',
+    });
+    expect(result).toStrictEqual(
+      new BadRequest<TransactionRequestDto>(
+        'Transaction request already confirmed',
+      ),
+    );
   });
 
   it(`Update - should return Transaction request not found (Not Found - 404) exception`, async () => {
@@ -257,10 +305,16 @@ describe('TransactionRequestService', () => {
     await new projectModel(mockProjects[0]).save();
     await new transactionRequestModel(mockTransactionRequests[0]).save();
     const response = await transactionRequestService.update('12', {
-      status: TransactionRequestStatus.Excecuted,
+      txHash: '123',
+      receiptId: '222',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      caller_address: 'bob.testnet',
     });
     expect(response).toStrictEqual(
-      new NotFound<TransactionRequest>('Transaction request not found'),
+      new NotFound<TransactionRequestDto>('Transaction request not found'),
     );
   });
 
@@ -271,11 +325,17 @@ describe('TransactionRequestService', () => {
     const response = await transactionRequestService.update(
       '634ff1e4bb85ed5475a1ff6d',
       {
-        status: TransactionRequestStatus.Excecuted,
+        txHash: '123',
+        receiptId: '222',
+        txDetails: {
+          name: 'dule',
+          base: '123',
+        },
+        caller_address: 'bob.testnet',
       },
     );
     expect(response).toStrictEqual(
-      new NotFound<TransactionRequest>('Transaction request not found'),
+      new NotFound<TransactionRequestDto>('Transaction request not found'),
     );
   });
 });
