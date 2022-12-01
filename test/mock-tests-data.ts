@@ -10,6 +10,7 @@ import { ApiKeyDto } from '../src/modules/api-key/dto/api-key.dto';
 import { TransactionRequestStatus } from '../src/common/enums/transaction-request.enum';
 import { CreateTransactionRequestDto } from '../src/modules/transaction-request/dto/create-transaction-request.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { TransactionRequestDto } from '../src/modules/transaction-request/dto/transaction-request.dto';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
@@ -492,3 +493,18 @@ export const mockCreateTransactionRequestDtos = [
   mockCreateTransactionRequestDto3,
   mockCreateTransactionRequestDto4,
 ];
+
+export const mockTransactionRequestDto: TransactionRequestDto = {
+  contractId: mockTransactionRequest1.contractId,
+  uuid: mockTransactionRequest1.uuid,
+  method: mockTransactionRequest1.method,
+  args: mockTransactionRequest1.args,
+  gas: mockTransactionRequest1.gas,
+  txHash: '123',
+  receiptId: '1233212',
+  txDetails: JSON.stringify({ name: '123', lastname: '222' }),
+  project_id: mockTransactionRequest1.project._id.toString(),
+  created_at: mockTransactionRequest1.createdAt,
+  status: mockTransactionRequest1.status,
+  caller_address: 'bob.testnet',
+};
