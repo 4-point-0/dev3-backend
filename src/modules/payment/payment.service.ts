@@ -8,6 +8,7 @@ import {
   BadRequest,
   NotFound,
   ServerError,
+  Unauthorized,
 } from '../../helpers/response/errors';
 import { ServiceResult } from '../../helpers/response/result';
 import { isNearWallet } from '../../utils/near-wallet-validation';
@@ -17,7 +18,7 @@ import { PagodaEventDataDto } from './dto/pagoda-event-data.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { Payment, PaymentDocument } from './entities/payment.entity';
 import { mapDtoPayment } from './mappers/map-dto-payment';
-import { mapPaymentGet } from './mappers/map-payment-get.ts';
+import { mapPaymentGet } from './mappers/map-payment-get';
 
 @Injectable()
 export class PaymentService {
@@ -34,12 +35,12 @@ export class PaymentService {
         return new BadRequest<Payment>(`Receiver ${dto.receiver} not valid`);
       }
 
-      if (!dto.uid) {
-        return new BadRequest<Payment>(`Uid can't be empty`);
-      }
-
       if (!dto.amount) {
         return new BadRequest<Payment>(`Amount can't be empty`);
+      }
+
+      if (!dto.owner) {
+        return new BadRequest<Payment>(`Owner can't be empty`);
       }
 
       if (!dto.project_id) {
@@ -51,15 +52,18 @@ export class PaymentService {
       }
 
       const project = await this.projectRepo
-        .findOne({ _id: new Mongoose.Types.ObjectId(dto.project_id) })
+        .findOne({
+          _id: new Mongoose.Types.ObjectId(dto.project_id),
+        })
+        .populate('owner')
         .exec();
 
-      if (!project) {
+      if (!project || project.owner._id.toString() !== dto.owner.toString()) {
         return new NotFound<Payment>('Project not found');
       }
 
       const payment = await new this.paymentRepo(
-        mapDtoPayment(dto, project),
+        mapDtoPayment(dto, project, project.owner),
       ).save();
 
       return new ServiceResult<Payment>(payment);
@@ -70,10 +74,10 @@ export class PaymentService {
   }
 
   async findAll(
+    ownerId: Mongoose.Types.ObjectId,
     project_id: string,
     offset?: number,
     limit?: number,
-    uid?: string,
     receiver?: string,
     receiver_fungible?: string,
     status?: PaymentStatus,
@@ -81,15 +85,12 @@ export class PaymentService {
     try {
       const projectObjectId = new Mongoose.Types.ObjectId(project_id);
       const query = this.paymentRepo.find({
+        owner: ownerId,
         project: projectObjectId,
       });
       const queryCount = this.paymentRepo
-        .find({ project: projectObjectId })
+        .find({ owner: ownerId, project: projectObjectId })
         .countDocuments();
-
-      if (uid) {
-        query.find({ uid: { $regex: uid, $options: 'i' } });
-      }
 
       if (receiver) {
         query.find({ receiver: { $regex: receiver, $options: 'i' } });
@@ -119,34 +120,46 @@ export class PaymentService {
     }
   }
 
-  async findByUid(uid: string): Promise<ServiceResult<PaymentDto>> {
+  async findByUuid(uuid: string): Promise<ServiceResult<PaymentDto>> {
     try {
-      const payment = await this.paymentRepo.findOne({ uid }).exec();
+      const payment = await this.paymentRepo.findOne({ uuid }).exec();
 
       if (!payment) {
         return new NotFound<PaymentDto>('Payment not found');
       }
 
-      return new ServiceResult<PaymentDto>(mapPaymentGet(payment));
+      return new ServiceResult<PaymentDto>(mapPaymentGet(payment, false));
     } catch (error) {
       this.logger.error('PaymentService - findByUid', error);
       return new ServerError<PaymentDto>(`Can't get Payment`);
     }
   }
 
-  async findOne(id: string): Promise<ServiceResult<PaymentDto>> {
+  async findOne(
+    id: string,
+    ownerId: string,
+  ): Promise<ServiceResult<PaymentDto>> {
     try {
       if (!Mongoose.Types.ObjectId.isValid(id)) {
         return new NotFound<PaymentDto>('Payment not found');
       }
 
-      const payment = await this.paymentRepo.findOne({ _id: id }).exec();
+      const payment = await this.paymentRepo
+        .findOne({ _id: id })
+        .populate('owner')
+        .exec();
 
       if (!payment) {
         return new NotFound<PaymentDto>('Payment not found');
       }
 
-      return new ServiceResult<PaymentDto>(mapPaymentGet(payment));
+      if (payment.owner._id.toString() !== ownerId) {
+        return new Unauthorized<PaymentDto>(
+          'Unauthorized access to user payment',
+        );
+      }
+
+      return new ServiceResult<PaymentDto>(mapPaymentGet(payment, true));
     } catch (error) {
       this.logger.error('PaymentService - findOne', error);
       return new ServerError<PaymentDto>(`Can't get payment`);
@@ -183,7 +196,7 @@ export class PaymentService {
       updatePayment.status = PaymentStatus.Paid;
       updatePayment.updatedAt = new Date();
       await this.paymentRepo.updateOne({ _id: paymentObjectId }, updatePayment);
-      return new ServiceResult<PaymentDto>(mapPaymentGet(updatePayment));
+      return new ServiceResult<PaymentDto>(mapPaymentGet(updatePayment, false));
     } catch (error) {
       this.logger.error('PaymentService - update', error);
       return new ServerError<PaymentDto>(`Can't update payment`);

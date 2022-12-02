@@ -5,6 +5,7 @@ import { Project } from '../../../modules/project/entities/project.entity';
 import { BaseEntity } from '../../../common/entities/base-entity';
 import { PaymentStatus } from '../../../common/enums/payment-status.enum';
 import { nearWalletRegex } from '../../../utils/regex';
+import { User } from '../../../modules/user/entities/user.entity';
 
 export type PaymentDocument = Payment & Document;
 
@@ -16,7 +17,7 @@ export class Payment extends BaseEntity {
     type: String,
   })
   @Prop({ required: true })
-  uid: string;
+  uuid: string;
 
   @ApiProperty({
     type: String,
@@ -59,6 +60,12 @@ export class Payment extends BaseEntity {
   })
   @Prop({ type: Mongoose.Types.ObjectId, ref: Project.name })
   project: Project;
+
+  @ApiProperty({
+    type: User,
+  })
+  @Prop({ type: Mongoose.Types.ObjectId, ref: User.name })
+  owner: User;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

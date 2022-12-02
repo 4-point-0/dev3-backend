@@ -174,7 +174,7 @@ export const mockCreateProjectDtos = [
 
 export const mockPayment1 = {
   _id: new Mongoose.Types.ObjectId('784ff1e4bb85ed5475a1ff5d'),
-  uid: 'bob.dev3.testnet',
+  uuid: uuidv4(),
   memo: 'Pay 10 tokens',
   amount: '10',
   receiver: 'mary.dev3.testnet',
@@ -187,7 +187,7 @@ export const mockPayment1 = {
 
 export const mockPayment2 = {
   _id: new Mongoose.Types.ObjectId('784fe1e4cb85ed5475a1ff5d'),
-  uid: 'john.dev3.testnet',
+  uuid: uuidv4(),
   memo: 'Pay 12 tokens',
   amount: '12',
   receiver: 'alice.dev3.testnet',
@@ -200,7 +200,7 @@ export const mockPayment2 = {
 
 export const mockPayment3 = {
   _id: new Mongoose.Types.ObjectId('784ff1e2bb85fd5475a1ff5d'),
-  uid: 'alice.dev3.testnet',
+  uuid: uuidv4(),
   memo: 'Pay 9 tokens',
   amount: '9',
   receiver: 'bob.dev3.testnet',
@@ -213,7 +213,7 @@ export const mockPayment3 = {
 
 export const mockPayment4 = {
   _id: new Mongoose.Types.ObjectId('784ff1e4bb85ed5475a1ff5d'),
-  uid: 'bob.dev3.testnet',
+  uuid: uuidv4(),
   memo: 'Pay 15 tokens',
   amount: '15',
   receiver: 'mary.dev3.testnet',
@@ -232,35 +232,35 @@ export const mockPayments = [
 ];
 
 export const mockCreatePaymentDto1: CreatePaymentDto = {
-  uid: mockPayment1.uid,
   memo: mockPayment1.memo,
   amount: mockPayment1.amount,
   receiver: mockPayment1.receiver,
   project_id: mockPayment1.project._id.toString(),
+  owner: mockPayment1.owner._id,
 };
 
 export const mockCreatePaymentDto2: CreatePaymentDto = {
-  uid: mockPayment2.uid,
   memo: mockPayment2.memo,
   amount: mockPayment2.amount,
   receiver: mockPayment2.receiver,
   project_id: mockPayment1.project._id.toString(),
+  owner: mockPayment1.owner._id,
 };
 
 export const mockCreatePaymentDto3: CreatePaymentDto = {
-  uid: mockPayment3.uid,
   memo: mockPayment3.memo,
   amount: mockPayment3.amount,
   receiver: mockPayment3.receiver,
   project_id: mockPayment1.project._id.toString(),
+  owner: mockPayment1.owner._id,
 };
 
 export const mockCreatePaymentDto4: CreatePaymentDto = {
-  uid: mockPayment4.uid,
   memo: mockPayment4.memo,
   amount: mockPayment4.amount,
   receiver: mockPayment4.receiver,
   project_id: mockPayment1.project._id.toString(),
+  owner: mockPayment1.owner._id,
 };
 
 export const mockCreatePaymentDtos = [
@@ -272,7 +272,7 @@ export const mockCreatePaymentDtos = [
 
 export const mockPaymentDto = {
   _id: mockPayment1._id.toString(),
-  uid: mockPayment1.uid,
+  uuid: mockPayment1.uuid,
   amount: mockPayment1.amount,
   memo: mockPayment1.memo,
   receiver: mockPayment1.receiver,

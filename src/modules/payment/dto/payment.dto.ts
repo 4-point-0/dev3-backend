@@ -5,7 +5,7 @@ export class PaymentDto {
   @ApiProperty({
     type: String,
   })
-  readonly _id: string;
+  readonly _id?: string;
 
   @ApiProperty({
     type: String,
@@ -15,7 +15,7 @@ export class PaymentDto {
   @ApiProperty({
     type: String,
   })
-  readonly uid: string;
+  readonly uuid: string;
 
   @ApiProperty({
     type: String,
