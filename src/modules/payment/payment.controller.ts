@@ -27,6 +27,7 @@ import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
 import { handle } from '../../helpers/response/handle';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
+import { AuthRequest } from '../user/entities/user.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { Payment } from './entities/payment.entity';
@@ -54,7 +55,8 @@ export class PaymentController {
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   @HttpCode(200)
-  async create(@Body() dto: CreatePaymentDto) {
+  async create(@Req() request: AuthRequest, @Body() dto: CreatePaymentDto) {
+    dto.owner = request.user._id;
     return handle(await this.paymentService.create(dto));
   }
 
@@ -65,7 +67,6 @@ export class PaymentController {
   @ApiQuery({ name: 'project_id', required: true })
   @ApiQuery({ name: 'offset', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  @ApiQuery({ name: 'uid', required: false })
   @ApiQuery({ name: 'receiver', required: false })
   @ApiQuery({ name: 'receiver_fungible', required: false })
   @ApiQuery({ name: 'status', enum: PaymentStatus, required: false })
@@ -76,20 +77,20 @@ export class PaymentController {
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async findAll(
+    @Req() request: AuthRequest,
     @Query('project_id') project_id: string,
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
-    @Query('uid') uid?: string,
     @Query('receiver') receiver?: string,
     @Query('receiver_fungible') receiver_fungible?: string,
     @Query('status') status?: PaymentStatus,
   ) {
     return handle(
       await this.paymentService.findAll(
+        request.user._id,
         project_id,
         offset,
         limit,
-        uid,
         receiver,
         receiver_fungible,
         status,
@@ -103,11 +104,13 @@ export class PaymentController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findById(@Param('id') id: string) {
-    return handle<PaymentDto>(await this.paymentService.findOne(id));
+  async findById(@Req() request: AuthRequest, @Param('id') id: string) {
+    return handle<PaymentDto>(
+      await this.paymentService.findOne(id, request.user._id.toString()),
+    );
   }
 
-  @Get('uid/:uid')
+  @Get('uuid/:uuid')
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: PaymentDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -115,8 +118,8 @@ export class PaymentController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async findByUid(@Param('uid') uid: string) {
-    return handle<PaymentDto>(await this.paymentService.findByUid(uid));
+  async findByUid(@Param('uuid') uuid: string) {
+    return handle<PaymentDto>(await this.paymentService.findByUuid(uuid));
   }
 
   @Post('ft-transfer-pagoda')

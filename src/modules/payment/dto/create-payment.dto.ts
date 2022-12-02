@@ -1,14 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, Matches } from 'class-validator';
 import { nearWalletRegex } from '../../../utils/regex';
+import Mongoose from 'mongoose';
 
 export class CreatePaymentDto {
-  @IsNotEmpty()
-  @ApiProperty({
-    type: String,
-  })
-  readonly uid: string;
-
   @ApiProperty({
     type: String,
   })
@@ -39,4 +34,6 @@ export class CreatePaymentDto {
   })
   @IsNotEmpty()
   project_id: string;
+
+  owner: Mongoose.Types.ObjectId;
 }

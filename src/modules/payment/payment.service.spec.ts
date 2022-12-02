@@ -4,6 +4,7 @@ import {
   mockCreatePaymentDtos,
   mockPayments,
   mockProjects,
+  mockUser,
 } from '../../../test/mock-tests-data';
 import { PaymentService } from './payment.service';
 import { Payment, PaymentSchema } from './entities/payment.entity';
@@ -12,6 +13,8 @@ import { connect, Connection, Model } from 'mongoose';
 import { BadRequest, NotFound } from '../../helpers/response/errors';
 import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { Project, ProjectSchema } from '../project/entities/project.entity';
+import { User, UserSchema } from '../user/entities/user.entity';
+import { ProjectService } from '../project/project.service';
 
 describe('PaymentService', () => {
   let paymentService: PaymentService;
@@ -19,6 +22,7 @@ describe('PaymentService', () => {
   let mongoConnection: Connection;
   let paymentModel: Model<Payment>;
   let projectModel: Model<Project>;
+  let userModel: Model<User>;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -26,11 +30,14 @@ describe('PaymentService', () => {
     mongoConnection = (await connect(uri)).connection;
     paymentModel = mongoConnection.model(Payment.name, PaymentSchema);
     projectModel = mongoConnection.model(Project.name, ProjectSchema);
+    userModel = mongoConnection.model(User.name, UserSchema);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PaymentService,
+        ProjectService,
         { provide: getModelToken(Payment.name), useValue: paymentModel },
         { provide: getModelToken(Project.name), useValue: projectModel },
+        { provide: getModelToken(User.name), useValue: userModel },
       ],
     }).compile();
 
@@ -52,14 +59,17 @@ describe('PaymentService', () => {
   });
 
   it('Create - should return the saved object', async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     const createdPayment = await paymentService.create(
       mockCreatePaymentDtos[0],
     );
-    expect(createdPayment.data.uid).toBe(mockCreatePaymentDtos[0].uid);
+    expect(createdPayment.data._id).toBeDefined();
+    expect(createdPayment.data.uuid).toBeDefined();
   });
 
   it(`Create - should return Receiver not valid (Bad Request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     const dto = { ...mockCreatePaymentDtos[0] };
     dto.receiver = '123';
@@ -69,17 +79,8 @@ describe('PaymentService', () => {
     );
   });
 
-  it(`Create - should return Uid can't be empty (Bad Request - 400) exception`, async () => {
-    await new projectModel(mockProjects[0]).save();
-    const dto = { ...mockCreatePaymentDtos[0] };
-    delete dto.uid;
-    const response = await paymentService.create(dto);
-    expect(response).toStrictEqual(
-      new BadRequest<Payment>(`Uid can't be empty`),
-    );
-  });
-
   it(`Create - should return Amount can't be empty (Bad Request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     const dto = { ...mockCreatePaymentDtos[0] };
     delete dto.amount;
@@ -90,6 +91,7 @@ describe('PaymentService', () => {
   });
 
   it(`Create - should return Project id can't be empty (Bad Request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     const dto = { ...mockCreatePaymentDtos[0] };
     delete dto.project_id;
@@ -100,21 +102,24 @@ describe('PaymentService', () => {
   });
 
   it(`FindAll - should findAll`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     await paymentService.create(mockCreatePaymentDtos[0]);
     await paymentService.create(mockCreatePaymentDtos[1]);
     const result = await paymentService.findAll(
+      mockUser._id,
       mockCreatePaymentDtos[0].project_id,
     );
-
     expect(result.data.results).toHaveLength(2);
   });
 
   it(`FindAll - should findAll with total count`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     await paymentService.create(mockCreatePaymentDtos[0]);
     await paymentService.create(mockCreatePaymentDtos[1]);
     const result = await paymentService.findAll(
+      mockUser._id,
       mockCreatePaymentDtos[0].project_id,
     );
     expect(result.data.total).toEqual(2);
@@ -122,6 +127,7 @@ describe('PaymentService', () => {
   });
 
   it(`FindAll - should findAll with total count, limit, offset`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     await paymentService.create(mockCreatePaymentDtos[0]);
     await paymentService.create(mockCreatePaymentDtos[1]);
@@ -130,6 +136,7 @@ describe('PaymentService', () => {
     const limit = 2;
     const offset = 2;
     const result = await paymentService.findAll(
+      mockUser._id,
       mockCreatePaymentDtos[0].project_id,
       offset,
       limit,
@@ -142,6 +149,7 @@ describe('PaymentService', () => {
   });
 
   it(`FindAll - should findAll with total count, limit, offset, filter by uid, status`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     await paymentService.create(mockCreatePaymentDtos[0]);
     await paymentService.create(mockCreatePaymentDtos[1]);
@@ -149,13 +157,12 @@ describe('PaymentService', () => {
     await paymentService.create(mockCreatePaymentDtos[3]);
     const limit = 2;
     const offset = 0;
-    const uid = 'bob.dev3.testnet';
     const status = PaymentStatus.Pending;
     const result = await paymentService.findAll(
+      mockUser._id,
       mockCreatePaymentDtos[0].project_id,
       offset,
       limit,
-      uid,
       null,
       null,
       status,
@@ -164,34 +171,42 @@ describe('PaymentService', () => {
     expect(result.data.offset).toEqual(offset);
     expect(result.data.limit).toEqual(limit);
     expect(result.data.count).toEqual(limit);
-    expect(result.data.results[0].uid).toMatch(mockCreatePaymentDtos[0].uid);
     expect(result.data.results[0].status).toEqual(status);
-    expect(result.data.results[1].uid).toMatch(mockCreatePaymentDtos[3].uid);
     expect(result.data.results[1].status).toEqual(status);
   });
 
   it(`FindOne - should findOne`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     const createResult = await paymentService.create(mockCreatePaymentDtos[0]);
 
     const result = await paymentService.findOne(
       createResult.data._id.toString(),
+      mockUser._id.toString(),
     );
 
     expect(result.data.amount).toBe(mockCreatePaymentDtos[0].amount);
   });
 
   it(`FindOne - should return Payment not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     await new paymentModel(mockPayments[0]).save();
-    const response = await paymentService.findOne('12');
+    const response = await paymentService.findOne(
+      '12',
+      mockUser._id.toString(),
+    );
     expect(response).toStrictEqual(new NotFound<Payment>('Payment not found'));
   });
 
   it(`FindOne - should return Payment not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
     await new paymentModel(mockPayments[0]).save();
-    const response = await paymentService.findOne('634ff1e4bb81ed5475a1ff6d');
+    const response = await paymentService.findOne(
+      '634ff1e4bb81ed5475a1ff6d',
+      mockUser._id.toString(),
+    );
     expect(response).toStrictEqual(new NotFound<Payment>('Payment not found'));
   });
 
