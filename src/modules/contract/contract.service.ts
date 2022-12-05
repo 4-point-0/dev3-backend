@@ -33,7 +33,10 @@ export class ContractService {
 
   github_token = this.configService.get<string>('github.token');
   branch =
-    this.configService.get<string>('NODE_ENV') === 'dev' ? 'dev' : 'main';
+    this.configService.get<string>('NODE_ENV') === 'dev' ||
+    this.configService.get<string>('NODE_ENV') === 'staging'
+      ? 'dev'
+      : 'main';
 
   async findAll(
     offset?: number,

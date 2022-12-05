@@ -24,7 +24,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "postinstall": "husky install",
-    "deploy": "npm ci && npm run build && npm run start:prod"
+    "deploy-staging": "npm ci && npm run build && npm run start:staging",
+    "deploy-prod": "npm ci && npm run build && npm run start:prod"
   },
   "dependencies": {
     "@adminjs/express": "^5.0.1",
