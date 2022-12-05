@@ -1,5 +1,5 @@
-import { getRpc } from '../../../helpers/rpc/rpc-helper';
-import { AxiosPostDto } from '../dto/axios-post.dto';
+import { getRpc } from '../helpers/rpc/rpc-helper';
+import { AxiosPostDto } from '../modules/auth/dto/axios-post.dto';
 
 export const getRpcPostArguments = (
   accountId: string,

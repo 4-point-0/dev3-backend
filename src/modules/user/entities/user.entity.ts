@@ -36,8 +36,13 @@ export class User extends BaseEntity {
   @ApiProperty({
     type: [String],
   })
-  @Prop({ type: [String], required: true, default: [Role.Customer] })
-  roles: string[]; // 'customer' or 'admin'.
+  @Prop({
+    type: [String],
+    required: true,
+    enum: Role,
+    default: [Role.Customer],
+  })
+  roles: Role[];
 
   @ApiProperty({
     type: String,

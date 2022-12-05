@@ -1,13 +1,6 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as borsh from 'borsh';
-import { sha256 } from 'js-sha256';
-import { firstValueFrom } from 'rxjs';
 import { UserService } from '../user/user.service';
-import * as nacl from 'tweetnacl';
-import { edsa } from '../../common/constants';
-import { JwtUser } from './dto/jwt-user';
 import { ServiceResult } from '../../helpers/response/result';
 import { JwtTokenDto } from './dto/jwt-token.dto';
 import {
@@ -15,18 +8,19 @@ import {
   NotFound,
   ServerError,
 } from '../../helpers/response/errors';
-import { mapJwtUserCreate } from './mappers/map-jwt-user-create';
-import { mapJwtUser } from './mappers/map-jwt-user';
-import { getRpcPostArguments } from './common/rpc-call-arguments';
-import { Role } from '../../common/enums/role.enum';
 import { ConfigService } from '@nestjs/config';
+import { NearRegisterUserDto } from './dto/near-register-user.dto';
+import {
+  getNearPublicKey,
+  nearValidatePublicKeyByAccountId,
+} from '../../helpers/near/near-helper';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private readonly httpService: HttpService,
     private jwtService: JwtService,
     private readonly userService: UserService,
     private configService: ConfigService,
@@ -37,12 +31,27 @@ export class AuthService {
     signedJsonString: string,
   ): Promise<ServiceResult<JwtTokenDto>> {
     try {
-      const jwtUser = await this.nearValidate(username, signedJsonString);
+      const publicKey = await getNearPublicKey(username, signedJsonString);
 
-      if (!jwtUser) return new NotFound('User not found');
+      if (!publicKey) {
+        return new BadRequest('Invalid signature');
+      }
 
-      const user = await this.getOrCreateUser(jwtUser);
-      if (!user) return new BadRequest('Error getting user');
+      const pK_of_account = await nearValidatePublicKeyByAccountId(
+        username,
+        publicKey,
+        this.configService.get('NODE_ENV'),
+      );
+
+      if (!pK_of_account) {
+        return new BadRequest('Invalid public key');
+      }
+
+      const user = await this.userService.findOne(username);
+      if (!user) {
+        return new NotFound('User not found!');
+      }
+
       const dto = {
         token: this.jwtService.sign(user),
       };
@@ -54,98 +63,46 @@ export class AuthService {
     }
   }
 
-  private async nearValidatePublicKeyByAccountId(
-    accountId: string,
-    pkArray: string | Uint8Array,
-  ): Promise<boolean> {
+  async registerNearUser(
+    dto: NearRegisterUserDto,
+  ): Promise<ServiceResult<User>> {
     try {
-      const currentPublicKey = edsa + borsh.baseEncode(pkArray);
-      const { url, payload, config } = getRpcPostArguments(
-        accountId,
+      const publicKey = await getNearPublicKey(
+        dto.username,
+        dto.signedJsonString,
+      );
+
+      if (!publicKey) {
+        return new BadRequest('Invalid signature');
+      }
+
+      const pK_of_account = await nearValidatePublicKeyByAccountId(
+        dto.username,
+        publicKey,
         this.configService.get('NODE_ENV'),
       );
-      const result = await firstValueFrom(
-        this.httpService.post(url, payload, config),
-      );
 
-      const data = result.data;
+      if (!pK_of_account) {
+        return new BadRequest('Invalid public key');
+      }
+      const user = await this.userService.findOne(dto.username);
 
-      if (!data || !data.result || !data.result.keys) return false;
-
-      for (const key in data.result.keys) {
-        if (data.result.keys[key].public_key === currentPublicKey) return true;
+      if (user) {
+        return new BadRequest('User already exists!');
       }
 
-      return false;
-    } catch (error) {
-      this.logger.error(
-        'AuthService - nearValidatePublicKeyByAccountId',
-        error,
-      );
-      return false;
-    }
-  }
-
-  private async nearValidate(
-    username: string,
-    signedJsonString: string,
-  ): Promise<JwtUser | null> {
-    try {
-      // Parameters:
-      //   username: the NEAR accountId (e.g. test.near)
-      //   signedJsonString: a json.stringify of the object {"signature", "publicKey"},
-      //             where "signature" is the signature obtained after signing
-      //             the user's username (e.g. test.near), and "publicKey" is
-      //             the user's public key
-      let { signature, publicKey } = JSON.parse(signedJsonString);
-
-      // We expect the user to sign a message composed by its USERNAME
-      const msg = Uint8Array.from(sha256.array(username));
-      signature = Uint8Array.from(Object.values(signature));
-      publicKey = Uint8Array.from(Object.values(publicKey.data));
-
-      // check that the signature was created using the counterpart private key
-      const valid_signature = nacl.sign.detached.verify(
-        msg,
-        signature,
-        publicKey,
-      );
-
-      // and that the publicKey is from this USERNAME
-      const pK_of_account = await this.nearValidatePublicKeyByAccountId(
-        username,
-        publicKey,
-      );
-
-      if (!valid_signature || !pK_of_account) return null;
-
-      return {
-        uid: username,
-        username,
+      const newUser = await this.userService.create({
+        uid: dto.username,
         accountType: 'near',
-        roles: [Role.Customer],
-      };
+        username: dto.username,
+        nearWalletAccountId: dto.username,
+        roles: dto.roles,
+      });
+
+      return new ServiceResult<User>(newUser);
     } catch (error) {
-      this.logger.error('AuthService - nearValidate', error);
-      return null;
-    }
-  }
-
-  private async getOrCreateUser(jwtUser: JwtUser) {
-    try {
-      const user = await this.userService.findOne(jwtUser.uid);
-
-      if (!user) {
-        const newUser = await this.userService.create(
-          mapJwtUserCreate(jwtUser),
-        );
-
-        return mapJwtUser(newUser);
-      }
-      return mapJwtUser(user);
-    } catch (error) {
-      this.logger.error('AuthService - getOrCreateUser', error);
-      return null;
+      this.logger.error('AuthService - registerNearUser', error);
+      return new ServerError<User>(`Can't register user`);
     }
   }
 }

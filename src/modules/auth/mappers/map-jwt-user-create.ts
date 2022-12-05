@@ -8,5 +8,6 @@ export const mapJwtUserCreate = (jwtUser: JwtUser): CreateUserDto => {
     accountType: jwtUser.accountType,
     nearWalletAccountId:
       jwtUser.accountType === 'near' ? jwtUser.username : null,
+    roles: jwtUser.roles,
   };
 };
