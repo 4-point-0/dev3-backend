@@ -18,8 +18,8 @@ import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
 import { Address } from '../address/entities/address.entity';
 import { dev3CompanyName, dev3LogoUrl } from '../../common/constants';
-import { PaymentModule } from '../payment/payment.module';
-import { Payment } from '../payment/entities/payment.entity';
+// import { PaymentModule } from '../payment/payment.module';
+// import { Payment } from '../payment/entities/payment.entity';
 import { ContractModule } from '../contract/contract.module';
 import { Contract } from '../contract/entities/contract.entity';
 import { ApiKeyModule } from '../api-key/api-key.module';
@@ -55,7 +55,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     AuthModule,
     UserModule,
     AddressModule,
-    PaymentModule,
+    // PaymentModule,
     ContractModule,
     ApiKeyModule,
     TransactionRequestModule,
@@ -65,7 +65,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         getModelToken('Project'),
         getModelToken('User'),
         getModelToken('Address'),
-        getModelToken('Payment'),
+        // getModelToken('Payment'),
         getModelToken('Contract'),
         getModelToken('ApiKey'),
         getModelToken('TransactionRequest'),
@@ -75,7 +75,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
         projectModel: Model<Project>,
         userModel: Model<User>,
         addressModel: Model<Address>,
-        paymentModel: Model<Payment>,
+        // paymentModel: Model<Payment>,
         contractModel: Model<Contract>,
         apiKeyModel: Model<ApiKey>,
         transactionRequestModel: Model<TransactionRequest>,
@@ -161,30 +161,30 @@ AdminJS.registerAdapter(AdminJSMongoose);
                 parent: { name: 'Content', icon: 'Home' },
               },
             },
-            {
-              resource: paymentModel,
-              options: {
-                properties: {
-                  createdAt: {
-                    isVisible: {
-                      edit: false,
-                      new: false,
-                    },
-                  },
-                  updatedAt: {
-                    isVisible: {
-                      edit: false,
-                      new: false,
-                    },
-                  },
-                  owner: {
-                    isRequired: true,
-                    reference: 'User',
-                  },
-                },
-                parent: { name: 'Content', icon: 'Home' },
-              },
-            },
+            // {
+            //   resource: paymentModel,
+            //   options: {
+            //     properties: {
+            //       createdAt: {
+            //         isVisible: {
+            //           edit: false,
+            //           new: false,
+            //         },
+            //       },
+            //       updatedAt: {
+            //         isVisible: {
+            //           edit: false,
+            //           new: false,
+            //         },
+            //       },
+            //       owner: {
+            //         isRequired: true,
+            //         reference: 'User',
+            //       },
+            //     },
+            //     parent: { name: 'Content', icon: 'Home' },
+            //   },
+            // },
             {
               resource: contractModel,
               options: {
