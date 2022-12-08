@@ -14,8 +14,8 @@ export const mapTransactionRequestDto = (
     gas: entity.gas,
     deposit: entity.deposit,
     txHash: entity.txHash,
-    receiptId: entity.receiptId,
     txDetails: entity.txDetails,
+    is_near_token: entity.is_near_token,
     caller_address: entity.caller_address,
     project_id: entity.project._id.toString(),
   };

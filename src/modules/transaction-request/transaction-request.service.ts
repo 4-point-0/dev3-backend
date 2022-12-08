@@ -21,6 +21,8 @@ import { UpdateTransactionRequestDto } from './dto/update-transaction-request.dt
 import { TransactionRequestDto } from './dto/transaction-request.dto';
 import { mapTransactionRequestDto } from './mappers/mapTransactionRequestDto';
 import { v4 as uuidv4 } from 'uuid';
+import { ConfigService } from '@nestjs/config';
+import { getState } from '../../helpers/rpc/rpc-helper';
 
 @Injectable()
 export class TransactionRequestService {
@@ -30,6 +32,7 @@ export class TransactionRequestService {
     @InjectModel(TransactionRequest.name)
     private transactionRequestRepo: Model<TransactionRequestDocument>,
     @InjectModel(Project.name) private projectRepo: Model<ProjectDocument>,
+    private configService: ConfigService,
   ) {}
 
   async create(
@@ -99,7 +102,9 @@ export class TransactionRequestService {
         .countDocuments();
 
       if (project_id) {
-        query.find({ project: { $regex: project_id, $options: 'i' } });
+        query.find({
+          project: new Mongoose.Types.ObjectId(project_id),
+        });
       }
 
       if (contractId) {
@@ -146,8 +151,21 @@ export class TransactionRequestService {
         );
       }
 
+      if (
+        transactionRequest.txHash &&
+        transactionRequest.status === TransactionRequestStatus.Pending
+      ) {
+        await this.updateTxStatus(
+          transactionRequest.txHash,
+          transactionRequest.contractId,
+          transactionRequest.uuid,
+        );
+      }
+
       return new ServiceResult<TransactionRequestDto>(
-        mapTransactionRequestDto(transactionRequest),
+        mapTransactionRequestDto(
+          await this.transactionRequestRepo.findOne({ uuid }).exec(),
+        ),
       );
     } catch (error) {
       this.logger.error('TransactionRequestService - findByUUid', error);
@@ -185,7 +203,22 @@ export class TransactionRequestService {
         );
       }
 
-      return new ServiceResult<TransactionRequest>(transactionRequest);
+      if (
+        transactionRequest.txHash &&
+        transactionRequest.status === TransactionRequestStatus.Pending
+      ) {
+        await this.updateTxStatus(
+          transactionRequest.txHash,
+          transactionRequest.contractId,
+          transactionRequest.uuid,
+        );
+      }
+      return new ServiceResult<TransactionRequest>(
+        await this.transactionRequestRepo
+          .findOne({ _id: id })
+          .populate('owner')
+          .exec(),
+      );
     } catch (error) {
       this.logger.error('TransactionRequestService - findOne', error);
       return new ServerError<TransactionRequest>(
@@ -209,18 +242,13 @@ export class TransactionRequestService {
         );
       }
 
-      if (
-        updateTransactionRequest.txHash ||
-        updateTransactionRequest.receiptId
-      ) {
+      if (updateTransactionRequest.txHash) {
         return new BadRequest<TransactionRequestDto>(
           'Transaction request already confirmed',
         );
       }
 
-      updateTransactionRequest.status = TransactionRequestStatus.Excecuted;
       updateTransactionRequest.txHash = dto.txHash;
-      updateTransactionRequest.receiptId = dto.receiptId;
       updateTransactionRequest.txDetails = dto.txDetails;
       updateTransactionRequest.caller_address = dto.caller_address;
       updateTransactionRequest.updatedAt = new Date();
@@ -239,5 +267,49 @@ export class TransactionRequestService {
         `Can't update transaction request`,
       );
     }
+  }
+
+  async updateAllTxStatuses(): Promise<void> {
+    try {
+      const transactionRequests = await this.transactionRequestRepo
+        .find({ status: TransactionRequestStatus.Pending })
+        .exec();
+
+      for (const transactionRequest of transactionRequests) {
+        if (transactionRequest.txHash && transactionRequest.caller_address) {
+          await this.updateTxStatus(
+            transactionRequest.txHash,
+            transactionRequest.caller_address,
+            transactionRequest.uuid,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error(
+        'TransactionRequestService - updateAllTxStatuses',
+        error,
+      );
+    }
+  }
+
+  async updateTxStatus(
+    txHash: string,
+    caller_address: string,
+    uuid: string,
+  ): Promise<void> {
+    const txState = await getState(
+      txHash,
+      caller_address,
+      this.configService.get('NODE_ENV'),
+    );
+    console.log(txState);
+    await this.transactionRequestRepo.updateOne(
+      { uuid },
+      {
+        status: txState.status.hasOwnProperty('SuccessValue')
+          ? TransactionRequestStatus.Success
+          : TransactionRequestStatus.Failure,
+      },
+    );
   }
 }

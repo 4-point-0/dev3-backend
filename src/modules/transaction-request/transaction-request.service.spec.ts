@@ -21,8 +21,8 @@ import {
   NotFound,
   Unauthorized,
 } from '../../helpers/response/errors';
-import { TransactionRequestStatus } from '../../common/enums/transaction-request.enum';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
+import { ConfigService } from '@nestjs/config';
 
 describe('TransactionRequestService', () => {
   let transactionRequestService: TransactionRequestService;
@@ -47,6 +47,17 @@ describe('TransactionRequestService', () => {
         TransactionRequestService,
         { provide: getModelToken(Project.name), useValue: projectModel },
         { provide: getModelToken(User.name), useValue: userModel },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'NODE_ENV') {
+                return 'dev';
+              }
+              return null;
+            }),
+          },
+        },
         {
           provide: getModelToken(TransactionRequest.name),
           useValue: transactionRequestModel,
@@ -166,9 +177,33 @@ describe('TransactionRequestService', () => {
       null,
       null,
       '123',
+      null,
+      null,
     );
     expect(result.data.results).toHaveLength(2);
     expect(result.data.count).toBe(2);
+  });
+
+  it(`FindAll - should findAll by method name`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new projectModel(mockProjects[1]).save();
+    await transactionRequestService.create(mockCreateTransactionRequestDtos[0]);
+    await transactionRequestService.create(mockCreateTransactionRequestDtos[1]);
+
+    const result = await transactionRequestService.findAll(
+      mockUser._id,
+      null,
+      null,
+      mockProjects[0]._id.toString(),
+      null,
+      mockCreateTransactionRequestDtos[0].method,
+    );
+
+    expect(result.data.results).toHaveLength(1);
+    expect(result.data.results[0].method).toBe(
+      mockCreateTransactionRequestDtos[0].method,
+    );
   });
 
   it(`FindByUuid - should find by uuid`, async () => {
@@ -250,7 +285,6 @@ describe('TransactionRequestService', () => {
 
     const updateDto = {
       txHash: '123',
-      receiptId: '222',
       txDetails: {
         name: 'dule',
         base: '123',
@@ -261,10 +295,8 @@ describe('TransactionRequestService', () => {
       createResult.uuid,
       updateDto,
     );
-    expect(result.data.status).toBe(TransactionRequestStatus.Excecuted);
     expect(result.data.txHash).toBe(updateDto.txHash);
     expect(result.data.txDetails).toStrictEqual(updateDto.txDetails);
-    expect(result.data.receiptId).toBe(updateDto.receiptId);
     expect(result.data.caller_address).toBe(updateDto.caller_address);
   });
 
@@ -276,7 +308,6 @@ describe('TransactionRequestService', () => {
     ).save();
     await transactionRequestService.update(createResult.uuid, {
       txHash: '123',
-      receiptId: '222',
       txDetails: {
         name: 'dule',
         base: '123',
@@ -286,7 +317,6 @@ describe('TransactionRequestService', () => {
 
     const result = await transactionRequestService.update(createResult.uuid, {
       txHash: '123',
-      receiptId: '222',
       txDetails: {
         name: 'dule',
         base: '123',
@@ -306,7 +336,6 @@ describe('TransactionRequestService', () => {
     await new transactionRequestModel(mockTransactionRequests[0]).save();
     const response = await transactionRequestService.update('12', {
       txHash: '123',
-      receiptId: '222',
       txDetails: {
         name: 'dule',
         base: '123',
@@ -326,7 +355,6 @@ describe('TransactionRequestService', () => {
       '634ff1e4bb85ed5475a1ff6d',
       {
         txHash: '123',
-        receiptId: '222',
         txDetails: {
           name: 'dule',
           base: '123',
