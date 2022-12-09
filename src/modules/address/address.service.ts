@@ -104,8 +104,12 @@ export class AddressService {
       }
 
       const updateAddress = await this.repo.findOne({ _id: id }).exec();
-      updateAddress.phone = updateAddressDto.phone;
-      updateAddress.email = updateAddressDto.email;
+      updateAddress.phone = updateAddressDto.phone
+        ? updateAddressDto.phone
+        : null;
+      updateAddress.email = updateAddressDto.email
+        ? updateAddressDto.email
+        : null;
       updateAddress.updatedAt = new Date();
       await this.repo.updateOne({ _id: id }, updateAddress);
       return new ServiceResult<Address>(updateAddress);
