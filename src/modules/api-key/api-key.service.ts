@@ -86,7 +86,7 @@ export class ApiKeyService {
         .countDocuments();
 
       if (project_id) {
-        query.find({ project: { $regex: project_id, $options: 'i' } });
+        query.find({ project: new Mongoose.Types.ObjectId(project_id) });
       }
       if (api_key) {
         query.find({ api_key: { $regex: api_key, $options: 'i' } });

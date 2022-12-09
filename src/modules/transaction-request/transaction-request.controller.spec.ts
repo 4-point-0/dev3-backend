@@ -14,8 +14,9 @@ import { TransactionRequest } from './entities/transaction-request.entity';
 import { TransactionRequestController } from './transaction-request.controller';
 import { TransactionRequestService } from './transaction-request.service';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
+import { ConfigService } from '@nestjs/config';
 
-describe('ApiKeyController', () => {
+describe('TransactionRequestController', () => {
   let transactionRequestController: TransactionRequestController;
   let transactionRequestService: TransactionRequestService;
 
@@ -29,6 +30,17 @@ describe('ApiKeyController', () => {
           useValue: jest.fn(),
         },
         { provide: getModelToken(Project.name), useValue: jest.fn() },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'NODE_ENV') {
+                return 'dev';
+              }
+              return null;
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -92,25 +104,6 @@ describe('ApiKeyController', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return one transaction request', async () => {
-      const result = new ServiceResult<TransactionRequest>(
-        mockTransactionRequests[0],
-      );
-      jest
-        .spyOn(transactionRequestService, 'findOne')
-        .mockResolvedValue(result);
-      const req: any = {
-        user: mockUser,
-      };
-      const response = await transactionRequestController.findOne(
-        req,
-        mockTransactionRequests[0]._id.toString(),
-      );
-      expect(response).toBe(result.data);
-    });
-  });
-
   describe('update', () => {
     it('should update one address', async () => {
       const transactionRequest: any = {
@@ -132,7 +125,6 @@ describe('ApiKeyController', () => {
         transactionRequest.uuid.toString(),
         {
           txHash: '123',
-          receiptId: '222',
           txDetails: {
             name: 'dule',
             base: '123',
@@ -141,7 +133,6 @@ describe('ApiKeyController', () => {
         },
       );
       expect(response.txHash).toBe(transactionRequest.txHash);
-      expect(response.receiptId).toBe(transactionRequest.receiptId);
     });
   });
 });

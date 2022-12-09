@@ -8,10 +8,6 @@ export class UpdateTransactionRequestDto {
 
   @IsNotEmpty()
   @ApiProperty({ required: true })
-  readonly receiptId: string;
-
-  @IsNotEmpty()
-  @ApiProperty({ required: true })
   readonly caller_address: string;
 
   @IsOptional()

@@ -27,4 +27,5 @@ export const configuration = () => ({
     update_contracts_secret: process.env.GITHUB_UPDATE_CONTRACTS_SECRET,
     webhook_secret: process.env.GITHUB_WEBHOOK_SECRET,
   },
+  start_cron_jobs: process.env.START_CRON_JOBS,
 });
