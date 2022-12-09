@@ -27,14 +27,14 @@ export class Address extends BaseEntity {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: false })
-  phone: string;
+  @Prop({ required: false, default: null })
+  phone?: string;
 
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: false, match: emailRegex })
-  email: string;
+  @Prop({ required: false, match: emailRegex, default: null })
+  email?: string;
 
   @ApiProperty({
     type: User,
