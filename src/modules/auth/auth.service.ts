@@ -7,7 +7,6 @@ import { firstValueFrom } from 'rxjs';
 import { UserService } from '../user/user.service';
 import * as nacl from 'tweetnacl';
 import { edsa } from '../../common/constants';
-import { JwtUser } from './dto/jwt-user';
 import { ServiceResult } from '../../helpers/response/result';
 import { JwtTokenDto } from './dto/jwt-token.dto';
 import {
@@ -15,7 +14,6 @@ import {
   NotFound,
   ServerError,
 } from '../../helpers/response/errors';
-import { mapJwtUserCreate } from './mappers/map-jwt-user-create';
 import { mapJwtUser } from './mappers/map-jwt-user';
 import { getRpcPostArguments } from './common/rpc-call-arguments';
 import { Role } from '../../common/enums/role.enum';
@@ -37,11 +35,11 @@ export class AuthService {
     signedJsonString: string,
   ): Promise<ServiceResult<JwtTokenDto>> {
     try {
-      const jwtUser = await this.nearValidate(username, signedJsonString);
+      const isValid = await this.nearValidate(username, signedJsonString);
 
-      if (!jwtUser) return new NotFound('User not found');
+      if (!isValid) return new NotFound('Not valid signature!');
 
-      const user = await this.getOrCreateUser(jwtUser);
+      const user = await this.getOrCreateUser(username);
       if (!user) return new BadRequest('Error getting user');
       const dto = {
         token: this.jwtService.sign(user),
@@ -51,6 +49,46 @@ export class AuthService {
     } catch (error) {
       this.logger.error('AuthService - getNearJwtToken', error);
       return new ServerError<JwtTokenDto>(`Can't get jwt token`);
+    }
+  }
+
+  private async nearValidate(
+    username: string,
+    signedJsonString: string,
+  ): Promise<boolean> {
+    try {
+      // Parameters:
+      //   username: the NEAR accountId (e.g. test.near)
+      //   signedJsonString: a json.stringify of the object {"signature", "publicKey"},
+      //             where "signature" is the signature obtained after signing
+      //             the user's username (e.g. test.near), and "publicKey" is
+      //             the user's public key
+      let { signature, publicKey } = JSON.parse(signedJsonString);
+
+      // We expect the user to sign a message composed by its USERNAME
+      const msg = Uint8Array.from(sha256.array(username));
+      signature = Uint8Array.from(Object.values(signature));
+      publicKey = Uint8Array.from(Object.values(publicKey.data));
+
+      // check that the signature was created using the counterpart private key
+      const valid_signature = nacl.sign.detached.verify(
+        msg,
+        signature,
+        publicKey,
+      );
+
+      // and that the publicKey is from this USERNAME
+      const pK_of_account = await this.nearValidatePublicKeyByAccountId(
+        username,
+        publicKey,
+      );
+
+      if (!valid_signature || !pK_of_account) return null;
+
+      return true;
+    } catch (error) {
+      this.logger.error('AuthService - nearValidate', error);
+      return false;
     }
   }
 
@@ -86,59 +124,18 @@ export class AuthService {
     }
   }
 
-  private async nearValidate(
-    username: string,
-    signedJsonString: string,
-  ): Promise<JwtUser | null> {
+  private async getOrCreateUser(username: string) {
     try {
-      // Parameters:
-      //   username: the NEAR accountId (e.g. test.near)
-      //   signedJsonString: a json.stringify of the object {"signature", "publicKey"},
-      //             where "signature" is the signature obtained after signing
-      //             the user's username (e.g. test.near), and "publicKey" is
-      //             the user's public key
-      let { signature, publicKey } = JSON.parse(signedJsonString);
-
-      // We expect the user to sign a message composed by its USERNAME
-      const msg = Uint8Array.from(sha256.array(username));
-      signature = Uint8Array.from(Object.values(signature));
-      publicKey = Uint8Array.from(Object.values(publicKey.data));
-
-      // check that the signature was created using the counterpart private key
-      const valid_signature = nacl.sign.detached.verify(
-        msg,
-        signature,
-        publicKey,
-      );
-
-      // and that the publicKey is from this USERNAME
-      const pK_of_account = await this.nearValidatePublicKeyByAccountId(
-        username,
-        publicKey,
-      );
-
-      if (!valid_signature || !pK_of_account) return null;
-
-      return {
-        uid: username,
-        username,
-        accountType: 'near',
-        roles: [Role.Customer],
-      };
-    } catch (error) {
-      this.logger.error('AuthService - nearValidate', error);
-      return null;
-    }
-  }
-
-  private async getOrCreateUser(jwtUser: JwtUser) {
-    try {
-      const user = await this.userService.findOne(jwtUser.uid);
+      const user = await this.userService.findOne(username);
 
       if (!user) {
-        const newUser = await this.userService.create(
-          mapJwtUserCreate(jwtUser),
-        );
+        const newUser = await this.userService.create({
+          uid: username,
+          accountType: 'near',
+          nearWalletAccountId: username,
+          username: username,
+          roles: [Role.Customer],
+        });
 
         return mapJwtUser(newUser);
       }
