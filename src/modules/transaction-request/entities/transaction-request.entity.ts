@@ -22,7 +22,8 @@ export class TransactionRequest extends BaseEntity {
     type: String,
     enum: [
       TransactionRequestStatus.Pending,
-      TransactionRequestStatus.Excecuted,
+      TransactionRequestStatus.Success,
+      TransactionRequestStatus.Failure,
     ],
   })
   @Prop({
@@ -35,9 +36,10 @@ export class TransactionRequest extends BaseEntity {
 
   @ApiProperty({
     type: String,
+    required: false,
   })
-  @Prop({ required: true })
-  contractId: string;
+  @Prop({ required: false })
+  contractId?: string;
 
   @ApiProperty({
     type: String,
@@ -79,18 +81,6 @@ export class TransactionRequest extends BaseEntity {
   @Prop({ required: false })
   txHash?: string;
 
-  @ApiProperty({
-    type: String,
-  })
-  @Prop({ required: false })
-  receiptId?: string;
-
-  @ApiProperty({
-    type: String,
-  })
-  @Prop({ required: false })
-  caller_address?: string;
-
   @ApiProperty()
   @Prop({
     required: false,
@@ -106,6 +96,18 @@ export class TransactionRequest extends BaseEntity {
     },
   })
   txDetails?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @Prop({ required: false })
+  caller_address?: string;
+
+  @ApiProperty({
+    type: Boolean,
+  })
+  @Prop({ required: true, default: false })
+  is_near_token: boolean;
 
   @ApiProperty({
     type: User,

@@ -44,7 +44,7 @@ export class TransactionRequestController {
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: TransactionRequest })
-  @ApiResponse({ status: 201, description: 'Payment created' })
+  @ApiResponse({ status: 201, description: 'Transaction request created' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -108,21 +108,6 @@ export class TransactionRequestController {
   async findByUuid(@Param('uuid') uuid: string) {
     return handle<TransactionRequestDto>(
       await this.transactionRequestService.findByUuid(uuid),
-    );
-  }
-
-  @Get(':id')
-  @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: TransactionRequest })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 500, description: 'Server error' })
-  async findOne(@Req() request: AuthRequest, @Param('id') id: string) {
-    return handle<TransactionRequest>(
-      await this.transactionRequestService.findOne(
-        id,
-        request.user._id.toString(),
-      ),
     );
   }
 

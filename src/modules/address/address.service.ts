@@ -111,6 +111,7 @@ export class AddressService {
         ? updateAddressDto.email
         : null;
       updateAddress.updatedAt = new Date();
+
       await this.repo.updateOne({ _id: id }, updateAddress);
       return new ServiceResult<Address>(updateAddress);
     } catch (error) {

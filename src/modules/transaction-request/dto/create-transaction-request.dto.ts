@@ -3,11 +3,12 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 import Mongoose from 'mongoose';
 
 export class CreateTransactionRequestDto {
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: String,
+    required: false,
   })
-  readonly contractId: string;
+  readonly contractId?: string;
 
   @IsNotEmpty()
   @ApiProperty({
@@ -26,6 +27,10 @@ export class CreateTransactionRequestDto {
   @IsOptional()
   @ApiProperty({ required: false })
   readonly deposit?: string;
+
+  @IsOptional()
+  @ApiProperty({ required: true })
+  readonly is_near_token: boolean;
 
   @IsNotEmpty()
   @ApiProperty({

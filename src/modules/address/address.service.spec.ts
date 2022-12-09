@@ -192,6 +192,18 @@ describe('AddressService', () => {
     expect(result.data.email).toBe(email);
   });
 
+  it(`Update - should update with null`, async () => {
+    const userResult = await new userModel(mockUser).save();
+    const createResult = await new addressModel(mockAddresses[0]).save();
+    const result = await addressService.update(
+      createResult._id.toString(),
+      userResult._id.toString(),
+      { phone: null, email: null },
+    );
+    expect(result.data.phone).toBe(null);
+    expect(result.data.email).toBe(null);
+  });
+
   it(`Update - should return Address not found (Not Found - 404) exception`, async () => {
     await new userModel(mockUser).save();
     await new addressModel(mockAddresses[0]).save();
