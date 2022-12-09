@@ -157,7 +157,7 @@ export class TransactionRequestService {
       ) {
         await this.updateTxStatus(
           transactionRequest.txHash,
-          transactionRequest.contractId,
+          transactionRequest.caller_address,
           transactionRequest.uuid,
         );
       }
@@ -209,7 +209,7 @@ export class TransactionRequestService {
       ) {
         await this.updateTxStatus(
           transactionRequest.txHash,
-          transactionRequest.contractId,
+          transactionRequest.caller_address,
           transactionRequest.uuid,
         );
       }
@@ -297,19 +297,22 @@ export class TransactionRequestService {
     caller_address: string,
     uuid: string,
   ): Promise<void> {
-    const txState = await getState(
-      txHash,
-      caller_address,
-      this.configService.get('NODE_ENV'),
-    );
-    console.log(txState);
-    await this.transactionRequestRepo.updateOne(
-      { uuid },
-      {
-        status: txState.status.hasOwnProperty('SuccessValue')
-          ? TransactionRequestStatus.Success
-          : TransactionRequestStatus.Failure,
-      },
-    );
+    try {
+      const txState = await getState(
+        txHash,
+        caller_address,
+        this.configService.get('NODE_ENV'),
+      );
+      await this.transactionRequestRepo.updateOne(
+        { uuid },
+        {
+          status: txState.status.hasOwnProperty('SuccessValue')
+            ? TransactionRequestStatus.Success
+            : TransactionRequestStatus.Failure,
+        },
+      );
+    } catch (e) {
+      console.log('updateTxStatus', e);
+    }
   }
 }

@@ -18,8 +18,6 @@ import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
 import { Address } from '../address/entities/address.entity';
 import { dev3CompanyName, dev3LogoUrl } from '../../common/constants';
-// import { PaymentModule } from '../payment/payment.module';
-// import { Payment } from '../payment/entities/payment.entity';
 import { ContractModule } from '../contract/contract.module';
 import { Contract } from '../contract/entities/contract.entity';
 import { ApiKeyModule } from '../api-key/api-key.module';
@@ -30,6 +28,9 @@ import * as dotenv from 'dotenv';
 import { envValidationSchema } from '../../config/validation';
 import { TransactionRequestModule } from '../transaction-request/tranasction-request.module';
 import { TransactionRequest } from '../transaction-request/entities/transaction-request.entity';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from '../task/task.module';
+
 dotenv.config({
   path: existsSync(`.env.${process.env.NODE_ENV}`)
     ? `.env.${process.env.NODE_ENV}`
@@ -51,6 +52,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     ProjectModule,
     AuthModule,
     UserModule,
@@ -59,6 +61,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     ContractModule,
     ApiKeyModule,
     TransactionRequestModule,
+    TasksModule,
     AdminModule.createAdminAsync({
       imports: [MongooseSchemasModule],
       inject: [
