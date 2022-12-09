@@ -35,15 +35,17 @@ export class CreateAddressDto {
   @ApiProperty({
     type: String,
     required: false,
+    nullable: true,
   })
-  email: string;
+  email?: string;
   @IsPhoneNumber()
   @IsOptional()
   @ApiProperty({
     type: String,
     required: false,
+    nullable: true,
   })
-  phone: string;
+  phone?: string;
 
   owner: Mongoose.Types.ObjectId;
 }

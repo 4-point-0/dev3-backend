@@ -8,12 +8,12 @@ export class UpdateAddressDto {
     type: String,
     required: false,
   })
-  email: string;
+  email?: string;
   @IsPhoneNumber()
   @IsOptional()
   @ApiProperty({
     type: String,
     required: false,
   })
-  phone: string;
+  phone?: string;
 }
