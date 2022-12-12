@@ -6,8 +6,9 @@ export class CreateProjectDto {
   @IsNotEmpty()
   @ApiProperty({
     type: String,
+    required: true,
   })
-  readonly name?: string;
+  readonly name: string;
 
   @ApiProperty({
     type: String,

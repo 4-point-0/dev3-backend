@@ -22,6 +22,7 @@ import { TransactionRequestModule } from '../transaction-request/tranasction-req
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksModule } from '../task/task.module';
 import { AdminJsModule } from '../admin-js/admin-js.module';
+import { FileModule } from '../file/file.module';
 
 dotenv.config({
   path: existsSync(`.env.${process.env.NODE_ENV}`)
@@ -53,6 +54,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     ApiKeyModule,
     TransactionRequestModule,
     TasksModule,
+    FileModule,
     AdminJsModule,
     MongooseSchemasModule,
   ],

@@ -22,7 +22,6 @@ import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-resp
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { HttpExceptionFilter } from '../../helpers/filters/http-exception.filter';
 import { handle } from '../../helpers/response/handle';
-import { BypassAuth } from '../auth/common/bypass-auth';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { AuthRequest } from '../user/entities/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -30,7 +29,6 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
 import { ProjectService } from './project.service';
 
-@UseGuards(JwtAuthGuard)
 @ApiTags('project')
 @Controller('project')
 @ApiExtraModels(PaginatedDto)
@@ -38,6 +36,7 @@ export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Project })
@@ -54,6 +53,7 @@ export class ProjectController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
   @ApiQuery({ name: 'offset', required: false })
@@ -85,6 +85,7 @@ export class ProjectController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Project })
@@ -101,7 +102,6 @@ export class ProjectController {
 
   @Get('slug/:slug')
   @UseFilters(new HttpExceptionFilter())
-  @BypassAuth()
   @ApiResponse({ status: 200, type: Project })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -113,6 +113,7 @@ export class ProjectController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseFilters(new HttpExceptionFilter())
   @ApiResponse({ status: 200, type: Project })

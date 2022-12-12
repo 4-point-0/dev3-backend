@@ -15,4 +15,8 @@ export const envValidationSchema = Joi.object({
   GITHUB_UPDATE_CONTRACTS_SECRET: Joi.string().required(),
   GITHUB_WEBHOOK_SECRET: Joi.string().required(),
   START_CRON_JOBS: Joi.string(),
+  AWS_ACCESS_KEY: Joi.string().required(),
+  AWS_SECRET_KEY: Joi.string().required(),
+  AWS_REGION: Joi.string().required(),
+  AWS_BUCKET_NAME: Joi.string().required(),
 });
