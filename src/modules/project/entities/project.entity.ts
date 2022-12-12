@@ -26,8 +26,8 @@ export class Project extends BaseEntity {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: false })
-  logoUrl: string;
+  @Prop({ required: false, default: null })
+  logoUrl?: string;
 
   @ApiProperty({
     type: User,

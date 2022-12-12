@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Address, AddressSchema } from '../address/entities/address.entity';
 import { ApiKey, ApiKeySchema } from '../api-key/entities/api-key.entity';
 import { Contract, ContractSchema } from '../contract/entities/contract.entity';
-// import { Payment, PaymentSchema } from '../payment/entities/payment.entity';
+import { File, FileSchema } from '../file/entities/file.entity';
 import { Project, ProjectSchema } from '../project/entities/project.entity';
 import {
   TransactionRequest,
@@ -24,6 +24,7 @@ import { User, UserSchema } from '../user/entities/user.entity';
     MongooseModule.forFeature([
       { name: TransactionRequest.name, schema: TransactionRequestSchema },
     ]),
+    MongooseModule.forFeature([{ name: File.name, schema: FileSchema }]),
   ],
   exports: [MongooseModule],
 })

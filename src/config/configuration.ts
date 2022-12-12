@@ -27,5 +27,11 @@ export const configuration = () => ({
     update_contracts_secret: process.env.GITHUB_UPDATE_CONTRACTS_SECRET,
     webhook_secret: process.env.GITHUB_WEBHOOK_SECRET,
   },
+  aws: {
+    access_key: process.env.AWS_ACCESS_KEY,
+    secret_key: process.env.AWS_SECRET_KEY,
+    bucket_name: process.env.AWS_BUCKET_NAME,
+    region: process.env.AWS_REGION,
+  },
   start_cron_jobs: process.env.START_CRON_JOBS,
 });

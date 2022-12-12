@@ -141,13 +141,18 @@ export class ProjectService {
         return new Unauthorized<Project>('Unauthorized access to user project');
       }
 
-      const updateProject = await this.repo.findOne({ _id: id }).exec();
-      updateProject.name = dto.name ?? dto.name;
-      updateProject.logoUrl = dto.logoUrl ?? dto.logoUrl;
-      updateProject.slug = toSlug(dto.slug ? dto.slug : dto.name);
-      updateProject.updatedAt = new Date();
-      await this.repo.updateOne({ _id: id }, updateProject);
-      return new ServiceResult<Project>(updateProject);
+      project.name = dto.name ?? project.name;
+      project.logoUrl = dto.logoUrl ?? dto.logoUrl;
+      project.slug = toSlug(dto.slug ? dto.slug : project.name);
+      project.updatedAt = new Date();
+      await this.repo.updateOne({ _id: id }, project);
+
+      const updatedProject = await this.repo
+        .findOne({ _id: id })
+        .populate('owner')
+        .exec();
+
+      return new ServiceResult<Project>(updatedProject);
     } catch (error) {
       this.logger.error('ProjectService - update', error);
       return new ServerError<Project>(`Can't update project`);

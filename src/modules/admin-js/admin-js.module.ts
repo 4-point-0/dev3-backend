@@ -10,6 +10,7 @@ import { Contract } from '../contract/entities/contract.entity';
 import { Project } from '../project/entities/project.entity';
 import { TransactionRequest } from '../transaction-request/entities/transaction-request.entity';
 import { User } from '../user/entities/user.entity';
+import { File } from '../file/entities/file.entity';
 
 export const AdminJsModule = AdminModule.createAdminAsync({
   imports: [MongooseSchemasModule],
@@ -20,6 +21,7 @@ export const AdminJsModule = AdminModule.createAdminAsync({
     getModelToken('Contract'),
     getModelToken('ApiKey'),
     getModelToken('TransactionRequest'),
+    getModelToken('File'),
     ConfigService,
   ],
   useFactory: (
@@ -29,6 +31,7 @@ export const AdminJsModule = AdminModule.createAdminAsync({
     contractModel: Model<Contract>,
     apiKeyModel: Model<ApiKey>,
     transactionRequestModel: Model<TransactionRequest>,
+    fileModel: Model<File>,
     configService: ConfigService,
   ) => ({
     adminJsOptions: {
@@ -153,6 +156,26 @@ export const AdminJsModule = AdminModule.createAdminAsync({
         },
         {
           resource: transactionRequestModel,
+          options: {
+            properties: {
+              createdAt: {
+                isVisible: {
+                  edit: false,
+                  new: false,
+                },
+              },
+              updatedAt: {
+                isVisible: {
+                  edit: false,
+                  new: false,
+                },
+              },
+            },
+            parent: { name: 'Content', icon: 'Home' },
+          },
+        },
+        {
+          resource: fileModel,
           options: {
             properties: {
               createdAt: {

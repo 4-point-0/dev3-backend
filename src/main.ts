@@ -7,6 +7,7 @@ import { ApiKeyModule } from './modules/api-key/api-key.module';
 import { AppModule } from './modules/app/app.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContractModule } from './modules/contract/contract.module';
+import { FileModule } from './modules/file/file.module';
 import { ProjectModule } from './modules/project/project.module';
 import { TasksModule } from './modules/task/task.module';
 import { TransactionRequestModule } from './modules/transaction-request/tranasction-request.module';
@@ -50,6 +51,7 @@ async function bootstrap() {
       AddressModule,
       ContractModule,
       TransactionRequestModule,
+      FileModule,
     ],
   });
   SwaggerModule.setup('swagger', app, documentClient);
