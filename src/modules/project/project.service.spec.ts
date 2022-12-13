@@ -2,11 +2,13 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   mockCreateProjectDtos,
+  mockFile1,
   mockProjects,
   mockUser,
 } from '../../../test/mock-tests-data';
 import { ProjectService } from './project.service';
 import { Project, ProjectSchema } from './entities/project.entity';
+import { File, FileSchema } from '../file/entities/file.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model } from 'mongoose';
@@ -23,6 +25,7 @@ describe('ProjectService', () => {
   let mongoConnection: Connection;
   let projectModel: Model<Project>;
   let userModel: Model<User>;
+  let fileModel: Model<File>;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -30,10 +33,12 @@ describe('ProjectService', () => {
     mongoConnection = (await connect(uri)).connection;
     projectModel = mongoConnection.model(Project.name, ProjectSchema);
     userModel = mongoConnection.model(User.name, UserSchema);
+    fileModel = mongoConnection.model(File.name, FileSchema);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProjectService,
         { provide: getModelToken(Project.name), useValue: projectModel },
+        { provide: getModelToken(File.name), useValue: fileModel },
         { provide: getModelToken(User.name), useValue: userModel },
       ],
     }).compile();
@@ -56,10 +61,15 @@ describe('ProjectService', () => {
   });
 
   it('Create - should return the saved object', async () => {
-    const createdAddress = await projectService.create(
+    await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
+    const createdProject = await projectService.create(
       mockCreateProjectDtos[0],
     );
-    expect(createdAddress.data.name).toBe(mockCreateProjectDtos[0].name);
+    expect(createdProject.data.name).toBe(mockCreateProjectDtos[0].name);
+    expect(createdProject.data.logo._id.toString()).toBe(
+      mockCreateProjectDtos[0].logo_id.toString(),
+    );
   });
 
   it(`Create - should return Name can't be empty (Bad Request - 400) exception`, async () => {
@@ -172,6 +182,7 @@ describe('ProjectService', () => {
 
   it(`FindBySlug - should findBySlug`, async () => {
     await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
     const createResult = await new projectModel(mockProjects[0]).save();
     const result = await projectService.findBySlug(createResult.slug);
     expect(result.data.slug).toBe(createResult.slug);
@@ -186,16 +197,94 @@ describe('ProjectService', () => {
 
   it(`Update - should update`, async () => {
     const userResult = await new userModel(mockUser).save();
+    const logo = await new fileModel(mockFile1).save();
     const createResult = await new projectModel(mockProjects[0]).save();
     const name = 'changed-name';
     const slug = 'koui';
+
+    const result = await projectService.update(
+      createResult._id.toString(),
+      userResult._id.toString(),
+      { name: name, slug: slug, logo_id: logo.id.toString() },
+    );
+
+    expect(result.data.name).toBe(name);
+    expect(result.data.slug).toMatch(slug);
+    expect(result.data.logo._id.toString()).toMatch(logo.id.toString());
+  });
+
+  it(`Update - should update without logo`, async () => {
+    const userResult = await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
+    const name = 'changed-name';
+    const slug = 'koui';
+
     const result = await projectService.update(
       createResult._id.toString(),
       userResult._id.toString(),
       { name: name, slug: slug },
     );
+
     expect(result.data.name).toBe(name);
     expect(result.data.slug).toMatch(slug);
+    expect(result.data.logo._id.toString()).toMatch(
+      createResult.logo._id.toString(),
+    );
+  });
+
+  it(`Update - should update without name`, async () => {
+    const userResult = await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
+    const name = 'changed-name';
+
+    const result = await projectService.update(
+      createResult._id.toString(),
+      userResult._id.toString(),
+      { name: name },
+    );
+
+    expect(result.data.name).toBe(name);
+    expect(result.data.slug).toMatch(result.data.slug);
+    expect(result.data.logo._id.toString()).toMatch(
+      createResult.logo._id.toString(),
+    );
+  });
+
+  it(`Update - should update without slug`, async () => {
+    const userResult = await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
+    const slug = 'koui';
+
+    const result = await projectService.update(
+      createResult._id.toString(),
+      userResult._id.toString(),
+      { slug: slug },
+    );
+
+    expect(result.data.name).toBe(createResult.name);
+    expect(result.data.slug).toMatch(slug);
+    expect(result.data.logo._id.toString()).toMatch(
+      createResult.logo._id.toString(),
+    );
+  });
+
+  it(`Update - should update without logo`, async () => {
+    const userResult = await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
+
+    const result = await projectService.update(
+      createResult._id.toString(),
+      userResult._id.toString(),
+      { logo_id: null },
+    );
+
+    expect(result.data.name).toBe(createResult.name);
+    expect(result.data.slug).toMatch(result.data.slug);
+    expect(result.data.logo).toBeNull();
   });
 
   it(`Update - should return Project not found (Not Found - 404) exception`, async () => {
