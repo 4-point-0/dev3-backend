@@ -11,16 +11,20 @@ import {
 } from '../../helpers/response/errors';
 import { ServiceResult } from '../../helpers/response/result';
 import { toSlug } from '../../utils/slug';
+import { FileDocument, File } from '../file/entities/file.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { ProjectDto } from './dto/project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project, ProjectDocument } from './entities/project.entity';
+import { mapToProjectDto } from './mappers/maptToProjectDto';
 
 @Injectable()
 export class ProjectService {
   private readonly logger = new Logger(ProjectService.name);
 
   constructor(
-    @InjectModel(Project.name) private repo: Model<ProjectDocument>,
+    @InjectModel(Project.name) private projectRepo: Model<ProjectDocument>,
+    @InjectModel(File.name) private fileRepo: Model<FileDocument>,
   ) {}
 
   async create(dto: CreateProjectDto): Promise<ServiceResult<Project>> {
@@ -29,16 +33,38 @@ export class ProjectService {
         return new BadRequest<Project>(`Name can't be empty`);
       }
 
-      const projectNameDoc = await this.repo
+      const projectNameDoc = await this.projectRepo
         .exists({ owner: dto.owner, name: dto.name })
         .exec();
 
       if (projectNameDoc) {
         return new BadRequest<Project>(`Name ${dto.name} isn't unique`);
       }
-      const result = await new this.repo(dto).save();
+
+      const file = await this.fileRepo
+        .findOne({
+          _id: new Mongoose.Types.ObjectId(dto.logo_id),
+        })
+        .populate('owner')
+        .exec();
+
+      if (!file) {
+        return new NotFound<Project>('Logo not found');
+      }
+
+      if (file.owner._id.toString() !== dto.owner.toString()) {
+        return new Unauthorized<Project>('Unauthorized access to user file');
+      }
+
+      const result = await new this.projectRepo({
+        name: dto.name,
+        slug: dto.slug,
+        logo: file !== null ? file._id : null,
+        owner: dto.owner,
+      }).save();
       return new ServiceResult<Project>(result);
     } catch (error) {
+      console.log(error);
       this.logger.error('ProjectService - create', error);
       return new ServerError<Project>(`Can't create project`);
     }
@@ -52,8 +78,13 @@ export class ProjectService {
     slug?: string,
   ): Promise<ServiceResult<PaginatedDto<Project>>> {
     try {
-      const query = this.repo.find({ owner: ownerId }).populate('owner');
-      const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
+      const query = this.projectRepo
+        .find({ owner: ownerId })
+        .populate('owner')
+        .populate('logo');
+      const queryCount = this.projectRepo
+        .find({ owner: ownerId })
+        .countDocuments();
 
       if (name) {
         query.find({ name: { $regex: name, $options: 'i' } });
@@ -77,18 +108,21 @@ export class ProjectService {
     }
   }
 
-  async findBySlug(slug: string): Promise<ServiceResult<Project>> {
+  async findBySlug(slug: string): Promise<ServiceResult<ProjectDto>> {
     try {
-      const project = await this.repo.findOne({ slug: slug }).exec();
+      const project = await this.projectRepo
+        .findOne({ slug: slug })
+        .populate('logo')
+        .exec();
 
       if (!project) {
-        return new NotFound<Project>('Project not found');
+        return new NotFound<ProjectDto>('Project not found');
       }
 
-      return new ServiceResult<Project>(project);
+      return new ServiceResult<ProjectDto>(mapToProjectDto(project));
     } catch (error) {
       this.logger.error('ProjectService - findBySlug', error);
-      return new ServerError<Project>(`Can't get project`);
+      return new ServerError<ProjectDto>(`Can't get project`);
     }
   }
 
@@ -98,9 +132,10 @@ export class ProjectService {
         return new NotFound<Project>('Project not found');
       }
 
-      const project = await this.repo
+      const project = await this.projectRepo
         .findOne({ _id: id })
         .populate('owner')
+        .populate('logo')
         .exec();
 
       if (!project) {
@@ -128,7 +163,7 @@ export class ProjectService {
         return new NotFound<Project>('Project not found');
       }
 
-      const project = await this.repo
+      const project = await this.projectRepo
         .findOne({ _id: id })
         .populate('owner')
         .exec();
@@ -141,15 +176,40 @@ export class ProjectService {
         return new Unauthorized<Project>('Unauthorized access to user project');
       }
 
+      if (dto.logo_id) {
+        const file = await this.fileRepo
+          .findOne({
+            _id: new Mongoose.Types.ObjectId(dto.logo_id),
+          })
+          .populate('owner')
+          .exec();
+
+        if (!file) {
+          return new NotFound<Project>('Logo not found');
+        }
+
+        if (file.owner._id.toString() !== ownerId) {
+          return new Unauthorized<Project>(
+            'Unauthorized access to user project',
+          );
+        }
+
+        project.logo = file.id;
+      }
+
+      if (dto.logo_id === null) {
+        project.logo = null;
+      }
+
       project.name = dto.name ?? project.name;
-      project.logoUrl = dto.logoUrl ?? dto.logoUrl;
       project.slug = toSlug(dto.slug ? dto.slug : project.name);
       project.updatedAt = new Date();
-      await this.repo.updateOne({ _id: id }, project);
+      await this.projectRepo.updateOne({ _id: id }, project);
 
-      const updatedProject = await this.repo
+      const updatedProject = await this.projectRepo
         .findOne({ _id: id })
         .populate('owner')
+        .populate('logo')
         .exec();
 
       return new ServiceResult<Project>(updatedProject);

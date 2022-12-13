@@ -3,6 +3,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -21,6 +22,7 @@ import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { FileUploadDto } from '../project/dto/upload-file.dto';
 import { FileService } from './file.service';
 import { File } from './entities/file.entity';
+import { AuthRequest } from '../user/entities/user.entity';
 
 @ApiTags('file')
 @Controller('file')
@@ -48,11 +50,13 @@ export class FileController {
   @ApiResponse({ status: 422, description: 'Not valid file type' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async uploadFile(
+    @Req() request: AuthRequest,
     @UploadedFile()
     file: Express.Multer.File,
   ) {
     return handle(
       await this.fileService.uploadFile(
+        request.user._id,
         file.buffer,
         file.originalname,
         file.mimetype,
@@ -60,7 +64,7 @@ export class FileController {
     );
   }
 
-  @Patch(':url')
+  @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseInterceptors(
@@ -81,10 +85,17 @@ export class FileController {
   @ApiResponse({ status: 422, description: 'Not valid file type' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async updateFile(
-    @Param('url') url: string,
+    @Req() request: AuthRequest,
+    @Param('id') id: string,
     @UploadedFile()
     file: Express.Multer.File,
   ) {
-    return handle(await this.fileService.putFile(url, file.buffer));
+    return handle(
+      await this.fileService.putFile(
+        request.user._id.toString(),
+        id,
+        file.buffer,
+      ),
+    );
   }
 }

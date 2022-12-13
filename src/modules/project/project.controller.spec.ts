@@ -5,13 +5,16 @@ import {
   mockAuthUser,
   mockCreateProjectDtos,
   mockUser,
+  mockProjectDto,
 } from '../../../test/mock-tests-data';
 import { ServiceResult } from '../../helpers/response/result';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
 import { Project } from './entities/project.entity';
+import { File } from '../file/entities/file.entity';
 import { BadRequest, NotFound } from '../../helpers/response/errors';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
+import { ProjectDto } from './dto/project.dto';
 
 describe('ProjectController', () => {
   let projectController: ProjectController;
@@ -23,6 +26,7 @@ describe('ProjectController', () => {
         ProjectController,
         ProjectService,
         { provide: getModelToken(Project.name), useValue: jest.fn() },
+        { provide: getModelToken(File.name), useValue: jest.fn() },
       ],
     }).compile();
 
@@ -80,14 +84,14 @@ describe('ProjectController', () => {
 
   describe('findBySlug', () => {
     it('should return one project by slug', async () => {
-      const result = new ServiceResult<Project>(mockProjects[0]);
+      const result = new ServiceResult<ProjectDto>(mockProjectDto);
       jest.spyOn(projectService, 'findBySlug').mockResolvedValue(result);
       const response = await projectController.findBySlug('slug-1234');
       expect(response).toBe(result.data);
     });
 
     it('should return Project not found (Not Found - 404) exception', async () => {
-      const result = new NotFound<Project>('Project not found');
+      const result = new NotFound<ProjectDto>('Project not found');
       jest.spyOn(projectService, 'findBySlug').mockResolvedValue(result);
       try {
         await projectController.findBySlug('test');

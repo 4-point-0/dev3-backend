@@ -25,6 +25,7 @@ import { handle } from '../../helpers/response/handle';
 import { JwtAuthGuard } from '../auth/common/jwt-auth.guard';
 import { AuthRequest } from '../user/entities/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { ProjectDto } from './dto/project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
 import { ProjectService } from './project.service';
@@ -102,14 +103,14 @@ export class ProjectController {
 
   @Get('slug/:slug')
   @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: Project })
+  @ApiResponse({ status: 200, type: ProjectDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async findBySlug(@Param('slug') slug: string) {
-    return handle<Project>(await this.projectService.findBySlug(slug));
+    return handle<ProjectDto>(await this.projectService.findBySlug(slug));
   }
 
   @Patch(':id')

@@ -13,6 +13,7 @@ import { connect, Connection, Model } from 'mongoose';
 import { BadRequest, NotFound } from '../../helpers/response/errors';
 import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { Project, ProjectSchema } from '../project/entities/project.entity';
+import { File, FileSchema } from '../file/entities/file.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 import { ProjectService } from '../project/project.service';
 
@@ -23,6 +24,7 @@ describe('PaymentService', () => {
   let paymentModel: Model<Payment>;
   let projectModel: Model<Project>;
   let userModel: Model<User>;
+  let fileModel: Model<File>;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -31,11 +33,13 @@ describe('PaymentService', () => {
     paymentModel = mongoConnection.model(Payment.name, PaymentSchema);
     projectModel = mongoConnection.model(Project.name, ProjectSchema);
     userModel = mongoConnection.model(User.name, UserSchema);
+    fileModel = mongoConnection.model(File.name, FileSchema);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PaymentService,
         ProjectService,
         { provide: getModelToken(Payment.name), useValue: paymentModel },
+        { provide: getModelToken(File.name), useValue: fileModel },
         { provide: getModelToken(Project.name), useValue: projectModel },
         { provide: getModelToken(User.name), useValue: userModel },
       ],
