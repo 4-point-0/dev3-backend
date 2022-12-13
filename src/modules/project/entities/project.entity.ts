@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import Mongoose, { Document } from 'mongoose';
 import { User } from '../../../modules/user/entities/user.entity';
+import { File } from '../../../modules/file/entities/file.entity';
 import { BaseEntity } from '../../../common/entities/base-entity';
 import { toSlug } from '../../../utils/slug';
 
@@ -24,10 +25,10 @@ export class Project extends BaseEntity {
   slug: string;
 
   @ApiProperty({
-    type: String,
+    type: File,
   })
-  @Prop({ required: false, default: null })
-  logoUrl?: string;
+  @Prop({ type: Mongoose.Types.ObjectId, ref: File.name, default: null })
+  logo?: File;
 
   @ApiProperty({
     type: User,

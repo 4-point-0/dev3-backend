@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
-import Mongoose from 'mongoose';
 
-export class CreateProjectDto {
-  @IsNotEmpty()
+export class ProjectDto {
   @ApiProperty({
     type: String,
-    required: true,
+  })
+  readonly id: string;
+
+  @ApiProperty({
+    type: String,
   })
   readonly name: string;
 
@@ -18,7 +19,5 @@ export class CreateProjectDto {
   @ApiProperty({
     type: String,
   })
-  readonly logo_id?: string;
-
-  owner: Mongoose.Types.ObjectId;
+  readonly logo_url?: string;
 }

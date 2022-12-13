@@ -21,5 +21,5 @@ export class UpdateProjectDto {
     type: String,
     required: false,
   })
-  readonly logoUrl?: string;
+  readonly logo_id?: string;
 }
