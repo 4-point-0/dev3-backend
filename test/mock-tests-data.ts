@@ -89,11 +89,30 @@ export const mockCreateAddressDtos = [
   mockCreateAddressDto1,
   mockCreateAddressDto2,
 ];
+export const mockFile1 = {
+  _id: new Mongoose.Types.ObjectId('6398491ef34acc5f99d54a24'),
+  name: 'logo-social.png',
+  mime_type: 'image/png',
+  url: 'http://localhost/5aa3713e-65d3-43df-a9e2-d28314695f6b-logo.png',
+  key: '5aa3713e-65d3-43df-a9e2-d28314695f6b-logo.png',
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockFile1Dto = {
+  _id: mockFile1._id,
+  name: 'logo-social.png',
+  mime_type: 'image/png',
+  url: 'http://localhost/5aa3713e-65d3-43df-a9e2-d28314695f6b-logo.png',
+  key: '5aa3713e-65d3-43df-a9e2-d28314695f6b-logo.png',
+  owner: mockUser._id,
+};
 
 export const mockProject1 = {
   name: 'dev3-test',
   slug: 'slug-1234',
-  logoUrl: 'http://localhost/logo-SI.png',
+  logo: mockFile1,
   owner: mockUser,
   _id: new Mongoose.Types.ObjectId('634ff1e4bb85ed5475a1ff5d'),
   updatedAt: new Date(),
@@ -103,7 +122,7 @@ export const mockProject1 = {
 export const mockProject2 = {
   name: 'project',
   slug: 'slug-1232',
-  logoUrl: 'http://localhost/logo-SI.png',
+  logo: mockFile1,
   owner: mockUser,
   _id: new Mongoose.Types.ObjectId('634ff1e4bb85ed5475a1ff5f'),
   updatedAt: new Date(),
@@ -113,7 +132,7 @@ export const mockProject2 = {
 export const mockProject3 = {
   name: 'project12',
   slug: 'slug-1235',
-  logoUrl: 'http://localhost/logo-SI.png',
+  logo: mockFile1,
   owner: mockUser,
   _id: new Mongoose.Types.ObjectId('634ff1e4bb85ed5475a1ff5c'),
   updatedAt: new Date(),
@@ -123,7 +142,7 @@ export const mockProject3 = {
 export const mockProject4 = {
   name: 'super-must',
   slug: 'super-must-my24',
-  logoUrl: 'http://localhost/logo-SI.png',
+  logo: mockFile1,
   owner: mockUser,
   _id: new Mongoose.Types.ObjectId('634ff1e4bb85ed5475a1ff5a'),
   updatedAt: new Date(),
@@ -140,28 +159,28 @@ export const mockProjects = [
 export const mockCreateProjectDto1: CreateProjectDto = {
   name: mockProject1.name,
   slug: mockProject1.slug,
-  logoUrl: mockProject1.logoUrl,
+  logo_id: mockFile1._id.toString(),
   owner: mockUser._id,
 };
 
 export const mockCreateProjectDto2: CreateProjectDto = {
   name: mockProject2.name,
   slug: mockProject2.slug,
-  logoUrl: mockProject2.logoUrl,
+  logo_id: mockFile1._id.toString(),
   owner: mockUser._id,
 };
 
 export const mockCreateProjectDto3: CreateProjectDto = {
   name: mockProject3.name,
   slug: mockProject3.slug,
-  logoUrl: mockProject3.logoUrl,
+  logo_id: mockFile1._id.toString(),
   owner: mockUser._id,
 };
 
 export const mockCreateProjectDto4: CreateProjectDto = {
   name: mockProject4.name,
   slug: mockProject4.slug,
-  logoUrl: mockProject4.logoUrl,
+  logo_id: mockFile1._id.toString(),
   owner: mockUser._id,
 };
 
@@ -171,6 +190,13 @@ export const mockCreateProjectDtos = [
   mockCreateProjectDto3,
   mockCreateProjectDto4,
 ];
+
+export const mockProjectDto = {
+  id: mockProjects[0]._id.toString(),
+  name: mockProjects[0].name,
+  slug: mockProjects[0].slug,
+  logo_url: mockProjects[0].logo.url,
+};
 
 export const mockPayment1 = {
   _id: new Mongoose.Types.ObjectId('784ff1e4bb85ed5475a1ff5d'),
