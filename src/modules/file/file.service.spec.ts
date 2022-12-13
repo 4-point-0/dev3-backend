@@ -61,7 +61,7 @@ describe('FileService', () => {
     }
   });
 
-  it(`Update - should return Unauthorized access to user file (Not Found - 404) exception`, async () => {
+  it(`Update - should return Unauthorized access to user file (Unauthorized - 401) exception`, async () => {
     const dataBuffer: any = [];
     await new userModel(mockUser).save();
     const createResult = await new fileModel(mockFile1).save();
