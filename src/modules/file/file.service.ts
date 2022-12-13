@@ -2,11 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { S3 } from 'aws-sdk';
-import { Model } from 'mongoose';
+import Mongoose, { Model } from 'mongoose';
 import { ServiceResult } from '../../helpers/response/result';
 import { v4 as uuid } from 'uuid';
 import { FileDocument, File } from './entities/file.entity';
-import { NotFound, ServerError } from '../../helpers/response/errors';
+import {
+  NotFound,
+  ServerError,
+  Unauthorized,
+} from '../../helpers/response/errors';
 
 @Injectable()
 export class FileService {
@@ -17,6 +21,7 @@ export class FileService {
   ) {}
 
   async uploadFile(
+    ownerId: Mongoose.Types.ObjectId,
     dataBuffer: Buffer,
     fileName: string,
     mimetype: string,
@@ -42,6 +47,7 @@ export class FileService {
         url: uploadResult.Location,
         key: uploadResult.Key,
         mime_type: mimetype,
+        owner: ownerId,
       }).save();
 
       return new ServiceResult<File>(file);
@@ -51,12 +57,23 @@ export class FileService {
     }
   }
 
-  async putFile(url: string, dataBuffer: Buffer): Promise<ServiceResult<File>> {
+  async putFile(
+    ownerId: string,
+    id: string,
+    dataBuffer: Buffer,
+  ): Promise<ServiceResult<File>> {
     try {
-      const file = await this.repo.findOne({ url: url }).exec();
+      const file = await this.repo
+        .findOne({ id: new Mongoose.Types.ObjectId(id) })
+        .populate('owner')
+        .exec();
 
       if (!file) {
         return new NotFound<File>('File not found');
+      }
+
+      if (file.owner._id.toString() !== ownerId) {
+        return new Unauthorized<File>('Unauthorized access to user file');
       }
 
       const s3 = this.getS3();
