@@ -16,6 +16,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectDto } from './dto/project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project, ProjectDocument } from './entities/project.entity';
+import { mapCreateDtoToProject } from './mappers/mapCreateDtoToProject';
 import { mapToProjectDto } from './mappers/maptToProjectDto';
 
 @Injectable()
@@ -41,27 +42,29 @@ export class ProjectService {
         return new BadRequest<Project>(`Name ${dto.name} isn't unique`);
       }
 
-      const file = await this.fileRepo
-        .findOne({
-          _id: new Mongoose.Types.ObjectId(dto.logo_id),
-        })
-        .populate('owner')
-        .exec();
+      const entity = mapCreateDtoToProject(dto);
 
-      if (!file) {
-        return new NotFound<Project>('Logo not found');
+      if (dto.logo_id) {
+        const file = await this.fileRepo
+          .findOne({
+            _id: new Mongoose.Types.ObjectId(dto.logo_id),
+          })
+          .populate('owner')
+          .exec();
+
+        if (!file) {
+          return new NotFound<Project>('Logo not found');
+        }
+
+        if (file.owner._id.toString() !== dto.owner.toString()) {
+          return new Unauthorized<Project>('Unauthorized access to user file');
+        }
+        entity.logo = file._id;
       }
 
-      if (file.owner._id.toString() !== dto.owner.toString()) {
-        return new Unauthorized<Project>('Unauthorized access to user file');
-      }
-
-      const result = await new this.projectRepo({
-        name: dto.name,
-        slug: dto.slug,
-        logo: file !== null ? file._id : null,
-        owner: dto.owner,
-      }).save();
+      const result = await (
+        await new this.projectRepo(entity).save()
+      ).populate('logo');
       return new ServiceResult<Project>(result);
     } catch (error) {
       console.log(error);
@@ -195,9 +198,7 @@ export class ProjectService {
         }
 
         project.logo = file.id;
-      }
-
-      if (dto.logo_id === null) {
+      } else if (dto.logo_id === null) {
         project.logo = null;
       }
 
