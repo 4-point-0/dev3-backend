@@ -109,6 +109,13 @@ describe('ProjectService', () => {
     );
   });
 
+  it(`Create - should return Logo not found (Not Found - 404) exception`, async () => {
+    const dto = { ...mockCreateProjectDtos[0] };
+    dto.logo_id = '123';
+    const response = await projectService.create(dto);
+    expect(response).toStrictEqual(new NotFound<Project>(`Logo not found`));
+  });
+
   it(`FindAll - should findAll`, async () => {
     await new userModel(mockUser).save();
     await new projectModel(mockCreateProjectDtos[0]).save();
@@ -289,6 +296,22 @@ describe('ProjectService', () => {
     );
   });
 
+  it(`Update - should leave existing slug`, async () => {
+    const userResult = await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
+    const createResult = await new projectModel(mockProjects[0]).save();
+    const name = 'test';
+
+    const result = await projectService.update(
+      createResult._id.toString(),
+      userResult._id.toString(),
+      { name: name },
+    );
+
+    expect(result.data.name).toBe(name);
+    expect(result.data.slug).toMatch(createResult.slug);
+  });
+
   it(`Update - should update without logo`, async () => {
     const userResult = await new userModel(mockUser).save();
     await new fileModel(mockFile1).save();
@@ -337,7 +360,20 @@ describe('ProjectService', () => {
     expect(response).toStrictEqual(new NotFound<Project>('Project not found'));
   });
 
-  it(`Update - should return Unauthorized access to user project (Not Found - 404) exception`, async () => {
+  it(`Update - should return Logo not found (Not Found - 404) exception`, async () => {
+    const userResult = await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    const response = await projectService.update(
+      mockProjects[0]._id.toString(),
+      userResult._id.toString(),
+      {
+        logo_id: '123',
+      },
+    );
+    expect(response).toStrictEqual(new NotFound<Project>('Logo not found'));
+  });
+
+  it(`Update - should return Unauthorized access to user project (Unauthorized - 401) exception`, async () => {
     await new userModel(mockUser).save();
     const createResult = await new projectModel(mockProjects[0]).save();
     const name = 'changed-name';
