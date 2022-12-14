@@ -72,6 +72,24 @@ describe('ProjectService', () => {
     );
   });
 
+  it('Create - should return the saved object with logo_id null if logo undefined', async () => {
+    await new userModel(mockUser).save();
+    const dto = { ...mockCreateProjectDtos[0] };
+    delete dto.logo_id;
+    const createdProject = await projectService.create(dto);
+    expect(createdProject.data.name).toBe(mockCreateProjectDtos[0].name);
+    expect(createdProject.data.logo).toBeNull();
+  });
+
+  it('Create - should return the saved object with logo_id null', async () => {
+    await new userModel(mockUser).save();
+    const dto = { ...mockCreateProjectDtos[0] };
+    dto.logo_id = null;
+    const createdProject = await projectService.create(dto);
+    expect(createdProject.data.name).toBe(mockCreateProjectDtos[0].name);
+    expect(createdProject.data.logo).toBeNull();
+  });
+
   it(`Create - should return Name can't be empty (Bad Request - 400) exception`, async () => {
     const dto = { ...mockCreateProjectDtos[0] };
     delete dto.name;
@@ -233,7 +251,7 @@ describe('ProjectService', () => {
     );
   });
 
-  it(`Update - should update without name`, async () => {
+  it(`Update - should update with name`, async () => {
     const userResult = await new userModel(mockUser).save();
     await new fileModel(mockFile1).save();
     const createResult = await new projectModel(mockProjects[0]).save();
@@ -252,7 +270,7 @@ describe('ProjectService', () => {
     );
   });
 
-  it(`Update - should update without slug`, async () => {
+  it(`Update - should update with slug`, async () => {
     const userResult = await new userModel(mockUser).save();
     await new fileModel(mockFile1).save();
     const createResult = await new projectModel(mockProjects[0]).save();
