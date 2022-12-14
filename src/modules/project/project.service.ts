@@ -45,6 +45,10 @@ export class ProjectService {
       const entity = mapCreateDtoToProject(dto);
 
       if (dto.logo_id) {
+        if (!Mongoose.Types.ObjectId.isValid(dto.logo_id)) {
+          return new NotFound<Project>('Logo not found');
+        }
+
         const file = await this.fileRepo
           .findOne({
             _id: new Mongoose.Types.ObjectId(dto.logo_id),
@@ -180,6 +184,10 @@ export class ProjectService {
       }
 
       if (dto.logo_id) {
+        if (!Mongoose.Types.ObjectId.isValid(dto.logo_id)) {
+          return new NotFound<Project>('Logo not found');
+        }
+
         const file = await this.fileRepo
           .findOne({
             _id: new Mongoose.Types.ObjectId(dto.logo_id),
@@ -202,8 +210,14 @@ export class ProjectService {
         project.logo = null;
       }
 
-      project.name = dto.name ?? project.name;
-      project.slug = toSlug(dto.slug ? dto.slug : project.name);
+      if (dto.name) {
+        project.name = dto.name;
+      }
+
+      if (dto.slug) {
+        project.slug = toSlug(dto.slug);
+      }
+
       project.updatedAt = new Date();
       await this.projectRepo.updateOne({ _id: id }, project);
 
