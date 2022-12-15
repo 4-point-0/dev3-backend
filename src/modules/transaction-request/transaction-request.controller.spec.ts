@@ -15,6 +15,7 @@ import { TransactionRequestController } from './transaction-request.controller';
 import { TransactionRequestService } from './transaction-request.service';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
 import { ConfigService } from '@nestjs/config';
+import { TransactionRequestType } from '../../common/enums/transaction-request-type.enum';
 
 describe('TransactionRequestController', () => {
   let transactionRequestController: TransactionRequestController;
@@ -115,6 +116,7 @@ describe('TransactionRequestController', () => {
         name: 'dule',
         base: '123',
       };
+      transactionRequest.type = TransactionRequestType.Payment;
 
       const result = new ServiceResult<TransactionRequestDto>(
         transactionRequest,

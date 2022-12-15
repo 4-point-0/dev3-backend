@@ -23,6 +23,8 @@ import { mapTransactionRequestDto } from './mappers/mapTransactionRequestDto';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { getState } from '../../helpers/rpc/rpc-helper';
+import { TransactionRequestType } from '../../common/enums/transaction-request-type.enum';
+import { isValidEnum } from '../../helpers/enum/enum.helper';
 
 @Injectable()
 export class TransactionRequestService {
@@ -49,6 +51,12 @@ export class TransactionRequestService {
 
       if (!dto.method) {
         return new BadRequest<TransactionRequest>(`Method can't be empty`);
+      }
+
+      if (!isValidEnum(TransactionRequestType, dto.type)) {
+        return new BadRequest<TransactionRequest>(
+          `Not valid transaction request type`,
+        );
       }
 
       if (!Mongoose.Types.ObjectId.isValid(dto.project_id)) {
@@ -92,6 +100,7 @@ export class TransactionRequestService {
     contractId?: string,
     method?: string,
     status?: TransactionRequestStatus,
+    type?: TransactionRequestType,
   ): Promise<ServiceResult<PaginatedDto<TransactionRequest>>> {
     try {
       const query = this.transactionRequestRepo.find({
@@ -119,6 +128,10 @@ export class TransactionRequestService {
 
       if (status) {
         query.find({ status: { $regex: status, $options: 'i' } });
+      }
+
+      if (type) {
+        query.find({ type: { $regex: type, $options: 'i' } });
       }
 
       const paginatedDto = await toPage<TransactionRequest>(
@@ -246,6 +259,16 @@ export class TransactionRequestService {
         return new BadRequest<TransactionRequestDto>(
           'Transaction request already confirmed',
         );
+      }
+
+      if (dto.type && !isValidEnum(TransactionRequestType, dto.type)) {
+        return new BadRequest<TransactionRequestDto>(
+          `Not valid transaction request type`,
+        );
+      }
+
+      if (dto.type) {
+        updateTransactionRequest.type = dto.type;
       }
 
       updateTransactionRequest.txHash = dto.txHash;

@@ -1,8 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import Mongoose from 'mongoose';
+import { TransactionRequestType } from '../../../common/enums/transaction-request-type.enum';
 
 export class CreateTransactionRequestDto {
+  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    enum: TransactionRequestType,
+  })
+  readonly type: TransactionRequestType;
+
   @IsOptional()
   @ApiProperty({
     type: String,

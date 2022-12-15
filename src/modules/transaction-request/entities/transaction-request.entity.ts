@@ -5,6 +5,7 @@ import { Project } from '../../../modules/project/entities/project.entity';
 import { BaseEntity } from '../../../common/entities/base-entity';
 import { User } from '../../../modules/user/entities/user.entity';
 import { TransactionRequestStatus } from '../../../common/enums/transaction-request.enum';
+import { TransactionRequestType } from '../../../common/enums/transaction-request-type.enum';
 
 export type TransactionRequestDocument = TransactionRequest & Document;
 
@@ -17,6 +18,17 @@ export class TransactionRequest extends BaseEntity {
   })
   @Prop({ required: true })
   uuid: string;
+
+  @ApiProperty({
+    type: String,
+    enum: [TransactionRequestType.Transaction, TransactionRequestType.Payment],
+  })
+  @Prop({
+    required: true,
+    enum: TransactionRequestType,
+    default: TransactionRequestType.Transaction,
+  })
+  type: string;
 
   @ApiProperty({
     type: String,
@@ -65,23 +77,26 @@ export class TransactionRequest extends BaseEntity {
 
   @ApiProperty({
     type: String,
+    required: false,
   })
   @Prop({ required: false })
   gas?: string;
 
   @ApiProperty({
     type: String,
+    required: false,
   })
   @Prop({ required: false })
   deposit?: string;
 
   @ApiProperty({
     type: String,
+    required: false,
   })
   @Prop({ required: false })
   txHash?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @Prop({
     required: false,
     get: (txDetails: string) => {
@@ -99,14 +114,16 @@ export class TransactionRequest extends BaseEntity {
 
   @ApiProperty({
     type: String,
+    required: false,
   })
   @Prop({ required: false })
   caller_address?: string;
 
   @ApiProperty({
     type: Boolean,
+    required: false,
   })
-  @Prop({ required: true, default: false })
+  @Prop({ required: false, default: false })
   is_near_token: boolean;
 
   @ApiProperty({
