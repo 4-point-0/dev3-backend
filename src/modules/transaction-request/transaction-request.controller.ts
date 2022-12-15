@@ -30,6 +30,7 @@ import { TransactionRequestStatus } from '../../common/enums/transaction-request
 import { AuthRequest } from '../user/entities/user.entity';
 import { UpdateTransactionRequestDto } from './dto/update-transaction-request.dto';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
+import { TransactionRequestType } from '../../common/enums/transaction-request-type.enum';
 
 @ApiTags('transaction-request')
 @Controller('transaction-request')
@@ -69,6 +70,7 @@ export class TransactionRequestController {
   @ApiQuery({ name: 'contractId', required: false })
   @ApiQuery({ name: 'method', required: false })
   @ApiQuery({ name: 'status', enum: TransactionRequestStatus, required: false })
+  @ApiQuery({ name: 'type', enum: TransactionRequestType, required: false })
   @ApiPaginatedResponse(TransactionRequest)
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -83,6 +85,7 @@ export class TransactionRequestController {
     @Query('contractId') contractId?: string,
     @Query('method') method?: string,
     @Query('status') status?: TransactionRequestStatus,
+    @Query('type') type?: TransactionRequestType,
   ) {
     return handle(
       await this.transactionRequestService.findAll(
@@ -93,6 +96,7 @@ export class TransactionRequestController {
         contractId,
         method,
         status,
+        type,
       ),
     );
   }

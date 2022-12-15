@@ -11,6 +11,7 @@ import { TransactionRequestStatus } from '../src/common/enums/transaction-reques
 import { CreateTransactionRequestDto } from '../src/modules/transaction-request/dto/create-transaction-request.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionRequestDto } from '../src/modules/transaction-request/dto/transaction-request.dto';
+import { TransactionRequestType } from '../src/common/enums/transaction-request-type.enum';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
@@ -417,6 +418,7 @@ export const mockApiKeyDtos: ApiKeyDto[] = [
 export const mockTransactionRequest1 = {
   _id: new Mongoose.Types.ObjectId('784ff1e4bc85ec5475a1ff5d'),
   uuid: uuidv4(),
+  type: TransactionRequestType.Transaction,
   status: TransactionRequestStatus.Pending,
   contractId: '123',
   method: 'withdraw',
@@ -432,6 +434,7 @@ export const mockTransactionRequest1 = {
 export const mockTransactionRequest2 = {
   _id: new Mongoose.Types.ObjectId('784fe1e4cd85ed4355a1ff5d'),
   uuid: uuidv4(),
+  type: TransactionRequestType.Payment,
   status: TransactionRequestStatus.Pending,
   contractId: '123',
   method: 'ft_transfer',
@@ -446,6 +449,7 @@ export const mockTransactionRequest2 = {
 export const mockTransactionRequest3 = {
   _id: new Mongoose.Types.ObjectId('784ff1e3bb85fd2135a1ff5d'),
   uuid: uuidv4(),
+  type: TransactionRequestType.Transaction,
   status: TransactionRequestStatus.Pending,
   contractId: '125',
   method: 'withdraw',
@@ -460,6 +464,7 @@ export const mockTransactionRequest3 = {
 export const mockTransactionRequest4 = {
   _id: new Mongoose.Types.ObjectId('784ff2e4bb85fd1125a1ff5d'),
   uuid: uuidv4(),
+  type: TransactionRequestType.Payment,
   status: TransactionRequestStatus.Pending,
   contractId: '123',
   method: 'deposit',
@@ -478,6 +483,7 @@ export const mockTransactionRequests = [
 ];
 
 export const mockCreateTransactionRequestDto1: CreateTransactionRequestDto = {
+  type: mockTransactionRequest1.type,
   contractId: mockTransactionRequest1.contractId,
   uuid: mockTransactionRequest1.uuid,
   method: mockTransactionRequest1.method,
@@ -490,6 +496,7 @@ export const mockCreateTransactionRequestDto1: CreateTransactionRequestDto = {
 };
 
 export const mockCreateTransactionRequestDto2: CreateTransactionRequestDto = {
+  type: mockTransactionRequest2.type,
   contractId: mockTransactionRequest2.contractId,
   uuid: mockTransactionRequest2.uuid,
   method: mockTransactionRequest2.method,
@@ -501,6 +508,7 @@ export const mockCreateTransactionRequestDto2: CreateTransactionRequestDto = {
 };
 
 export const mockCreateTransactionRequestDto3: CreateTransactionRequestDto = {
+  type: mockTransactionRequest3.type,
   contractId: mockTransactionRequest3.contractId,
   uuid: mockTransactionRequest3.uuid,
   method: mockTransactionRequest3.method,
@@ -512,6 +520,7 @@ export const mockCreateTransactionRequestDto3: CreateTransactionRequestDto = {
 };
 
 export const mockCreateTransactionRequestDto4: CreateTransactionRequestDto = {
+  type: mockTransactionRequest4.type,
   contractId: mockTransactionRequest4.contractId,
   uuid: mockTransactionRequest4.uuid,
   method: mockTransactionRequest4.method,
@@ -520,16 +529,30 @@ export const mockCreateTransactionRequestDto4: CreateTransactionRequestDto = {
   project: mockTransactionRequest4.project._id,
   owner: mockUser._id,
 };
+export const mockCreateTransactionRequestDto5: CreateTransactionRequestDto = {
+  type: mockTransactionRequest1.type,
+  contractId: mockTransactionRequest1.contractId,
+  uuid: mockTransactionRequest1.uuid,
+  method: mockTransactionRequest1.method,
+  args: mockTransactionRequest1.args,
+  gas: mockTransactionRequest1.gas,
+  is_near_token: mockTransactionRequest1.is_near_token,
+  project_id: mockTransactionRequest1.project._id.toString(),
+  project: mockTransactionRequest1.project._id,
+  owner: mockUser._id,
+};
 
 export const mockCreateTransactionRequestDtos = [
   mockCreateTransactionRequestDto1,
   mockCreateTransactionRequestDto2,
   mockCreateTransactionRequestDto3,
   mockCreateTransactionRequestDto4,
+  mockCreateTransactionRequestDto5,
 ];
 
 export const mockTransactionRequestDto: TransactionRequestDto = {
   contractId: mockTransactionRequest1.contractId,
+  type: mockTransactionRequest1.type,
   uuid: mockTransactionRequest1.uuid,
   method: mockTransactionRequest1.method,
   args: mockTransactionRequest1.args,

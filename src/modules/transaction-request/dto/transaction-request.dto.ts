@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { TransactionRequestType } from '../../../common/enums/transaction-request-type.enum';
 import { TransactionRequestStatus } from '../../../common/enums/transaction-request.enum';
 
 export class TransactionRequestDto {
@@ -6,6 +7,13 @@ export class TransactionRequestDto {
     type: String,
   })
   uuid: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    enum: TransactionRequestType,
+  })
+  readonly type: TransactionRequestType;
 
   @ApiProperty({
     type: Date,
