@@ -3,7 +3,7 @@ import { CreateProjectDto } from '../src/modules/project/dto/create-project.dto'
 import { CreateAddressDto } from '../src/modules/address/dto/create-address.dto';
 import { Role } from '../src/common/enums/role.enum';
 import { PaymentStatus } from '../src/common/enums/payment-status.enum';
-import { CreatePaymentDto } from '../src/modules/payment/dto/create-payment.dto';
+import { CreatePaymentDto } from '../src/modules/payment-old/dto/create-payment.dto';
 import { addDays } from '../src/helpers/date/date-helper';
 import { CreateApiKeyDto } from '../src/modules/api-key/dto/create-api-key.dto';
 import { ApiKeyDto } from '../src/modules/api-key/dto/api-key.dto';
