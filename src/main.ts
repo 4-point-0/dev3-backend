@@ -7,6 +7,7 @@ import { ApiKeyModule } from './modules/api-key/api-key.module';
 import { AppModule } from './modules/app/app.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContractModule } from './modules/contract/contract.module';
+import { DeployedContractModule } from './modules/deployed-contract/deployed-contract.module';
 import { FileModule } from './modules/file/file.module';
 import { ProjectModule } from './modules/project/project.module';
 import { TasksModule } from './modules/task/task.module';
@@ -50,6 +51,7 @@ async function bootstrap() {
       ApiKeyModule,
       AddressModule,
       ContractModule,
+      DeployedContractModule,
       TransactionRequestModule,
       FileModule,
     ],
