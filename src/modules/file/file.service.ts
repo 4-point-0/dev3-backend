@@ -30,7 +30,7 @@ export class FileService {
       const s3 = this.getS3();
       const params = {
         Bucket: this.configService.get('aws.bucket_name'),
-        Key: `${uuid()}-${fileName}`,
+        Key: `${uuid()}`,
         Body: dataBuffer,
         ACL: 'public-read',
         ContentType: mimetype,
@@ -61,10 +61,16 @@ export class FileService {
     ownerId: string,
     id: string,
     dataBuffer: Buffer,
+    fileName: string,
+    mimetype: string,
   ): Promise<ServiceResult<File>> {
     try {
+      if (!Mongoose.Types.ObjectId.isValid(id)) {
+        return new NotFound<File>('File not found');
+      }
+
       const file = await this.repo
-        .findOne({ id: new Mongoose.Types.ObjectId(id) })
+        .findOne({ _id: new Mongoose.Types.ObjectId(id) })
         .populate('owner')
         .exec();
 
@@ -87,7 +93,8 @@ export class FileService {
       };
 
       await s3.putObject(params).promise();
-
+      file.name = fileName;
+      file.mime_type = mimetype;
       file.updatedAt = new Date();
       await this.repo.updateOne({ _id: file.id }, file);
 
