@@ -16,7 +16,7 @@ export class TransactionRequest extends BaseEntity {
   @ApiProperty({
     type: String,
   })
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   uuid: string;
 
   @ApiProperty({
