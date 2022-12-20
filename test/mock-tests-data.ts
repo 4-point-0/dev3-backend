@@ -12,6 +12,7 @@ import { CreateTransactionRequestDto } from '../src/modules/transaction-request/
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionRequestDto } from '../src/modules/transaction-request/dto/transaction-request.dto';
 import { TransactionRequestType } from '../src/common/enums/transaction-request-type.enum';
+import { PublicTransactionRequestDto } from '../src/modules/transaction-request/dto/public-transaction-request.dto';
 
 export const mockAuthUser = {
   uid: 'rimatikdev.testnet',
@@ -560,6 +561,25 @@ export const mockTransactionRequestDto: TransactionRequestDto = {
   txHash: '123',
   txDetails: JSON.stringify({ name: '123', lastname: '222' }),
   project_id: mockTransactionRequest1.project._id.toString(),
+  created_at: mockTransactionRequest1.createdAt,
+  status: mockTransactionRequest1.status,
+  caller_address: 'bob.testnet',
+  is_near_token: false,
+};
+
+export const mockPublicTransactionRequestDto: PublicTransactionRequestDto = {
+  contractId: mockTransactionRequest1.contractId,
+  type: mockTransactionRequest1.type,
+  uuid: mockTransactionRequest1.uuid,
+  method: mockTransactionRequest1.method,
+  args: mockTransactionRequest1.args,
+  gas: mockTransactionRequest1.gas,
+  txHash: '123',
+  txDetails: JSON.stringify({ name: '123', lastname: '222' }),
+  project: {
+    name: mockTransactionRequest1.project.name,
+    logo_url: mockTransactionRequest1.project.logo.url,
+  },
   created_at: mockTransactionRequest1.createdAt,
   status: mockTransactionRequest1.status,
   caller_address: 'bob.testnet',

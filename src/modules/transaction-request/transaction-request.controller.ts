@@ -31,6 +31,7 @@ import { AuthRequest } from '../user/entities/user.entity';
 import { UpdateTransactionRequestDto } from './dto/update-transaction-request.dto';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
 import { TransactionRequestType } from '../../common/enums/transaction-request-type.enum';
+import { PublicTransactionRequestDto } from './dto/public-transaction-request.dto';
 
 @ApiTags('transaction-request')
 @Controller('transaction-request')
@@ -103,14 +104,14 @@ export class TransactionRequestController {
 
   @Get('uuid/:uuid')
   @UseFilters(new HttpExceptionFilter())
-  @ApiResponse({ status: 200, type: TransactionRequestDto })
+  @ApiResponse({ status: 200, type: PublicTransactionRequestDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async findByUuid(@Param('uuid') uuid: string) {
-    return handle<TransactionRequestDto>(
+    return handle<PublicTransactionRequestDto>(
       await this.transactionRequestService.findByUuid(uuid),
     );
   }
