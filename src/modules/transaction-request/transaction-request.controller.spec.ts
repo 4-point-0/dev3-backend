@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import {
   mockCreateTransactionRequestDtos,
+  mockPublicTransactionRequestDto,
   mockTransactionRequest1,
   mockTransactionRequestDto,
   mockTransactionRequests,
@@ -16,6 +17,7 @@ import { TransactionRequestService } from './transaction-request.service';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
 import { ConfigService } from '@nestjs/config';
 import { TransactionRequestType } from '../../common/enums/transaction-request-type.enum';
+import { PublicTransactionRequestDto } from './dto/public-transaction-request.dto';
 
 describe('TransactionRequestController', () => {
   let transactionRequestController: TransactionRequestController;
@@ -92,8 +94,8 @@ describe('TransactionRequestController', () => {
 
   describe('findByUuid', () => {
     it('should find one transaction request by uuid', async () => {
-      const result = new ServiceResult<TransactionRequestDto>(
-        mockTransactionRequestDto,
+      const result = new ServiceResult<PublicTransactionRequestDto>(
+        mockPublicTransactionRequestDto,
       );
       jest
         .spyOn(transactionRequestService, 'findByUuid')

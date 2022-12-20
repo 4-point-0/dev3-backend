@@ -258,6 +258,8 @@ describe('TransactionRequestService', () => {
 
     const result = await transactionRequestService.findByUuid(res.data.uuid);
     expect(result.data.uuid).toBe(res.data.uuid);
+    expect(result.data.project.name).toBe(mockProjects[0].name);
+    expect(result.data.project.logo_url).toBe(mockProjects[0].logo.url);
   });
 
   it(`FindOne - should findOne`, async () => {
