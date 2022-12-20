@@ -12,6 +12,7 @@ import { TransactionRequestService } from './transaction-request.service';
 import { Project, ProjectSchema } from '../project/entities/project.entity';
 import {
   mockCreateTransactionRequestDtos,
+  mockFile1,
   mockProjects,
   mockTransactionRequests,
   mockUser,
@@ -24,6 +25,7 @@ import {
 import { TransactionRequestDto } from './dto/transaction-request.dto';
 import { ConfigService } from '@nestjs/config';
 import { TransactionRequestType } from '../../common/enums/transaction-request-type.enum';
+import { File, FileSchema } from '../file/entities/file.entity';
 
 describe('TransactionRequestService', () => {
   let transactionRequestService: TransactionRequestService;
@@ -32,6 +34,7 @@ describe('TransactionRequestService', () => {
   let projectModel: Model<Project>;
   let userModel: Model<User>;
   let transactionRequestModel: Model<TransactionRequest>;
+  let fileModel: Model<File>;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -39,6 +42,7 @@ describe('TransactionRequestService', () => {
     mongoConnection = (await connect(uri)).connection;
     projectModel = mongoConnection.model(Project.name, ProjectSchema);
     userModel = mongoConnection.model(User.name, UserSchema);
+    fileModel = mongoConnection.model(File.name, FileSchema);
     transactionRequestModel = mongoConnection.model(
       TransactionRequest.name,
       TransactionRequestSchema,
@@ -48,6 +52,7 @@ describe('TransactionRequestService', () => {
         TransactionRequestService,
         { provide: getModelToken(Project.name), useValue: projectModel },
         { provide: getModelToken(User.name), useValue: userModel },
+        { provide: getModelToken(File.name), useValue: fileModel },
         {
           provide: ConfigService,
           useValue: {
@@ -251,12 +256,13 @@ describe('TransactionRequestService', () => {
   it(`FindByUuid - should find by uuid`, async () => {
     await new userModel(mockUser).save();
     await new projectModel(mockProjects[0]).save();
-
+    await new fileModel(mockFile1).save();
     const res = await transactionRequestService.create(
       mockCreateTransactionRequestDtos[0],
     );
 
     const result = await transactionRequestService.findByUuid(res.data.uuid);
+
     expect(result.data.uuid).toBe(res.data.uuid);
     expect(result.data.project.name).toBe(mockProjects[0].name);
     expect(result.data.project.logo_url).toBe(mockProjects[0].logo.url);

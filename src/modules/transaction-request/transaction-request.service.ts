@@ -181,7 +181,10 @@ export class TransactionRequestService {
         mapPublicTransactionRequestDto(
           await this.transactionRequestRepo
             .findOne({ uuid })
-            .populate('project')
+            .populate({
+              path: 'project',
+              populate: { path: 'logo', model: 'File' },
+            })
             .exec(),
         ),
       );
