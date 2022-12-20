@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Logger,
+  Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -22,12 +25,14 @@ import { DeployedContractService } from './deployed-contract.service';
 import { DeployedContract } from './entities/deployed-contract.entity';
 import { AuthRequest } from '../user/entities/user.entity';
 import { CreateDeployedContractDto } from './dto/create-deployed-contract.dto';
-import { handle } from '../../helpers/response/handle';
+import { handle, handleEmtpy } from '../../helpers/response/handle';
 import { CommonApiResponse } from 'src/helpers/decorators/api-response-swagger.decorator';
 import { Auth } from '../../helpers/decorators/auth.decorator';
 import { DeployedContractStatus } from '../../common/enums/deployed-contract-status.enum';
 import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
 import { Role } from '../../common/enums/role.enum';
+import { DeployedContractDto } from './dto/deployed-contract.dto';
+import { UpdateDeployedContractDto } from './dto/update-deployed-contract.dto';
 
 @ApiTags('deployed-contract')
 @Controller('deployed-contract')
@@ -85,6 +90,65 @@ export class DeployedContractController {
         contract_template_id,
         status,
         tags,
+      ),
+    );
+  }
+
+  @Get(':uuid')
+  @Auth(Role.Customer)
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: DeployedContract })
+  @CommonApiResponse()
+  async findOne(@Req() request: AuthRequest, @Param('uuid') uuid: string) {
+    return handle<DeployedContract>(
+      await this.deployedContractService.findOne(
+        uuid,
+        request.user._id.toString(),
+      ),
+    );
+  }
+
+  @Get('public/:uuid')
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: DeployedContractDto })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async findByUuidPublic(@Param('uuid') uuid: string) {
+    return handle<DeployedContractDto>(
+      await this.deployedContractService.findByUuid(uuid),
+    );
+  }
+
+  @Patch(':uuid')
+  @Auth(Role.Customer)
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 200, type: DeployedContractDto })
+  @CommonApiResponse()
+  async update(
+    @Param('uuid') uuid: string,
+    @Body() updateDeployedContractDto: UpdateDeployedContractDto,
+  ) {
+    return handle(
+      await this.deployedContractService.update(
+        uuid,
+        updateDeployedContractDto,
+      ),
+    );
+  }
+
+  @Delete(':uuid')
+  @Auth(Role.Customer)
+  @UseFilters(new HttpExceptionFilter())
+  @ApiResponse({ status: 204 })
+  @CommonApiResponse()
+  async remove(@Req() request: AuthRequest, @Param('uuid') uuid: string) {
+    return handleEmtpy(
+      await this.deployedContractService.remove(
+        uuid,
+        request.user._id.toString(),
       ),
     );
   }

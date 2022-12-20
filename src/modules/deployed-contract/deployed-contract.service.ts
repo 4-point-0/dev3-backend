@@ -6,8 +6,12 @@ import {
   BadRequest,
   NotFound,
   ServerError,
+  Unauthorized,
 } from '../../helpers/response/errors';
-import { ServiceResult } from '../../helpers/response/result';
+import {
+  ServiceResult,
+  ServiceResultEmpty,
+} from '../../helpers/response/result';
 import {
   Contract,
   ContractDocument,
@@ -22,6 +26,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { DeployedContractStatus } from '../../common/enums/deployed-contract-status.enum';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import { toPage } from '../../helpers/pagination/pagination-helper';
+import { DeployedContractDto } from './dto/deployed-contract.dto';
+import { mapDeployedContractDto } from './mappers/mapDeployedContractDto';
+import { getState } from '../../helpers/rpc/rpc-helper';
+import { UpdateDeployedContractDto } from './dto/update-deployed-contract.dto';
 
 @Injectable()
 export class DeployedContractService {
@@ -57,7 +65,7 @@ export class DeployedContractService {
       }
 
       if (!dto.project_id) {
-        return new BadRequest<DeployedContract>(`Project uuid can't be empty`);
+        return new BadRequest<DeployedContract>(`Project id can't be empty`);
       }
 
       if (!Mongoose.Types.ObjectId.isValid(dto.project_id)) {
@@ -65,7 +73,7 @@ export class DeployedContractService {
       }
 
       const project = await this.projectRepo
-        .findOne({ id: new Mongoose.Types.ObjectId(dto.project_id) })
+        .findOne({ _id: new Mongoose.Types.ObjectId(dto.project_id) })
         .exec();
 
       if (!project) {
@@ -74,7 +82,7 @@ export class DeployedContractService {
 
       const contract_template = await this.contractTemplateRepo
         .findOne({
-          id: new Mongoose.Types.ObjectId(dto.contract_template_id),
+          _id: new Mongoose.Types.ObjectId(dto.contract_template_id),
         })
         .exec();
 
@@ -150,7 +158,7 @@ export class DeployedContractService {
         Mongoose.Types.ObjectId.isValid(contract_template_id)
       ) {
         query.find({
-          contract_template: { $regex: contract_template_id, $options: 'i' },
+          contract_template: new Mongoose.Types.ObjectId(contract_template_id),
         });
       }
 
@@ -159,7 +167,7 @@ export class DeployedContractService {
       }
 
       if (tags) {
-        query.find({ tags: { $regex: tags, $options: 'i' } });
+        query.find({ tags: { $in: tags } });
       }
 
       const paginatedDto = await toPage<DeployedContract>(
@@ -175,6 +183,179 @@ export class DeployedContractService {
       return new ServerError<PaginatedDto<DeployedContract>>(
         `Can't get deployed contracts`,
       );
+    }
+  }
+
+  async findOne(
+    uuid: string,
+    ownerId: string,
+  ): Promise<ServiceResult<DeployedContract>> {
+    try {
+      const deployedContract = await this.deployedContractRepo
+        .findOne({ uuid })
+        .populate('owner')
+        .exec();
+
+      if (!deployedContract) {
+        return new NotFound<DeployedContract>('Deployed contract not found');
+      }
+
+      if (deployedContract.owner._id.toString() !== ownerId) {
+        return new Unauthorized<DeployedContract>(
+          'Unauthorized access to user deployed contract',
+        );
+      }
+
+      if (
+        deployedContract.txHash &&
+        deployedContract.status === DeployedContractStatus.Pending
+      ) {
+        await this.updateTxStatus(
+          deployedContract.txHash,
+          deployedContract.deployer_address,
+          deployedContract.uuid,
+        );
+      }
+      return new ServiceResult<DeployedContract>(
+        await this.deployedContractRepo
+          .findOne({ uuid })
+          .populate('contract_template')
+          .populate('owner')
+          .exec(),
+      );
+    } catch (error) {
+      this.logger.error('DeployedContractService - findOne', error);
+      return new ServerError<DeployedContract>(`Can't get deployed contract`);
+    }
+  }
+
+  async findByUuid(uuid: string): Promise<ServiceResult<DeployedContractDto>> {
+    try {
+      const deployedContract = await this.deployedContractRepo
+        .findOne({ uuid })
+        .exec();
+
+      if (!deployedContract) {
+        return new NotFound<DeployedContractDto>('Deployed contract not found');
+      }
+
+      if (
+        deployedContract.txHash &&
+        deployedContract.status === DeployedContractStatus.Pending
+      ) {
+        await this.updateTxStatus(
+          deployedContract.txHash,
+          deployedContract.deployer_address,
+          deployedContract.uuid,
+        );
+      }
+
+      return new ServiceResult<DeployedContractDto>(
+        mapDeployedContractDto(
+          await this.deployedContractRepo
+            .findOne({ uuid })
+            .populate('contract_template')
+            .exec(),
+        ),
+      );
+    } catch (error) {
+      this.logger.error('DeployedContractService - findByUUid', error);
+      return new ServerError<DeployedContractDto>(
+        `Can't get deployed contract`,
+      );
+    }
+  }
+
+  async update(
+    uuid: string,
+    dto: UpdateDeployedContractDto,
+  ): Promise<ServiceResult<DeployedContractDto>> {
+    try {
+      const updateTransactionRequest = await this.deployedContractRepo
+        .findOne({ uuid })
+        .exec();
+
+      if (!updateTransactionRequest) {
+        return new NotFound<DeployedContractDto>(
+          'Deployment contract not found',
+        );
+      }
+
+      if (updateTransactionRequest.txHash) {
+        return new BadRequest<DeployedContractDto>(
+          'Deployment contract already confirmed',
+        );
+      }
+
+      updateTransactionRequest.txHash = dto.txHash;
+      updateTransactionRequest.txDetails = dto.txDetails;
+      updateTransactionRequest.deployer_address = dto.deployer_address;
+      updateTransactionRequest.updatedAt = new Date();
+
+      await this.deployedContractRepo.updateOne(
+        { uuid },
+        updateTransactionRequest,
+      );
+
+      return new ServiceResult<DeployedContractDto>(
+        mapDeployedContractDto(updateTransactionRequest),
+      );
+    } catch (error) {
+      this.logger.error('TransactionRequestService - update', error);
+      return new ServerError<DeployedContractDto>(
+        `Can't update deployed contract`,
+      );
+    }
+  }
+
+  async remove(uuid: string, ownerId: string): Promise<ServiceResultEmpty> {
+    try {
+      const deployedContract = await this.deployedContractRepo
+        .findOne({ uuid: uuid })
+        .populate('owner')
+        .exec();
+
+      if (!deployedContract) {
+        return new NotFound<string>('Deployed contract not found');
+      }
+
+      if (deployedContract.owner._id.toString() !== ownerId) {
+        return new Unauthorized(
+          'Unauthorized access to user deployed contract',
+        );
+      }
+
+      await this.deployedContractRepo
+        .findByIdAndDelete(deployedContract._id)
+        .exec();
+      return new ServiceResultEmpty();
+    } catch (error) {
+      this.logger.error('DeployedContractService - remove', error);
+      return new ServerError(`Can't remove deployed contract`);
+    }
+  }
+
+  async updateTxStatus(
+    txHash: string,
+    deployer_address: string,
+    uuid: string,
+  ): Promise<void> {
+    try {
+      const txState = await getState(
+        txHash,
+        deployer_address,
+        this.configService.get('NODE_ENV'),
+      );
+      await this.deployedContractRepo.updateOne(
+        { uuid },
+        {
+          status: txState.status.hasOwnProperty('SuccessValue')
+            ? DeployedContractStatus.Deployed
+            : DeployedContractStatus.Failure,
+        },
+      );
+    } catch (error) {
+      this.logger.error('DeployedContractService - updateTxStatus', error);
     }
   }
 }

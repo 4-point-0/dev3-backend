@@ -1,5 +1,5 @@
 import { HttpException } from '@nestjs/common';
-import { ServiceResult } from './result';
+import { ServiceResult, ServiceResultEmpty } from './result';
 
 export const handle = async <T>(result: ServiceResult<T>) => {
   if (result.data) {
@@ -7,4 +7,10 @@ export const handle = async <T>(result: ServiceResult<T>) => {
   }
 
   throw new HttpException(result.error.message, result.error.code);
+};
+
+export const handleEmtpy = async (result: ServiceResultEmpty) => {
+  if (result.error) {
+    throw new HttpException(result.error.message, result.error.code);
+  }
 };

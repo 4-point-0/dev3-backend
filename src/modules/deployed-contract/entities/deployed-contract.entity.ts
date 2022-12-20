@@ -69,6 +69,36 @@ export class DeployedContract extends BaseEntity {
   address?: string;
 
   @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @Prop({ required: false })
+  txHash?: string;
+
+  @ApiProperty({ required: false })
+  @Prop({
+    required: false,
+    get: (txDetails: string) => {
+      try {
+        return JSON.parse(txDetails);
+      } catch (err) {
+        return txDetails;
+      }
+    },
+    set: (txDetails: any) => {
+      return JSON.stringify(txDetails);
+    },
+  })
+  txDetails?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @Prop({ required: false })
+  deployer_address?: string;
+
+  @ApiProperty({
     type: User,
   })
   @Prop({ type: Mongoose.Types.ObjectId, ref: User.name })

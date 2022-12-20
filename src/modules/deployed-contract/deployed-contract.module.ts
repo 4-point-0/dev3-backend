@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Contract, ContractSchema } from '../contract/entities/contract.entity';
 import { Project, ProjectSchema } from '../project/entities/project.entity';
 import { DeployedContractService } from './deployed-contract.service';
-import { DeployedContractController } from './deployed.contract.controller';
+import { DeployedContractController } from './deployed-contract.controller';
 import {
   DeployedContract,
   DeployedContractSchema,
