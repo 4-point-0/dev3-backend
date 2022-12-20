@@ -20,7 +20,7 @@ export const mapPublicTransactionRequestDto = (
     caller_address: entity.caller_address,
     project: {
       name: entity.project.name,
-      logo_url: entity.project.logo.url,
+      logo_url: entity.project.logo ? entity.project.logo.url : null,
     },
     type: entity.type as TransactionRequestType,
   };
