@@ -26,7 +26,7 @@ import { DeployedContract } from './entities/deployed-contract.entity';
 import { AuthRequest } from '../user/entities/user.entity';
 import { CreateDeployedContractDto } from './dto/create-deployed-contract.dto';
 import { handle, handleEmtpy } from '../../helpers/response/handle';
-import { CommonApiResponse } from 'src/helpers/decorators/api-response-swagger.decorator';
+import { CommonApiResponse } from '../../helpers/decorators/api-response-swagger.decorator';
 import { Auth } from '../../helpers/decorators/auth.decorator';
 import { DeployedContractStatus } from '../../common/enums/deployed-contract-status.enum';
 import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-response';
@@ -76,7 +76,6 @@ export class DeployedContractController {
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
     @Query('alias') alias?: string,
-    @Query('contract_template_id') contract_template_id?: string,
     @Query('status') status?: DeployedContractStatus,
     @Query('tags') tags?: string[],
   ) {
@@ -87,7 +86,6 @@ export class DeployedContractController {
         limit,
         project_id,
         alias,
-        contract_template_id,
         status,
         tags,
       ),

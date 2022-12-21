@@ -3,10 +3,16 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model } from 'mongoose';
-import { BadRequest, NotFound } from '../../helpers/response/errors';
+import {
+  BadRequest,
+  NotFound,
+  Unauthorized,
+} from '../../helpers/response/errors';
 import {
   mockContractTemplates,
   mockCreateDeployedContractDtos,
+  mockDeployedContracts,
+  // mockDeployedContracts,
   mockProjects,
   mockUser,
 } from '../../../test/mock-tests-data';
@@ -19,6 +25,7 @@ import {
   DeployedContractSchema,
 } from './entities/deployed-contract.entity';
 import { DeployedContractStatus } from '../../common/enums/deployed-contract-status.enum';
+import { DeployedContractDto } from './dto/deployed-contract.dto';
 
 describe('DeployedContractService', () => {
   let deployedContractService: DeployedContractService;
@@ -239,7 +246,6 @@ describe('DeployedContractService', () => {
       null, //   limit: null,
       mockCreateDeployedContractDtos[0].project_id, //   project_id: null,
       null, //   alias: null,
-      null, //   contract_template_id: null,
       null, //   status: null,
       null, //   tags: null,
     );
@@ -262,30 +268,6 @@ describe('DeployedContractService', () => {
       null, //   limit: null,
       null, //   project_id: null,
       'erc20', //   alias: null,
-      null, //   contract_template_id: null,
-      null, //   status: null,
-      null, //   tags: null,
-    );
-
-    expect(result.data.results).toHaveLength(2);
-    expect(result.data.count).toBe(2);
-  });
-
-  it(`FindAll - should findAll by contract_template_id`, async () => {
-    await new userModel(mockUser).save();
-    await new projectModel(mockProjects[0]).save();
-    await new contractTemplateModel(mockContractTemplates[0]).save();
-    await new contractTemplateModel(mockContractTemplates[1]).save();
-    await deployedContractService.create(mockCreateDeployedContractDtos[0]);
-    await deployedContractService.create(mockCreateDeployedContractDtos[1]);
-
-    const result = await deployedContractService.findAll(
-      mockUser._id,
-      null, //   offset:
-      null, //   limit: null,
-      null, //   project_id: null,
-      null, //   alias: null,
-      mockCreateDeployedContractDtos[0].contract_template_id, //   contract_template_id: null,
       null, //   status: null,
       null, //   tags: null,
     );
@@ -308,7 +290,6 @@ describe('DeployedContractService', () => {
       null, //   limit: null,
       null, //   project_id: null,
       null, //   alias: null,
-      null, //   contract_template_id: null,
       DeployedContractStatus.Pending, //   status: null,
       null, //   tags: null,
     );
@@ -332,12 +313,227 @@ describe('DeployedContractService', () => {
       null, //   limit: null,
       null, //   project_id: null,
       null, //   alias: null,
-      null, //   contract_template_id: null,
       null, //   status: null,
       ['tokens', 'nft'], //   tags: null,
     );
 
     expect(result.data.results).toHaveLength(3);
     expect(result.data.count).toBe(3);
+  });
+
+  it(`FindOne - should findOne`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await deployedContractService.create(
+      mockCreateDeployedContractDtos[0],
+    );
+
+    const result = await deployedContractService.findOne(
+      createResult.data.uuid,
+      mockUser._id.toString(),
+    );
+
+    expect(result.data._id.toString()).toBe(createResult.data._id.toString());
+  });
+
+  it(`FindOne - should findOne`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await deployedContractService.create(
+      mockCreateDeployedContractDtos[0],
+    );
+
+    const result = await deployedContractService.findOne(
+      createResult.data.uuid,
+      mockUser._id.toString(),
+    );
+
+    expect(result.data._id.toString()).toBe(createResult.data._id.toString());
+  });
+
+  it(`FindOne - should return Deployed contract not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    await deployedContractService.create(mockCreateDeployedContractDtos[0]);
+    const response = await deployedContractService.findOne(
+      '12',
+      mockUser._id.toString(),
+    );
+    expect(response).toStrictEqual(
+      new NotFound<DeployedContract>('Deployed contract not found'),
+    );
+  });
+
+  it(`FindOne - should return Unauthorized access to user deployed contract (Unauthorized - 401) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await deployedContractService.create(
+      mockCreateDeployedContractDtos[0],
+    );
+    const response = await deployedContractService.findOne(
+      createResult.data.uuid,
+      '123',
+    );
+    expect(response).toStrictEqual(
+      new Unauthorized<DeployedContract>(
+        'Unauthorized access to user deployed contract',
+      ),
+    );
+  });
+
+  it(`FindByUuid - should by uuid`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await deployedContractService.create(
+      mockCreateDeployedContractDtos[0],
+    );
+
+    const result = await deployedContractService.findByUuid(
+      createResult.data.uuid,
+    );
+
+    expect(result.data.uuid).toBe(createResult.data.uuid);
+  });
+
+  it(`FindByUuid - should return Deployed contract not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    await deployedContractService.create(mockCreateDeployedContractDtos[0]);
+    const response = await deployedContractService.findByUuid('12');
+    expect(response).toStrictEqual(
+      new NotFound<DeployedContract>('Deployed contract not found'),
+    );
+  });
+
+  it(`Update - should update`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await new deployedContractModel(
+      mockDeployedContracts[0],
+    ).save();
+
+    const updateDto = {
+      txHash: '123',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      deployer_address: 'bob.testnet',
+    };
+    const result = await deployedContractService.update(
+      createResult.uuid,
+      updateDto,
+    );
+
+    expect(result.data.txHash).toBe(updateDto.txHash);
+    expect(result.data.txDetails).toStrictEqual(updateDto.txDetails);
+    expect(result.data.deployer_address).toBe(updateDto.deployer_address);
+  });
+
+  it(`Update - should return Deployment contract not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    await new deployedContractModel(mockDeployedContracts[0]).save();
+    const response = await deployedContractService.update('12', {
+      txHash: '123',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      deployer_address: 'bob.testnet',
+    });
+    expect(response).toStrictEqual(
+      new NotFound<DeployedContractDto>('Deployment contract not found'),
+    );
+  });
+
+  it(`Update - should return Deployment contract transaction already confirmed (Bad request - 400) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await new deployedContractModel(
+      mockDeployedContracts[0],
+    ).save();
+    await deployedContractService.update(createResult.uuid, {
+      txHash: '123',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      deployer_address: 'bob.testnet',
+    });
+
+    const result = await deployedContractService.update(createResult.uuid, {
+      txHash: '123',
+      txDetails: {
+        name: 'dule',
+        base: '123',
+      },
+      deployer_address: 'bob.testnet',
+    });
+    expect(result).toStrictEqual(
+      new BadRequest<DeployedContractDto>(
+        'Deployment contract transaction already confirmed',
+      ),
+    );
+  });
+
+  it(`Remove - should delete one`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await new deployedContractModel(
+      mockDeployedContracts[0],
+    ).save();
+
+    await deployedContractService.remove(
+      createResult.uuid,
+      mockUser._id.toString(),
+    );
+
+    const response = await deployedContractService.findOne(
+      createResult.uuid,
+      mockUser._id.toString(),
+    );
+
+    expect(response).toStrictEqual(
+      new NotFound<DeployedContract>('Deployed contract not found'),
+    );
+  });
+
+  it(`Remove - should return Deployed contract not found (Not Found - 404) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    await new deployedContractModel(mockDeployedContracts[0]).save();
+    const response = await deployedContractService.remove(
+      '123',
+      mockUser._id.toString(),
+    );
+    expect(response).toStrictEqual(new NotFound('Deployed contract not found'));
+  });
+
+  it(`Remove - should return Unauthorized access to user deployed contract (Unathorized - 401) exception`, async () => {
+    await new userModel(mockUser).save();
+    await new projectModel(mockProjects[0]).save();
+    await new contractTemplateModel(mockContractTemplates[0]).save();
+    const createResult = await new deployedContractModel(
+      mockDeployedContracts[0],
+    ).save();
+    const response = await deployedContractService.remove(
+      createResult.uuid,
+      '123',
+    );
+    expect(response).toStrictEqual(
+      new Unauthorized('Unauthorized access to user deployed contract'),
+    );
   });
 });

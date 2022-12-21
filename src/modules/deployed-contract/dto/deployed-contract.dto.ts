@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DeployedContractStatus } from 'src/common/enums/deployed-contract-status.enum';
+import { DeployedContractStatus } from '../../../common/enums/deployed-contract-status.enum';
 
 export class DeployedContractDto {
   @ApiProperty({
@@ -10,12 +10,12 @@ export class DeployedContractDto {
   @ApiProperty({
     type: String,
   })
-  name: string;
+  contract_template_name: string;
 
   @ApiProperty({
     type: String,
   })
-  description: string;
+  contract_template_description: string;
 
   @ApiProperty({
     type: String,
@@ -35,6 +35,22 @@ export class DeployedContractDto {
 
   @ApiProperty()
   args: any;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  deployer_address?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  txHash?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  txDetails?: string;
 
   @ApiProperty({
     type: Date,

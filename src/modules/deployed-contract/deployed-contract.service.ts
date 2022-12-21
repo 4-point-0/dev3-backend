@@ -129,7 +129,6 @@ export class DeployedContractService {
     limit?: number,
     project_id?: string,
     alias?: string,
-    contract_template_id?: string,
     status?: DeployedContractStatus,
     tags?: string[],
   ): Promise<ServiceResult<PaginatedDto<DeployedContract>>> {
@@ -150,15 +149,6 @@ export class DeployedContractService {
       if (alias) {
         query.find({
           alias: { $regex: alias, $options: 'i' },
-        });
-      }
-
-      if (
-        contract_template_id &&
-        Mongoose.Types.ObjectId.isValid(contract_template_id)
-      ) {
-        query.find({
-          contract_template: new Mongoose.Types.ObjectId(contract_template_id),
         });
       }
 
@@ -283,7 +273,7 @@ export class DeployedContractService {
 
       if (updateTransactionRequest.txHash) {
         return new BadRequest<DeployedContractDto>(
-          'Deployment contract already confirmed',
+          'Deployment contract transaction already confirmed',
         );
       }
 
@@ -316,7 +306,7 @@ export class DeployedContractService {
         .exec();
 
       if (!deployedContract) {
-        return new NotFound<string>('Deployed contract not found');
+        return new NotFound('Deployed contract not found');
       }
 
       if (deployedContract.owner._id.toString() !== ownerId) {

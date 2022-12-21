@@ -738,6 +738,13 @@ export const mockDeployedContract4 = {
   createdAt: new Date(),
 };
 
+export const mockDeployedContracts = [
+  mockDeployedContract1,
+  mockDeployedContract2,
+  mockDeployedContract3,
+  mockDeployedContract4,
+];
+
 export const mockCreateDeployedContractDto1 = {
   alias: mockDeployedContract1.alias,
   contract_template_id: mockDeployedContract1.contract_template._id.toString(),
@@ -776,3 +783,16 @@ export const mockCreateDeployedContractDtos = [
   mockCreateDeployedContractDto3,
   mockCreateDeployedContractDto4,
 ];
+
+export const mockDeployedContractDto = {
+  uuid: mockDeployedContract1.uuid,
+  contract_template_name: mockDeployedContract1.contract_template.name,
+  contract_template_description:
+    mockDeployedContract1.contract_template.description,
+  alias: mockDeployedContract1.alias,
+  tags: mockDeployedContract1.tags,
+  status: mockDeployedContract1.status,
+  args: mockDeployedContract1.args,
+  created_at: mockDeployedContract1.createdAt,
+  updated_at: mockDeployedContract1.updatedAt,
+};
