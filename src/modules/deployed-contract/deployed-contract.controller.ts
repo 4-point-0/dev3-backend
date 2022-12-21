@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  Logger,
   Param,
   Patch,
   Post,
@@ -12,7 +11,6 @@ import {
   Req,
   UseFilters,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   ApiExtraModels,
   ApiQuery,
@@ -38,10 +36,8 @@ import { UpdateDeployedContractDto } from './dto/update-deployed-contract.dto';
 @Controller('deployed-contract')
 @ApiExtraModels(PaginatedDto)
 export class DeployedContractController {
-  private readonly logger = new Logger(DeployedContractController.name);
   constructor(
     private readonly deployedContractService: DeployedContractService,
-    private configService: ConfigService,
   ) {}
 
   @Post()
