@@ -12,7 +12,6 @@ import {
   mockContractTemplates,
   mockCreateDeployedContractDtos,
   mockDeployedContracts,
-  // mockDeployedContracts,
   mockProjects,
   mockUser,
 } from '../../../test/mock-tests-data';
