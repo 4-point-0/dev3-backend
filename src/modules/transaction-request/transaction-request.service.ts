@@ -19,12 +19,14 @@ import {
 import { toPage } from '../../helpers/pagination/pagination-helper';
 import { UpdateTransactionRequestDto } from './dto/update-transaction-request.dto';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
+import { PublicTransactionRequestDto } from './dto/public-transaction-request.dto';
 import { mapTransactionRequestDto } from './mappers/mapTransactionRequestDto';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { getState } from '../../helpers/rpc/rpc-helper';
 import { TransactionRequestType } from '../../common/enums/transaction-request-type.enum';
 import { isValidEnum } from '../../helpers/enum/enum.helper';
+import { mapPublicTransactionRequestDto } from './mappers/mapPublicTransactionRequestDto';
 
 @Injectable()
 export class TransactionRequestService {
@@ -152,14 +154,14 @@ export class TransactionRequestService {
 
   async findByUuid(
     uuid: string,
-  ): Promise<ServiceResult<TransactionRequestDto>> {
+  ): Promise<ServiceResult<PublicTransactionRequestDto>> {
     try {
       const transactionRequest = await this.transactionRequestRepo
         .findOne({ uuid })
         .exec();
 
       if (!transactionRequest) {
-        return new NotFound<TransactionRequestDto>(
+        return new NotFound<PublicTransactionRequestDto>(
           'Transaction request not found',
         );
       }
@@ -175,14 +177,20 @@ export class TransactionRequestService {
         );
       }
 
-      return new ServiceResult<TransactionRequestDto>(
-        mapTransactionRequestDto(
-          await this.transactionRequestRepo.findOne({ uuid }).exec(),
+      return new ServiceResult<PublicTransactionRequestDto>(
+        mapPublicTransactionRequestDto(
+          await this.transactionRequestRepo
+            .findOne({ uuid })
+            .populate({
+              path: 'project',
+              populate: { path: 'logo', model: 'File' },
+            })
+            .exec(),
         ),
       );
     } catch (error) {
       this.logger.error('TransactionRequestService - findByUUid', error);
-      return new ServerError<TransactionRequestDto>(
+      return new ServerError<PublicTransactionRequestDto>(
         `Can't get transaction request`,
       );
     }

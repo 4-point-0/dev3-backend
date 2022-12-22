@@ -95,6 +95,8 @@ export class FileController {
         request.user._id.toString(),
         id,
         file.buffer,
+        file.originalname,
+        file.mimetype,
       ),
     );
   }

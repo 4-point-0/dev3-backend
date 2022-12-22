@@ -69,6 +69,8 @@ describe('FileService', () => {
       '123',
       createResult._id.toString(),
       dataBuffer,
+      'name',
+      'image/png',
     );
     expect(response).toStrictEqual(
       new Unauthorized('Unauthorized access to user file'),
