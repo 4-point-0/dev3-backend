@@ -28,8 +28,8 @@ import { ContractDto } from './dto/contract.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 
-@ApiTags('contract')
-@Controller('contract')
+@ApiTags('contract-template')
+@Controller('contract-template')
 @ApiExtraModels(PaginatedDto)
 export class ContractController {
   private readonly logger = new Logger(ContractController.name);

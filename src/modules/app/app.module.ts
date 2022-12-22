@@ -23,6 +23,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TasksModule } from '../task/task.module';
 import { AdminJsModule } from '../admin-js/admin-js.module';
 import { FileModule } from '../file/file.module';
+import { DeployedContractModule } from '../deployed-contract/deployed-contract.module';
 
 dotenv.config({
   path: existsSync(`.env.${process.env.NODE_ENV}`)
@@ -51,6 +52,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
     UserModule,
     AddressModule,
     ContractModule,
+    DeployedContractModule,
     ApiKeyModule,
     TransactionRequestModule,
     TasksModule,

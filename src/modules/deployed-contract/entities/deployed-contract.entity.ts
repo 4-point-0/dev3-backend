@@ -2,66 +2,34 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import Mongoose, { Document } from 'mongoose';
 import { Project } from '../../../modules/project/entities/project.entity';
-import { BaseEntity } from '../../../common/entities/base-entity';
 import { User } from '../../../modules/user/entities/user.entity';
-import { TransactionRequestStatus } from '../../../common/enums/transaction-request.enum';
-import { TransactionRequestType } from '../../../common/enums/transaction-request-type.enum';
+import { BaseEntity } from '../../../common/entities/base-entity';
+import { DeployedContractStatus } from '../../../common/enums/deployed-contract-status.enum';
+import { Contract } from '../../../modules/contract/entities/contract.entity';
 
-export type TransactionRequestDocument = TransactionRequest & Document;
+export type DeployedContractDocument = DeployedContract & Document;
 
 @Schema({
   _id: true,
 })
-export class TransactionRequest extends BaseEntity {
+export class DeployedContract extends BaseEntity {
   @ApiProperty({
     type: String,
+    required: true,
   })
   @Prop({ required: true, unique: true })
   uuid: string;
 
   @ApiProperty({
     type: String,
-    enum: [TransactionRequestType.Transaction, TransactionRequestType.Payment],
-  })
-  @Prop({
     required: true,
-    enum: TransactionRequestType,
-    default: TransactionRequestType.Transaction,
-  })
-  type: string;
-
-  @ApiProperty({
-    type: String,
-    enum: [
-      TransactionRequestStatus.Pending,
-      TransactionRequestStatus.Success,
-      TransactionRequestStatus.Failure,
-    ],
-  })
-  @Prop({
-    type: String,
-    required: true,
-    enum: TransactionRequestStatus,
-    default: TransactionRequestStatus.Pending,
-  })
-  status: TransactionRequestStatus;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @Prop({ required: false })
-  contractId?: string;
-
-  @ApiProperty({
-    type: String,
   })
   @Prop({ required: true })
-  method: string;
+  alias: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: true })
   @Prop({
-    required: false,
+    required: true,
     get: (args: string) => {
       try {
         return JSON.parse(args);
@@ -73,21 +41,32 @@ export class TransactionRequest extends BaseEntity {
       return JSON.stringify(args);
     },
   })
-  args?: string;
+  args: string;
+
+  @ApiProperty({
+    type: [String],
+  })
+  @Prop({ required: true })
+  tags: string[];
+
+  @ApiProperty({
+    type: String,
+    enum: [DeployedContractStatus.Pending, DeployedContractStatus.Deployed],
+  })
+  @Prop({
+    type: String,
+    required: true,
+    enum: DeployedContractStatus,
+    default: DeployedContractStatus.Pending,
+  })
+  status: DeployedContractStatus;
 
   @ApiProperty({
     type: String,
     required: false,
   })
   @Prop({ required: false })
-  gas?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @Prop({ required: false })
-  deposit?: string;
+  address?: string;
 
   @ApiProperty({
     type: String,
@@ -117,14 +96,7 @@ export class TransactionRequest extends BaseEntity {
     required: false,
   })
   @Prop({ required: false })
-  caller_address?: string;
-
-  @ApiProperty({
-    type: Boolean,
-    required: false,
-  })
-  @Prop({ required: false, default: false })
-  is_near_token: boolean;
+  deployer_address?: string;
 
   @ApiProperty({
     type: User,
@@ -137,7 +109,16 @@ export class TransactionRequest extends BaseEntity {
   })
   @Prop({ type: Mongoose.Types.ObjectId, ref: Project.name })
   project: Project;
+
+  @ApiProperty({
+    type: Contract,
+    required: false,
+  })
+  @Prop({ type: Mongoose.Types.ObjectId, ref: Contract.name, default: null })
+  contract_template?: Contract;
 }
 
-export const TransactionRequestSchema =
-  SchemaFactory.createForClass(TransactionRequest);
+export const DeployedContractSchema =
+  SchemaFactory.createForClass(DeployedContract);
+
+DeployedContractSchema.index({ owner: 1, alias: 1 }, { unique: true });

@@ -3,3 +3,7 @@ export const nearWalletRegex = new RegExp(
 );
 
 export const emailRegex = new RegExp(/^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/);
+
+export const deployedContractNameRegex = new RegExp(
+  /^[A-Za-z_-]+[A-Za-z0-9_-]*$/,
+);

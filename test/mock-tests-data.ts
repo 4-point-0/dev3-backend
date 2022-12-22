@@ -3,7 +3,7 @@ import { CreateProjectDto } from '../src/modules/project/dto/create-project.dto'
 import { CreateAddressDto } from '../src/modules/address/dto/create-address.dto';
 import { Role } from '../src/common/enums/role.enum';
 import { PaymentStatus } from '../src/common/enums/payment-status.enum';
-import { CreatePaymentDto } from '../src/modules/payment/dto/create-payment.dto';
+import { CreatePaymentDto } from '../src/modules/payment-old/dto/create-payment.dto';
 import { addDays } from '../src/helpers/date/date-helper';
 import { CreateApiKeyDto } from '../src/modules/api-key/dto/create-api-key.dto';
 import { ApiKeyDto } from '../src/modules/api-key/dto/api-key.dto';
@@ -12,6 +12,7 @@ import { CreateTransactionRequestDto } from '../src/modules/transaction-request/
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionRequestDto } from '../src/modules/transaction-request/dto/transaction-request.dto';
 import { TransactionRequestType } from '../src/common/enums/transaction-request-type.enum';
+import { DeployedContractStatus } from '../src/common/enums/deployed-contract-status.enum';
 import { PublicTransactionRequestDto } from '../src/modules/transaction-request/dto/public-transaction-request.dto';
 
 export const mockAuthUser = {
@@ -565,6 +566,236 @@ export const mockTransactionRequestDto: TransactionRequestDto = {
   status: mockTransactionRequest1.status,
   caller_address: 'bob.testnet',
   is_near_token: false,
+};
+
+export const mockContractTemplate1 = {
+  _id: new Mongoose.Types.ObjectId('784ed1f4ba85ec2475a1ef5d'),
+  name: 'ERC20 Fixed Supply',
+  description:
+    'ERC20 fungible token with fixed supply and ability to burn the tokens.',
+  is_audited: false,
+  tags: ['tokens', 'finance'],
+  creator_name: 'dev3',
+  github_url:
+    'https://github.com/4-point-0/dev3-contracts/blob/dev/contracts/dev3/fungible-token/manifest.json',
+  info_markdown_url:
+    'https://raw.githubusercontent.com/4-point-0/dev3-contracts/dev/contracts/dev3/fungible-token/info.md?token=123',
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockContractTemplate2 = {
+  _id: new Mongoose.Types.ObjectId('783fa1f4ba85ec2475a1ef5d'),
+  name: 'ERC721 Basic Mintable',
+  description: 'ERC721 NFT implementation with mintable by admin',
+  is_audited: false,
+  tags: ['nft'],
+  creator_name: 'dev3',
+  github_url:
+    'https://github.com/4-point-0/dev3-contracts/blob/dev/contracts/dev3/non-fungible-token/manifest.json',
+  info_markdown_url:
+    'https://raw.githubusercontent.com/4-point-0/dev3-contracts/dev/contracts/dev3/non-fungible-token/info.md?token=234',
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockContractTemplate3 = {
+  _id: new Mongoose.Types.ObjectId('783fa1f4bb85ec3265a1ef5d'),
+  name: 'Rewarder',
+  description: 'Smart contract which allows creating claimable token coupons.',
+  is_audited: true,
+  tags: ['token distribution', 'vouchers', 'secret code airdrop'],
+  creator_name: 'community',
+  github_url:
+    'https://github.com/4-point-0/dev3-contracts/blob/dev/contracts/community/disperse/manifest.json',
+  info_markdown_url:
+    'https://raw.githubusercontent.com/4-point-0/dev3-contracts/dev/contracts/community/disperse/info.md?token=721',
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockContractTemplate4 = {
+  _id: new Mongoose.Types.ObjectId('783fa1f4bb85ec3265b2ef5d'),
+  name: 'Disperse',
+  description: 'Smart contract for token and native coin distribution.',
+  is_audited: false,
+  tags: ['token distribution', 'disperse', 'batch payments'],
+  creator_name: 'community',
+  github_url:
+    'https://github.com/4-point-0/dev3-contracts/blob/dev/contracts/community/rewarder/manifest.json',
+  info_markdown_url:
+    'https://raw.githubusercontent.com/4-point-0/dev3-contracts/dev/contracts/community/rewarder/info.md?token=321',
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockContractTemplates = [
+  mockContractTemplate1,
+  mockContractTemplate2,
+  mockContractTemplate3,
+  mockContractTemplate4,
+];
+
+export const mockContractTemplateDto1 = {
+  name: mockContractTemplate1.name,
+  description: mockContractTemplate1.description,
+  is_audited: mockContractTemplate1.is_audited,
+  tags: mockContractTemplate1.tags,
+  creator_name: mockContractTemplate1.creator_name,
+  github_url: mockContractTemplate1.github_url,
+  info_markdown_url: mockContractTemplate1.info_markdown_url,
+};
+
+export const mockContractTemplateDto2 = {
+  name: mockContractTemplate2.name,
+  description: mockContractTemplate2.description,
+  is_audited: mockContractTemplate2.is_audited,
+  tags: mockContractTemplate2.tags,
+  creator_name: mockContractTemplate2.creator_name,
+  github_url: mockContractTemplate2.github_url,
+  info_markdown_url: mockContractTemplate2.info_markdown_url,
+};
+
+export const mockContractTemplateDto3 = {
+  name: mockContractTemplate3.name,
+  description: mockContractTemplate3.description,
+  is_audited: mockContractTemplate3.is_audited,
+  tags: mockContractTemplate3.tags,
+  creator_name: mockContractTemplate3.creator_name,
+  github_url: mockContractTemplate3.github_url,
+  info_markdown_url: mockContractTemplate3.info_markdown_url,
+};
+
+export const mockContractTemplateDto4 = {
+  name: mockContractTemplate4.name,
+  description: mockContractTemplate4.description,
+  is_audited: mockContractTemplate4.is_audited,
+  tags: mockContractTemplate4.tags,
+  creator_name: mockContractTemplate4.creator_name,
+  github_url: mockContractTemplate4.github_url,
+  info_markdown_url: mockContractTemplate4.info_markdown_url,
+};
+
+export const mockContractTemplateDtos = [
+  mockContractTemplateDto1,
+  mockContractTemplateDto2,
+  mockContractTemplateDto3,
+  mockContractTemplateDto4,
+];
+
+export const mockDeployedContract1 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bc85ec2475a1ef5d'),
+  uuid: uuidv4(),
+  alias: 'my-erc20',
+  args: JSON.stringify({ name: 'DSN', totalSupply: 100 }),
+  tags: ['tokens', 'finance'],
+  status: DeployedContractStatus.Pending,
+  contract_template: mockContractTemplate1,
+  project: mockProject1,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockDeployedContract2 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bc85ec2475a1ef5d'),
+  uuid: uuidv4(),
+  alias: 'your-erc20',
+  args: JSON.stringify({ name: 'DSB', totalSupply: 100 }),
+  tags: ['tokens', 'finance'],
+  status: DeployedContractStatus.Pending,
+  contract_template: mockContractTemplate1,
+  project: mockProject1,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockDeployedContract3 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bc85ec2475a1ef5d'),
+  uuid: uuidv4(),
+  alias: 'my-nft-contract',
+  args: JSON.stringify({ name: 'NFT', totalSupply: 20 }),
+  tags: ['nft'],
+  status: DeployedContractStatus.Pending,
+  contract_template: mockContractTemplate2,
+  project: mockProject1,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockDeployedContract4 = {
+  _id: new Mongoose.Types.ObjectId('784ff1e4bb75ac2475a1ef5d'),
+  uuid: uuidv4(),
+  alias: 'my-rewarder',
+  args: JSON.stringify({ name: 'Reward-people' }),
+  tags: ['token distribution', 'vouchers', 'secret code airdrop'],
+  status: DeployedContractStatus.Pending,
+  contract_template: mockContractTemplate3,
+  project: mockProject1,
+  owner: mockUser,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+};
+
+export const mockDeployedContracts = [
+  mockDeployedContract1,
+  mockDeployedContract2,
+  mockDeployedContract3,
+  mockDeployedContract4,
+];
+
+export const mockCreateDeployedContractDto1 = {
+  alias: mockDeployedContract1.alias,
+  contract_template_id: mockDeployedContract1.contract_template._id.toString(),
+  args: mockDeployedContract1.args,
+  project_id: mockDeployedContract1.project._id.toString(),
+  owner: mockUser._id,
+};
+
+export const mockCreateDeployedContractDto2 = {
+  alias: mockDeployedContract2.alias,
+  contract_template_id: mockDeployedContract2.contract_template._id.toString(),
+  args: mockDeployedContract2.args,
+  project_id: mockDeployedContract2.project._id.toString(),
+  owner: mockUser._id,
+};
+
+export const mockCreateDeployedContractDto3 = {
+  alias: mockDeployedContract3.alias,
+  contract_template_id: mockDeployedContract3.contract_template._id.toString(),
+  args: mockDeployedContract3.args,
+  project_id: mockDeployedContract3.project._id.toString(),
+  owner: mockUser._id,
+};
+
+export const mockCreateDeployedContractDto4 = {
+  alias: mockDeployedContract4.alias,
+  contract_template_id: mockDeployedContract4.contract_template._id.toString(),
+  args: mockDeployedContract4.args,
+  project_id: mockDeployedContract4.project._id.toString(),
+  owner: mockUser._id,
+};
+
+export const mockCreateDeployedContractDtos = [
+  mockCreateDeployedContractDto1,
+  mockCreateDeployedContractDto2,
+  mockCreateDeployedContractDto3,
+  mockCreateDeployedContractDto4,
+];
+
+export const mockDeployedContractDto = {
+  uuid: mockDeployedContract1.uuid,
+  contract_template_name: mockDeployedContract1.contract_template.name,
+  contract_template_description:
+    mockDeployedContract1.contract_template.description,
+  alias: mockDeployedContract1.alias,
+  tags: mockDeployedContract1.tags,
+  status: mockDeployedContract1.status,
+  args: mockDeployedContract1.args,
+  created_at: mockDeployedContract1.createdAt,
+  updated_at: mockDeployedContract1.updatedAt,
 };
 
 export const mockPublicTransactionRequestDto: PublicTransactionRequestDto = {
