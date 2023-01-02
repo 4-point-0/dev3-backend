@@ -242,7 +242,11 @@ export class ApiKeyService {
       apiKeyDb.updatedAt = new Date();
       await this.apiKeyRepo.updateOne({ _id: apiKeyDb._id }, apiKeyDb);
 
-      return new ServiceResult<ApiKeyDto>(mapToApiKeyDto(apiKeyDb));
+      const updatedApiKey = await this.apiKeyRepo
+        .findOne({ _id: apiKeyDb._id })
+        .exec();
+
+      return new ServiceResult<ApiKeyDto>(mapToApiKeyDto(updatedApiKey));
     } catch (error) {
       this.logger.error('ApiKeyService - regenerate', error);
       return error.errors
@@ -280,7 +284,11 @@ export class ApiKeyService {
       apiKeyDb.updatedAt = new Date();
       await this.apiKeyRepo.updateOne({ _id: apiKeyDb._id }, apiKeyDb);
 
-      return new ServiceResult<ApiKeyDto>(mapToApiKeyDto(apiKeyDb));
+      const updatedApiKey = await this.apiKeyRepo
+        .findOne({ _id: apiKeyDb._id })
+        .exec();
+
+      return new ServiceResult<ApiKeyDto>(mapToApiKeyDto(updatedApiKey));
     } catch (error) {
       this.logger.error('ApiKeyService - isValid', error);
       return error.errors
