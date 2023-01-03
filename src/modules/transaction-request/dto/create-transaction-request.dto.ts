@@ -30,6 +30,10 @@ export class CreateTransactionRequestDto {
   readonly args?: any;
 
   @IsOptional()
+  @ApiProperty({ required: false })
+  readonly meta?: any;
+
+  @IsOptional()
   @ApiProperty({ type: String, required: false })
   readonly gas?: string;
 

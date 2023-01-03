@@ -104,6 +104,9 @@ describe('TransactionRequestService', () => {
     expect(createdTransactionRequest.data.type).toBe(
       TransactionRequestType.Transaction,
     );
+    expect(createdTransactionRequest.data.meta).toBe(
+      mockCreateTransactionRequestDtos[0].meta,
+    );
   });
 
   it(`Create - should return Not valid transaction request type (Bad Request - 400) exception`, async () => {

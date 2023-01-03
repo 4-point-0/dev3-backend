@@ -12,6 +12,7 @@ export const mapPublicTransactionRequestDto = (
     contractId: entity.contractId,
     method: entity.method,
     args: entity.args,
+    meta: entity.meta,
     gas: entity.gas,
     deposit: entity.deposit,
     txHash: entity.txHash,

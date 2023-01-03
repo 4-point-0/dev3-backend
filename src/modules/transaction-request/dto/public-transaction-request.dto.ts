@@ -42,6 +42,9 @@ export class PublicTransactionRequestDto {
   method: string;
 
   @ApiProperty({ required: false })
+  meta?: any;
+
+  @ApiProperty({ required: false })
   args?: any;
 
   @ApiProperty({
