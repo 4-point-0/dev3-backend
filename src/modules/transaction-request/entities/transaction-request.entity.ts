@@ -62,6 +62,22 @@ export class TransactionRequest extends BaseEntity {
   @ApiProperty()
   @Prop({
     required: false,
+    get: (meta: string) => {
+      try {
+        return JSON.parse(meta);
+      } catch (err) {
+        return meta;
+      }
+    },
+    set: (meta: any) => {
+      return JSON.stringify(meta);
+    },
+  })
+  meta?: string;
+
+  @ApiProperty()
+  @Prop({
+    required: false,
     get: (args: string) => {
       try {
         return JSON.parse(args);
