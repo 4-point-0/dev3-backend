@@ -289,8 +289,12 @@ export class TransactionRequestService {
         updateTransactionRequest,
       );
 
+      const updatedTransactionRequest = await this.transactionRequestRepo
+        .findOne({ uuid })
+        .exec();
+
       return new ServiceResult<TransactionRequestDto>(
-        mapTransactionRequestDto(updateTransactionRequest),
+        mapTransactionRequestDto(updatedTransactionRequest),
       );
     } catch (error) {
       this.logger.error('TransactionRequestService - update', error);

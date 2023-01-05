@@ -98,7 +98,12 @@ export class FileService {
       file.updatedAt = new Date();
       await this.repo.updateOne({ _id: file.id }, file);
 
-      return new ServiceResult<File>(file);
+      const updatedFile = await this.repo
+        .findOne({ _id: new Mongoose.Types.ObjectId(id) })
+        .populate('owner')
+        .exec();
+
+      return new ServiceResult<File>(updatedFile);
     } catch (error) {
       this.logger.error('FileService - update file', error);
       return new ServerError<File>(`Can't update file`);
