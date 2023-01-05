@@ -113,7 +113,10 @@ export class AddressService {
       updateAddress.updatedAt = new Date();
 
       await this.repo.updateOne({ _id: id }, updateAddress);
-      return new ServiceResult<Address>(updateAddress);
+
+      const updatedAddress = await this.repo.findOne({ _id: id }).exec();
+
+      return new ServiceResult<Address>(updatedAddress);
     } catch (error) {
       this.logger.error('AddressService - update', error);
       return new ServerError<Address>(`Can't update address`);

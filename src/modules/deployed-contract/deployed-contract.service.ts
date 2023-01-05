@@ -261,34 +261,38 @@ export class DeployedContractService {
     dto: UpdateDeployedContractDto,
   ): Promise<ServiceResult<DeployedContractDto>> {
     try {
-      const updateTransactionRequest = await this.deployedContractRepo
+      const updateDeployedContract = await this.deployedContractRepo
         .findOne({ uuid })
         .exec();
 
-      if (!updateTransactionRequest) {
+      if (!updateDeployedContract) {
         return new NotFound<DeployedContractDto>(
           'Deployment contract not found',
         );
       }
 
-      if (updateTransactionRequest.txHash) {
+      if (updateDeployedContract.txHash) {
         return new BadRequest<DeployedContractDto>(
           'Deployment contract transaction already confirmed',
         );
       }
 
-      updateTransactionRequest.txHash = dto.txHash;
-      updateTransactionRequest.txDetails = dto.txDetails;
-      updateTransactionRequest.deployer_address = dto.deployer_address;
-      updateTransactionRequest.updatedAt = new Date();
+      updateDeployedContract.txHash = dto.txHash;
+      updateDeployedContract.txDetails = dto.txDetails;
+      updateDeployedContract.deployer_address = dto.deployer_address;
+      updateDeployedContract.updatedAt = new Date();
 
       await this.deployedContractRepo.updateOne(
         { uuid },
-        updateTransactionRequest,
+        updateDeployedContract,
       );
 
+      const updatedDeployedContract = await this.deployedContractRepo
+        .findOne({ uuid })
+        .exec();
+
       return new ServiceResult<DeployedContractDto>(
-        mapDeployedContractDto(updateTransactionRequest),
+        mapDeployedContractDto(updatedDeployedContract),
       );
     } catch (error) {
       this.logger.error('TransactionRequestService - update', error);
