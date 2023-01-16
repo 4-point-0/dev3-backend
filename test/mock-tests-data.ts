@@ -686,6 +686,10 @@ export const mockDeployedContractDto = {
   tags: mockDeployedContract1.tags,
   status: mockDeployedContract1.status,
   args: mockDeployedContract1.args,
+  project_name: mockDeployedContract1.project.name,
+  project_logo_url: mockDeployedContract1.project.logo
+    ? mockDeployedContract1.project.logo.url
+    : null,
   created_at: mockDeployedContract1.createdAt,
   updated_at: mockDeployedContract1.updatedAt,
 };

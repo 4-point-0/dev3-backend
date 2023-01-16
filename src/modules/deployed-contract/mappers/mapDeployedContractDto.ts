@@ -13,6 +13,8 @@ export const mapDeployedContractDto = (entity: DeployedContract) => {
     txHash: entity.txHash,
     txDetails: entity.txDetails,
     deployer_address: entity.deployer_address,
+    project_name: entity.project.name,
+    project_logo_url: entity.project.logo ? entity.project.logo.url : null,
     created_at: entity.createdAt,
     updated_at: entity.updatedAt,
   };
