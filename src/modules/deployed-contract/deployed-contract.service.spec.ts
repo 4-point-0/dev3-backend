@@ -25,6 +25,7 @@ import {
 } from './entities/deployed-contract.entity';
 import { DeployedContractStatus } from '../../common/enums/deployed-contract-status.enum';
 import { DeployedContractDto } from './dto/deployed-contract.dto';
+import { File, FileSchema } from '../file/entities/file.entity';
 
 describe('DeployedContractService', () => {
   let deployedContractService: DeployedContractService;
@@ -34,6 +35,7 @@ describe('DeployedContractService', () => {
   let userModel: Model<User>;
   let contractTemplateModel: Model<Contract>;
   let deployedContractModel: Model<DeployedContract>;
+  let fileModel: Model<File>;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -49,6 +51,7 @@ describe('DeployedContractService', () => {
       DeployedContract.name,
       DeployedContractSchema,
     );
+    fileModel = mongoConnection.model(File.name, FileSchema);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DeployedContractService,
@@ -72,6 +75,10 @@ describe('DeployedContractService', () => {
         {
           provide: getModelToken(DeployedContract.name),
           useValue: deployedContractModel,
+        },
+        {
+          provide: getModelToken(File.name),
+          useValue: fileModel,
         },
       ],
     }).compile();
