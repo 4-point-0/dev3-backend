@@ -133,9 +133,11 @@ export class DeployedContractService {
     tags?: string[],
   ): Promise<ServiceResult<PaginatedDto<DeployedContract>>> {
     try {
-      const query = this.deployedContractRepo.find({
-        owner: ownerId,
-      });
+      const query = this.deployedContractRepo
+        .find({
+          owner: ownerId,
+        })
+        .populate('contract_template');
       const queryCount = this.deployedContractRepo
         .find({ owner: ownerId })
         .countDocuments();
@@ -210,6 +212,7 @@ export class DeployedContractService {
         await this.deployedContractRepo
           .findOne({ uuid })
           .populate('contract_template')
+          .populate('project')
           .populate('owner')
           .exec(),
       );
@@ -245,6 +248,10 @@ export class DeployedContractService {
           await this.deployedContractRepo
             .findOne({ uuid })
             .populate('contract_template')
+            .populate({
+              path: 'project',
+              populate: { path: 'logo', model: 'File' },
+            })
             .exec(),
         ),
       );
@@ -289,6 +296,11 @@ export class DeployedContractService {
 
       const updatedDeployedContract = await this.deployedContractRepo
         .findOne({ uuid })
+        .populate('contract_template')
+        .populate({
+          path: 'project',
+          populate: { path: 'logo', model: 'File' },
+        })
         .exec();
 
       return new ServiceResult<DeployedContractDto>(

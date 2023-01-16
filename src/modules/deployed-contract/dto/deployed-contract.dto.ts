@@ -53,6 +53,16 @@ export class DeployedContractDto {
   txDetails?: string;
 
   @ApiProperty({
+    type: String,
+  })
+  project_name: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  project_logo_url: string;
+
+  @ApiProperty({
     type: Date,
   })
   created_at: Date;
