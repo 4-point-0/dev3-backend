@@ -27,6 +27,7 @@ import { handle } from '../../helpers/response/handle';
 import { ContractDto } from './dto/contract.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { BooleanPipe } from 'src/helpers/pipes/boolean.pipe';
 
 @ApiTags('contract-template')
 @Controller('contract-template')
@@ -56,7 +57,7 @@ export class ContractController {
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
     @Query('name') name?: string,
-    @Query('isAudited') isAudited?: boolean,
+    @Query('isAudited', BooleanPipe) isAudited?: boolean,
   ) {
     return handle<PaginatedDto<ContractDto>>(
       await this.contractService.findAll(offset, limit, name, isAudited),

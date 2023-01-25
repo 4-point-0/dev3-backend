@@ -31,6 +31,7 @@ import { ApiPaginatedResponse } from '../../common/pagination/api-paginated-resp
 import { Role } from '../../common/enums/role.enum';
 import { DeployedContractDto } from './dto/deployed-contract.dto';
 import { UpdateDeployedContractDto } from './dto/update-deployed-contract.dto';
+import { ArrayPipe } from '../../helpers/pipes/array.pipe';
 
 @ApiTags('deployed-contract')
 @Controller('deployed-contract')
@@ -63,7 +64,7 @@ export class DeployedContractController {
   @ApiQuery({ name: 'alias', required: false })
   @ApiQuery({ name: 'contract_template_id', required: false })
   @ApiQuery({ name: 'status', enum: DeployedContractStatus, required: false })
-  @ApiQuery({ name: 'tags', required: false })
+  @ApiQuery({ name: 'tags', required: false, type: String, isArray: true })
   @ApiPaginatedResponse(DeployedContract)
   @CommonApiResponse()
   async findAll(
@@ -73,7 +74,7 @@ export class DeployedContractController {
     @Query('limit') limit?: number,
     @Query('alias') alias?: string,
     @Query('status') status?: DeployedContractStatus,
-    @Query('tags') tags?: string[],
+    @Query('tags', ArrayPipe) tags?: string[],
   ) {
     return handle(
       await this.deployedContractService.findAll(

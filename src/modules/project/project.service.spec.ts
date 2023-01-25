@@ -162,7 +162,7 @@ describe('ProjectService', () => {
       name,
       slug,
     );
-    expect(result.data.total).toEqual(4);
+    expect(result.data.total).toEqual(2);
     expect(result.data.offset).toEqual(offset);
     expect(result.data.count).toEqual(limit);
     expect(result.data.limit).toEqual(limit);

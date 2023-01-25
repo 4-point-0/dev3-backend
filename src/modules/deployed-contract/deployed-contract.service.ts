@@ -25,7 +25,6 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { DeployedContractStatus } from '../../common/enums/deployed-contract-status.enum';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
-import { toPage } from '../../helpers/pagination/pagination-helper';
 import { DeployedContractDto } from './dto/deployed-contract.dto';
 import { mapDeployedContractDto } from './mappers/mapDeployedContractDto';
 import { getState } from '../../helpers/rpc/rpc-helper';
@@ -133,43 +132,66 @@ export class DeployedContractService {
     tags?: string[],
   ): Promise<ServiceResult<PaginatedDto<DeployedContract>>> {
     try {
-      const query = this.deployedContractRepo
-        .find({
-          owner: ownerId,
-        })
-        .populate('contract_template');
-      const queryCount = this.deployedContractRepo
-        .find({ owner: ownerId })
-        .countDocuments();
+      const paginatedAggregate: any[] = [];
+      const queryAnd: any = {
+        $and: [],
+      };
+
+      queryAnd.$and.push({ owner: ownerId });
 
       if (project_id && Mongoose.Types.ObjectId.isValid(project_id)) {
-        query.find({
+        queryAnd.$and.push({
           project: new Mongoose.Types.ObjectId(project_id),
         });
       }
 
       if (alias) {
-        query.find({
+        queryAnd.$and.push({
           alias: { $regex: alias, $options: 'i' },
         });
       }
 
       if (status) {
-        query.find({ status: { $regex: status, $options: 'i' } });
+        queryAnd.$and.push({
+          status: { $regex: status, $options: 'i' },
+        });
       }
 
-      if (tags) {
-        query.find({ tags: { $in: tags } });
+      if (tags && tags.length > 0) {
+        queryAnd.$and.push({ tags: { $in: tags } });
       }
 
-      const paginatedDto = await toPage<DeployedContract>(
-        query,
-        queryCount,
-        offset,
-        limit,
-      );
+      paginatedAggregate.push({ $match: queryAnd });
 
-      return new ServiceResult<PaginatedDto<DeployedContract>>(paginatedDto);
+      if (offset) {
+        paginatedAggregate.push({ $skip: Number(offset) });
+      }
+
+      if (limit) {
+        paginatedAggregate.push({ $limit: Number(limit) });
+      }
+
+      const [{ paginatedResult, totalCount }] = await this.deployedContractRepo
+        .aggregate([
+          {
+            $facet: {
+              paginatedResult: paginatedAggregate,
+              totalCount: [{ $match: queryAnd }, { $count: 'count' }],
+            },
+          },
+        ])
+        .exec();
+      await this.deployedContractRepo.populate(paginatedResult, {
+        path: 'contract_template',
+      });
+
+      return new ServiceResult<PaginatedDto<DeployedContract>>({
+        total: totalCount.length > 0 ? totalCount[0].count : 0,
+        count: paginatedResult.length,
+        offset: offset ? Number(offset) : 0,
+        limit: limit ? Number(limit) : 0,
+        results: paginatedResult,
+      });
     } catch (error) {
       this.logger.error('DeployedContractService - findAll', error);
       return new ServerError<PaginatedDto<DeployedContract>>(

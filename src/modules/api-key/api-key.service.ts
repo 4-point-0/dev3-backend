@@ -17,7 +17,6 @@ import { mapToApiKeyDto, mapToPaginatedApiKeyDto } from './mappers/mappers';
 import { RevokeApiKeyDto } from './dto/revoke-api-key.dto';
 import { RegenerateApiKeyDto } from './dto/regenerate-api-key.dto';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
-import { toPage } from '../../helpers/pagination/pagination-helper';
 import { User } from '../user/entities/user.entity';
 
 @Injectable()
@@ -80,36 +79,62 @@ export class ApiKeyService {
     api_key?: string,
   ): Promise<ServiceResult<PaginatedDto<ApiKeyDto>>> {
     try {
-      const query = this.apiKeyRepo.find({ owner: ownerId }).populate('owner');
-      const queryCount = this.apiKeyRepo
-        .find({ owner: ownerId })
-        .countDocuments();
+      const paginatedAggregate: any[] = [];
+      const queryAnd: any = {
+        $and: [],
+      };
+
+      queryAnd.$and.push({ owner: ownerId });
 
       if (project_id) {
-        query.find({ project: new Mongoose.Types.ObjectId(project_id) });
-      }
-      if (api_key) {
-        query.find({ api_key: { $regex: api_key, $options: 'i' } });
+        queryAnd.$and.push({
+          project: new Mongoose.Types.ObjectId(project_id),
+        });
       }
 
-      const paginatedDto = await toPage<ApiKey>(
-        query,
-        queryCount,
-        offset,
-        limit,
-      );
+      if (api_key) {
+        queryAnd.$and.push({
+          api_key: { $regex: api_key, $options: 'i' },
+        });
+      }
+
+      paginatedAggregate.push({ $match: queryAnd });
+
+      if (offset) {
+        paginatedAggregate.push({ $skip: Number(offset) });
+      }
+
+      if (limit) {
+        paginatedAggregate.push({ $limit: Number(limit) });
+      }
+
+      const [{ paginatedResult, totalCount }] = await this.apiKeyRepo
+        .aggregate([
+          {
+            $facet: {
+              paginatedResult: paginatedAggregate,
+              totalCount: [{ $match: queryAnd }, { $count: 'count' }],
+            },
+          },
+        ])
+        .exec();
+
+      const paginated = {
+        total: totalCount.length > 0 ? totalCount[0].count : 0,
+        count: paginatedResult.length,
+        offset: offset ? Number(offset) : 0,
+        limit: limit ? Number(limit) : 0,
+        results: paginatedResult,
+      };
 
       const apiKeyDtos: ApiKeyDto[] = [];
 
-      for (const apiKey of paginatedDto.results) {
+      for (const apiKey of paginatedResult) {
         const dto = mapToApiKeyDto(apiKey);
         apiKeyDtos.push(dto);
       }
 
-      const paginatedApiKeyDto = mapToPaginatedApiKeyDto(
-        paginatedDto,
-        apiKeyDtos,
-      );
+      const paginatedApiKeyDto = mapToPaginatedApiKeyDto(paginated, apiKeyDtos);
 
       return new ServiceResult<PaginatedDto<ApiKeyDto>>(paginatedApiKeyDto);
     } catch (error) {
