@@ -16,7 +16,6 @@ import {
   TransactionRequest,
   TransactionRequestDocument,
 } from './entities/transaction-request.entity';
-import { toPage } from '../../helpers/pagination/pagination-helper';
 import { UpdateTransactionRequestDto } from './dto/update-transaction-request.dto';
 import { TransactionRequestDto } from './dto/transaction-request.dto';
 import { PublicTransactionRequestDto } from './dto/public-transaction-request.dto';
@@ -105,45 +104,70 @@ export class TransactionRequestService {
     type?: TransactionRequestType,
   ): Promise<ServiceResult<PaginatedDto<TransactionRequest>>> {
     try {
-      const query = this.transactionRequestRepo.find({
-        owner: ownerId,
-      });
-      const queryCount = this.transactionRequestRepo
-        .find({ owner: ownerId })
-        .countDocuments();
+      const paginatedAggregate: any[] = [];
+      const queryAnd: any = {
+        $and: [],
+      };
+
+      queryAnd.$and.push({ owner: ownerId });
 
       if (project_id) {
-        query.find({
+        queryAnd.$and.push({
           project: new Mongoose.Types.ObjectId(project_id),
         });
       }
 
       if (contractId) {
-        query.find({ contractId: { $regex: contractId, $options: 'i' } });
+        queryAnd.$and.push({
+          contractId: { $regex: contractId, $options: 'i' },
+        });
       }
 
       if (method) {
-        query.find({
+        queryAnd.$and.push({
           method: { $regex: method, $options: 'i' },
         });
       }
 
       if (status) {
-        query.find({ status: { $regex: status, $options: 'i' } });
+        queryAnd.$and.push({
+          status: { $regex: status, $options: 'i' },
+        });
       }
 
       if (type) {
-        query.find({ type: { $regex: type, $options: 'i' } });
+        queryAnd.$and.push({ type: { $regex: type, $options: 'i' } });
       }
 
-      const paginatedDto = await toPage<TransactionRequest>(
-        query,
-        queryCount,
-        offset,
-        limit,
-      );
+      paginatedAggregate.push({ $match: queryAnd });
 
-      return new ServiceResult<PaginatedDto<TransactionRequest>>(paginatedDto);
+      if (offset) {
+        paginatedAggregate.push({ $skip: Number(offset) });
+      }
+
+      if (limit) {
+        paginatedAggregate.push({ $limit: Number(limit) });
+      }
+
+      const [{ paginatedResult, totalCount }] =
+        await this.transactionRequestRepo
+          .aggregate([
+            {
+              $facet: {
+                paginatedResult: paginatedAggregate,
+                totalCount: [{ $match: queryAnd }, { $count: 'count' }],
+              },
+            },
+          ])
+          .exec();
+
+      return new ServiceResult<PaginatedDto<TransactionRequest>>({
+        total: totalCount.length > 0 ? totalCount[0].count : 0,
+        count: paginatedResult.length,
+        offset: offset ? Number(offset) : 0,
+        limit: limit ? Number(limit) : 0,
+        results: paginatedResult,
+      });
     } catch (error) {
       this.logger.error('TransactionRequestService - findAll', error);
       return new ServerError<PaginatedDto<TransactionRequest>>(

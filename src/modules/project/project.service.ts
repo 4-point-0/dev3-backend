@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model } from 'mongoose';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
-import { toPage } from '../../helpers/pagination/pagination-helper';
 import {
   BadRequest,
   NotFound,
@@ -85,30 +84,60 @@ export class ProjectService {
     slug?: string,
   ): Promise<ServiceResult<PaginatedDto<Project>>> {
     try {
-      const query = this.projectRepo
-        .find({ owner: ownerId })
-        .populate('owner')
-        .populate('logo');
-      const queryCount = this.projectRepo
-        .find({ owner: ownerId })
-        .countDocuments();
+      const paginatedAggregate: any[] = [];
+      const queryAnd: any = {
+        $and: [],
+      };
+
+      queryAnd.$and.push({ owner: ownerId });
 
       if (name) {
-        query.find({ name: { $regex: name, $options: 'i' } });
+        queryAnd.$and.push({
+          name: { $regex: name, $options: 'i' },
+        });
       }
 
       if (slug) {
-        query.find({ slug: { $regex: slug, $options: 'i' } });
+        queryAnd.$and.push({
+          slug: { $regex: slug, $options: 'i' },
+        });
       }
 
-      const paginatedDto = await toPage<Project>(
-        query,
-        queryCount,
-        offset,
-        limit,
-      );
+      paginatedAggregate.push({ $match: queryAnd });
 
-      return new ServiceResult<PaginatedDto<Project>>(paginatedDto);
+      if (offset) {
+        paginatedAggregate.push({ $skip: Number(offset) });
+      }
+
+      if (limit) {
+        paginatedAggregate.push({ $limit: Number(limit) });
+      }
+
+      const [{ paginatedResult, totalCount }] = await this.projectRepo
+        .aggregate([
+          {
+            $facet: {
+              paginatedResult: paginatedAggregate,
+              totalCount: [{ $match: queryAnd }, { $count: 'count' }],
+            },
+          },
+        ])
+        .exec();
+
+      await this.projectRepo.populate(paginatedResult, [
+        {
+          path: 'owner',
+        },
+        { path: 'logo' },
+      ]);
+
+      return new ServiceResult<PaginatedDto<Project>>({
+        total: totalCount.length > 0 ? totalCount[0].count : 0,
+        count: paginatedResult.length,
+        offset: offset ? Number(offset) : 0,
+        limit: limit ? Number(limit) : 0,
+        results: paginatedResult,
+      });
     } catch (error) {
       this.logger.error('ProjectService - findAll', error);
       return new ServerError<PaginatedDto<Project>>(`Can't get projects`);

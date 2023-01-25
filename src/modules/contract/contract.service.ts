@@ -7,8 +7,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Contract, ContractDocument } from './entities/contract.entity';
 import { Model } from 'mongoose';
 import { mapDtoToContract } from './mappers/map-dto-to-contract';
-import { toPage } from '../../helpers/pagination/pagination-helper';
-
 import {
   fetchApi,
   fetchRepo,
@@ -45,25 +43,53 @@ export class ContractService {
     isAudited?: boolean,
   ): Promise<ServiceResult<PaginatedDto<ContractDto>>> {
     try {
-      const query = this.repo.find();
-      const queryCount = this.repo.find().countDocuments();
+      const paginatedAggregate: any[] = [];
+      const totalCountQuery: any[] = [{ $count: 'count' }];
+      const queryAnd: any = {
+        $and: [],
+      };
 
       if (name) {
-        query.find({ name: { $regex: name, $options: 'i' } });
+        queryAnd.$and.push({
+          name: { $regex: name, $options: 'i' },
+        });
       }
 
       if (isAudited) {
-        query.find({ is_audited: isAudited });
+        queryAnd.$and.push({ is_audited: isAudited });
       }
 
-      const paginatedDto = await toPage<ContractDto>(
-        query,
-        queryCount,
-        offset,
-        limit,
-      );
+      if (queryAnd.$and.length > 0) {
+        paginatedAggregate.push({ $match: queryAnd });
+        totalCountQuery.push({ $match: queryAnd });
+      }
 
-      return new ServiceResult<PaginatedDto<ContractDto>>(paginatedDto);
+      if (offset) {
+        paginatedAggregate.push({ $skip: Number(offset) });
+      }
+
+      if (limit) {
+        paginatedAggregate.push({ $limit: Number(limit) });
+      }
+
+      const [{ paginatedResult, totalCount }] = await this.repo
+        .aggregate([
+          {
+            $facet: {
+              paginatedResult: paginatedAggregate,
+              totalCount: totalCountQuery,
+            },
+          },
+        ])
+        .exec();
+
+      return new ServiceResult<PaginatedDto<ContractDto>>({
+        total: totalCount.length > 0 ? totalCount[0].count : 0,
+        count: paginatedResult.length,
+        offset: offset ? Number(offset) : 0,
+        limit: limit ? Number(limit) : 0,
+        results: paginatedResult,
+      });
     } catch (error) {
       this.logger.error('ContractService - findAll', error);
       return new ServerError<PaginatedDto<ContractDto>>(`Can't get contracts`);

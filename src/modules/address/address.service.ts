@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import Mongoose, { Model } from 'mongoose';
-import { toPage } from '../../helpers/pagination/pagination-helper';
 import { PaginatedDto } from '../../common/pagination/paginated-dto';
 import {
   BadRequest,
@@ -59,21 +58,47 @@ export class AddressService {
     alias?: string,
   ): Promise<ServiceResult<PaginatedDto<Address>>> {
     try {
-      const query = this.repo.find({ owner: ownerId }).populate('owner');
-      const queryCount = this.repo.find({ owner: ownerId }).countDocuments();
+      const paginatedAggregate: any[] = [];
+      const queryAnd: any = {
+        $and: [],
+      };
+
+      queryAnd.$and.push({ owner: ownerId });
 
       if (alias) {
-        query.find({ alias: { $regex: alias, $options: 'i' } });
+        queryAnd.$and.push({
+          alias: { $regex: alias, $options: 'i' },
+        });
       }
 
-      const paginatedDto = await toPage<Address>(
-        query,
-        queryCount,
-        offset,
-        limit,
-      );
+      paginatedAggregate.push({ $match: queryAnd });
 
-      return new ServiceResult<PaginatedDto<Address>>(paginatedDto);
+      if (offset) {
+        paginatedAggregate.push({ $skip: Number(offset) });
+      }
+
+      if (limit) {
+        paginatedAggregate.push({ $limit: Number(limit) });
+      }
+
+      const [{ paginatedResult, totalCount }] = await this.repo
+        .aggregate([
+          {
+            $facet: {
+              paginatedResult: paginatedAggregate,
+              totalCount: [{ $match: queryAnd }, { $count: 'count' }],
+            },
+          },
+        ])
+        .exec();
+
+      return new ServiceResult<PaginatedDto<Address>>({
+        total: totalCount.length > 0 ? totalCount[0].count : 0,
+        count: paginatedResult.length,
+        offset: offset ? Number(offset) : 0,
+        limit: limit ? Number(limit) : 0,
+        results: paginatedResult,
+      });
     } catch (error) {
       this.logger.error('AddressService - findAll', error);
       return new ServerError<PaginatedDto<Address>>(`Can't get addresses`);
