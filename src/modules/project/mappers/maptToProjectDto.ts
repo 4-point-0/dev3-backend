@@ -12,6 +12,6 @@ export const mapToProjectDto = (
     id: entity.id.toString(),
     name: entity.name,
     slug: entity.slug,
-    logo_url: entity.logo.url,
+    logo_url: entity.logo ? entity.logo.url : null,
   };
 };

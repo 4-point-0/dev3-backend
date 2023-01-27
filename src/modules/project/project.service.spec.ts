@@ -211,6 +211,18 @@ describe('ProjectService', () => {
     const createResult = await new projectModel(mockProjects[0]).save();
     const result = await projectService.findBySlug(createResult.slug);
     expect(result.data.slug).toBe(createResult.slug);
+    expect(result.data.logo_url).toBe(createResult.logo.url);
+  });
+
+  it(`FindBySlug - should findBySlug`, async () => {
+    await new userModel(mockUser).save();
+    await new fileModel(mockFile1).save();
+    const slugProject = { ...mockProjects[0] };
+    delete slugProject.logo;
+    const createResult = await new projectModel(slugProject).save();
+    const result = await projectService.findBySlug(createResult.slug);
+    expect(result.data.slug).toBe(createResult.slug);
+    expect(result.data.logo_url).toBe(null);
   });
 
   it(`FindBySlug - should return Project not found (Not Found - 404) exception`, async () => {
