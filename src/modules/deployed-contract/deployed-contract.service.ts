@@ -363,6 +363,26 @@ export class DeployedContractService {
     }
   }
 
+  async updateAllTxStatuses(): Promise<void> {
+    try {
+      const deployedContracts = await this.deployedContractRepo
+        .find({ status: DeployedContractStatus.Pending })
+        .exec();
+
+      for (const deployedContract of deployedContracts) {
+        if (deployedContract.txHash && deployedContract.deployer_address) {
+          await this.updateTxStatus(
+            deployedContract.txHash,
+            deployedContract.deployer_address,
+            deployedContract.uuid,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error('DeployedContractService - updateAllTxStatuses', error);
+    }
+  }
+
   async updateTxStatus(
     txHash: string,
     deployer_address: string,
