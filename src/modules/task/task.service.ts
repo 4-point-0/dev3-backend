@@ -8,6 +8,7 @@ import {
   ServerError,
 } from '../../helpers/response/errors';
 import { ServiceResult } from '../../helpers/response/result';
+import { DeployedContractService } from '../deployed-contract/deployed-contract.service';
 import { TransactionRequestService } from '../transaction-request/transaction-request.service';
 import { CronJobDto } from './dto/cron-job.dto';
 import { mapCronToDto } from './mappers/mapCronToDto';
@@ -18,6 +19,7 @@ export class TaskService implements OnModuleInit {
 
   constructor(
     private readonly transactionRequestService: TransactionRequestService,
+    private readonly deployedContractService: DeployedContractService,
     private schedulerRegistry: SchedulerRegistry,
     private configService: ConfigService,
   ) {}
@@ -29,6 +31,7 @@ export class TaskService implements OnModuleInit {
         `0 */5 * * * *`,
         async () => {
           await this.transactionRequestService.updateAllTxStatuses();
+          await this.deployedContractService.updateAllTxStatuses();
         },
         () => {
           this.logger.warn(

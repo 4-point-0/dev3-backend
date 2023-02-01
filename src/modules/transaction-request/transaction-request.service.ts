@@ -370,8 +370,8 @@ export class TransactionRequestService {
             : TransactionRequestStatus.Failure,
         },
       );
-    } catch (e) {
-      console.log('updateTxStatus', e);
+    } catch (error) {
+      this.logger.error('TransactionRequestService - updateTxStatus', error);
     }
   }
 }
