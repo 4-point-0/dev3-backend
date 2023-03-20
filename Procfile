@@ -1,1 +1,1 @@
-web: npm run deploy-staging
+web: npm run deploy-production
